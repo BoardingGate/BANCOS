@@ -57,7 +57,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   margin-bottom:16px;
 }
 .balance-grid{display:grid;min-width:max-content}
-.grid-cell{border:1px solid var(--border);padding:10px;transition:background var(--transition)}
+.grid-cell{border:1px solid var(--border); border-bottom:var(--row-border, 1px solid var(--border)); padding:10px; transition:background var(--transition)}
 
 /* BOTONES DE NAVEGACIÓN (ESQUINA SUPERIOR) */
 .header-corner{
@@ -245,7 +245,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   }
   
   .balance-grid { display: grid !important; gap: 0; }
-  .grid-cell { border: 1px solid #ddd !important; }
+  .grid-cell { border: 1px solid #ddd !important; border-bottom: var(--row-border, 1px solid #ddd) !important; }
   
   .header-corner, .header-company, .header-bank {
     position: static !important;
