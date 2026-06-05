@@ -249,79 +249,128 @@
     ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
     ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
 
-    /* ====== NORMAS DE EXPORTACIÓN PDF ====== */
-    .pdf-mode, .pdf-mode body, .pdf-mode html {
+    /* ====== REGLAS DE OPTIMIZACIÓN PDF ====== */
+    .pdf-mode {
       background: #fff !important; 
+      color: #000 !important;
+    }
+    .pdf-mode body, .pdf-mode html {
+      background: #fff !important;
       color: #000 !important;
       margin: 0 !important;
       padding: 0 !important;
-      width: max-content !important;
-      min-width: 100% !important;
+      width: auto !important;
       height: auto !important;
       overflow: visible !important;
-      box-sizing: border-box !important;
     }
     .pdf-mode::before { display: none !important; }
 
-    .pdf-mode .app-header, .pdf-mode .tab-nav-inline, .pdf-mode .btn-delete-row, 
-    .pdf-mode .btn-delete-col, .pdf-mode .btn-add-mov, .pdf-mode .btn-del-mov, 
-    .pdf-mode .btn-del-invoice, .pdf-mode .btn-del-tax-company, .pdf-mode .cell-toggle, 
-    .pdf-mode .nav-controls, .pdf-mode .dynamic-actions {
+    /* Ocultar interfaces y elementos interactivos en PDF */
+    .pdf-mode .app-header, 
+    .pdf-mode .tab-nav-inline, 
+    .pdf-mode .btn-delete-row, 
+    .pdf-mode .btn-delete-col, 
+    .pdf-mode .btn-add-mov, 
+    .pdf-mode .btn-del-mov, 
+    .pdf-mode .btn-del-invoice, 
+    .pdf-mode .btn-del-tax-company, 
+    .pdf-mode .cell-toggle, 
+    .pdf-mode .nav-controls, 
+    .pdf-mode .dynamic-actions {
       display: none !important;
     }
 
-    .pdf-mode .app-main, .pdf-mode .section { 
+    /* Forzar contenedor principal y secciones sin paddings que desvíen coordenadas */
+    .pdf-mode .app-main {
+      padding: 0 !important;
       margin: 0 !important;
-      padding: 8px !important; 
-      width: max-content !important;
+      width: auto !important;
       max-width: none !important;
+    }
+
+    .pdf-mode .section {
+      padding: 0 !important;
+      margin: 0 !important;
       display: block !important;
+      width: auto !important;
+      max-width: none !important;
       overflow: visible !important;
     }
 
+    /* Quitar límites de scroll en PDF */
     .pdf-mode .table-scroll-wrapper {
-      display: inline-block !important;
       overflow: visible !important;
       max-height: none !important;
       border: none !important;
       background: transparent !important;
       box-shadow: none !important;
-      width: max-content !important; 
-      margin: 0 !important;
       padding: 0 !important;
+      margin: 0 !important;
     }
 
-    .pdf-mode .balance-grid { display: grid !important; gap: 0; }
-    .pdf-mode .grid-cell { 
-      border: 1px solid #aaa !important; 
-      border-bottom: var(--row-border, 1px solid #aaa) !important; 
+    /* Bordes e impresión limpia en escala de grises de alta legibilidad */
+    .pdf-mode .balance-grid {
+      display: grid !important;
+      border: 1px solid #ddd !important;
+    }
+    .pdf-mode .grid-cell {
+      border: 1px solid #ddd !important;
+      background: #fff !important;
+      color: #000 !important;
     }
 
-    .pdf-mode .header-corner, .pdf-mode .header-company, .pdf-mode .header-bank {
+    /* Desactivar posiciones fijas de cabeceras para prevenir superposiciones */
+    .pdf-mode .header-corner, 
+    .pdf-mode .header-company, 
+    .pdf-mode .header-bank {
       position: static !important;
       transform: none !important;
-      color: #fff !important; 
+      background-color: #f1f5f9 !important;
+      color: #000 !important;
+      border-bottom: 1px solid #aaa !important;
+    }
+    
+    .pdf-mode .header-input, 
+    .pdf-mode .bank-input {
+      color: #000 !important;
+      text-shadow: none !important;
+      background: transparent !important;
+      border: none !important;
     }
 
-    .pdf-mode .balance-cell { background: transparent !important; }
-    .pdf-mode .cell-disabled { background: #eee !important; border: 1px solid #ccc !important; }
+    .pdf-mode .balance-cell {
+      background: #fff !important;
+      border: 1px solid #ddd !important;
+    }
+    .pdf-mode .cell-disabled {
+      background: #f8fafc !important;
+      border: 1px dashed #cbd5e1 !important;
+    }
 
-    .pdf-mode .field-input, .pdf-mode .mov-importe, .pdf-mode .mov-obs, 
-    .pdf-mode .inv-field, .pdf-mode .tax-value-input, .pdf-mode .bank-input, 
-    .pdf-mode .notes-textarea {
+    /* Redefinición de campos de entrada para impresión de papel */
+    .pdf-mode .field-input, 
+    .pdf-mode .mov-importe, 
+    .pdf-mode .mov-obs, 
+    .pdf-mode .inv-field, 
+    .pdf-mode .tax-value-input {
       background: transparent !important;
-      border: 1px solid transparent !important;
-      border-bottom: 1px dotted #ccc !important;
+      border: none !important;
+      border-bottom: 1px solid #ccc !important;
       color: #000 !important;
       box-shadow: none !important;
-      resize: none !important;
+      padding: 2px !important;
     }
+
     .pdf-mode .field-calc {
-      background: transparent !important;
-      border: 1px solid #ccc !important;
-      color: #000 !important;
+      background: #f0fdf4 !important;
+      border: 1px solid #bbf7d0 !important;
+      color: #166534 !important;
     }
-    .pdf-mode input[type=checkbox] { accent-color: #000; }
+    .pdf-mode .calc-negative {
+      background: #fef2f2 !important;
+      border: 1px solid #fecaca !important;
+      color: #991b1b !important;
+    }
   </style>
 </head>
 <body>
@@ -549,10 +598,15 @@ function updateConciliado(bi, ci) {
 // ─── GENERACIÓN DE PDF ───────────────────────────────────
 window.downloadPDF = function(sectionId, filenamePrefix) {
   const section = document.getElementById(sectionId);
-
+  const originalStyle = section.getAttribute('style') || '';
+  
   window.scrollTo(0, 0);
   const wrapper = section.querySelector('.table-scroll-wrapper');
-  if (wrapper) wrapper.scrollTo(0, 0);
+  let originalScrollStyle = '';
+  if (wrapper) {
+    originalScrollStyle = wrapper.getAttribute('style') || '';
+    wrapper.scrollTo(0, 0);
+  }
   
   section.querySelectorAll('input, textarea, select').forEach(el => {
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
@@ -573,32 +627,47 @@ window.downloadPDF = function(sectionId, filenamePrefix) {
 
   document.body.classList.add('pdf-mode');
 
-  const realWidth = section.scrollWidth;
+  // Ajustar anchos reales de forma matemática
+  const realWidth = wrapper ? wrapper.scrollWidth : section.scrollWidth;
   section.style.width = realWidth + 'px';
   section.style.maxWidth = 'none';
+  section.style.margin = '0';
+  section.style.padding = '0';
+  if (wrapper) {
+    wrapper.style.width = realWidth + 'px';
+    wrapper.style.maxWidth = 'none';
+    wrapper.style.overflow = 'visible';
+  }
 
   setTimeout(() => {
     const opt = {
-      margin:       [10, 5, 10, 5],
+      margin:       [8, 8, 8, 8], // Márgenes físicos óptimos en mm
       filename:     `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.pdf`,
-      image:        { type: 'jpeg', quality: 1 },
+      image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { 
         scale: 2, 
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
         width: realWidth,
-        windowWidth: Math.max(3000, realWidth + 200) 
+        windowWidth: realWidth // Forzar lienzo virtual idéntico al ancho de datos para evitar desvíos
       }, 
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
     };
 
     html2pdf().set(opt).from(section).save().then(() => {
       document.body.classList.remove('pdf-mode');
-      section.style.width = '';
-      section.style.maxWidth = '';
+      section.setAttribute('style', originalStyle);
+      if (wrapper) {
+        wrapper.setAttribute('style', originalScrollStyle);
+      }
+    }).catch(err => {
+      console.error(err);
+      document.body.classList.remove('pdf-mode');
+      section.setAttribute('style', originalStyle);
+      if (wrapper) wrapper.setAttribute('style', originalScrollStyle);
     });
-  }, 500);
+  }, 400);
 };
 
 // ─── NAVEGACIÓN RÁPIDA (SCROLL) ───────────────────────────
