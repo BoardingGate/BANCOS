@@ -239,9 +239,14 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .pdf-mode {
   background: #fff !important; 
   color: #000 !important;
+  /* Obligamos al body a crecer todo lo necesario */
+  width: max-content !important;
+  min-width: 100% !important;
+  overflow: visible !important;
 }
 .pdf-mode::before { display: none !important; }
 
+/* Ocultar elementos UI que no van en el PDF */
 .pdf-mode .app-header, .pdf-mode .tab-nav, .pdf-mode .section-actions, 
 .pdf-mode .btn-delete-row, .pdf-mode .btn-delete-col, .pdf-mode .btn-add-mov, 
 .pdf-mode .btn-del-mov, .pdf-mode .btn-del-invoice, .pdf-mode .btn-del-tax-company,
@@ -249,7 +254,13 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   display: none !important;
 }
 
-.pdf-mode .app-main { padding: 10px !important; }
+/* Expandir contenedores a su ancho máximo real */
+.pdf-mode .app-main, .pdf-mode .section { 
+  padding: 10px !important; 
+  width: max-content !important;
+  max-width: none !important;
+  overflow: visible !important;
+}
 
 .pdf-mode .table-scroll-wrapper {
   overflow: visible !important;
@@ -257,12 +268,14 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
+  width: max-content !important; /* Desactiva el scroll y expande la tabla */
 }
 
+/* Tablas y cuadrículas nativas en el PDF */
 .pdf-mode .balance-grid { display: grid !important; gap: 0; }
 .pdf-mode .grid-cell { 
-  border: 1px solid #ddd !important; 
-  border-bottom: var(--row-border, 1px solid #ddd) !important; 
+  border: 1px solid #aaa !important; 
+  border-bottom: var(--row-border, 1px solid #aaa) !important; 
 }
 
 .pdf-mode .header-corner, .pdf-mode .header-company, .pdf-mode .header-bank {
@@ -287,16 +300,16 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 }
 .pdf-mode input[type=checkbox] { accent-color: #000; }
 
-/* Mantener el media print nativo por si acaso */
+/* Modo de impresión tradicional por si el usuario usa Ctrl+P */
 @media print {
   @page { size: landscape; margin: 10mm; }
-  body { background: #fff; color: #000; }
+  body { background: #fff; color: #000; width: max-content !important; }
   body::before { display: none; }
   .app-header, .tab-nav, .section-actions, .btn-delete-row, .btn-delete-col, .btn-add-mov, .btn-del-mov, .btn-del-invoice, .btn-del-tax-company, .cell-toggle, .nav-controls { display: none !important; }
-  .app-main { padding: 0; }
-  .table-scroll-wrapper { overflow: visible !important; max-height: none !important; border: none !important; background: transparent !important; box-shadow: none !important; }
+  .app-main { padding: 0; overflow: visible !important; }
+  .table-scroll-wrapper { overflow: visible !important; max-height: none !important; border: none !important; background: transparent !important; box-shadow: none !important; width: max-content !important; }
   .balance-grid { display: grid !important; gap: 0; }
-  .grid-cell { border: 1px solid #ddd !important; border-bottom: var(--row-border, 1px solid #ddd) !important; }
+  .grid-cell { border: 1px solid #aaa !important; border-bottom: var(--row-border, 1px solid #aaa) !important; }
   .header-corner, .header-company, .header-bank { position: static !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .balance-cell { background: transparent !important; }
   .cell-disabled { background: #eee !important; border: 1px solid #ccc !important; }
@@ -304,5 +317,5 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   .field-calc { background: transparent !important; border: 1px solid #ccc !important; color: #000 !important; }
   input[type=checkbox] { accent-color: #000; }
   .section { display: none; }
-  .section.active { display: block; }
+  .section.active { display: block; width: max-content !important; }
 }
