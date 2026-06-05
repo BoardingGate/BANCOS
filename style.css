@@ -235,18 +235,23 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
 
 
+
+/* ====== REGLAS PARA LA EXPORTACIÓN DEL PDF ====== */
 .pdf-mode, .pdf-mode body, .pdf-mode html {
   background: #fff !important; 
   color: #000 !important;
-  /* Obligamos al body a crecer a su tamaño real absoluto */
-  width: fit-content !important;
+  /* Eliminamos TODO margen y padding del documento base para evitar desplazamientos */
+  margin: 0 !important;
+  padding: 0 !important;
+  width: max-content !important;
   min-width: 100% !important;
   height: auto !important;
   overflow: visible !important;
+  box-sizing: border-box !important;
 }
 .pdf-mode::before { display: none !important; }
 
-/* Ocultar elementos UI que no van en el PDF */
+/* Ocultar elementos UI */
 .pdf-mode .app-header, .pdf-mode .tab-nav, .pdf-mode .section-actions, 
 .pdf-mode .btn-delete-row, .pdf-mode .btn-delete-col, .pdf-mode .btn-add-mov, 
 .pdf-mode .btn-del-mov, .pdf-mode .btn-del-invoice, .pdf-mode .btn-del-tax-company,
@@ -254,11 +259,13 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   display: none !important;
 }
 
-/* Expandir contenedores a su ancho máximo real */
+/* Forzar que las secciones ocupen todo su ancho sin restricciones */
 .pdf-mode .app-main, .pdf-mode .section { 
-  padding: 5px !important; 
-  width: fit-content !important;
+  margin: 0 !important;
+  padding: 10px !important; 
+  width: max-content !important;
   max-width: none !important;
+  display: block !important;
   overflow: visible !important;
 }
 
@@ -268,17 +275,19 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
-  width: fit-content !important; /* Desactiva el scroll y expande la tabla */
+  width: max-content !important; 
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-/* Tablas y cuadrículas nativas en el PDF */
+/* Configuración de la cuadrícula en PDF */
 .pdf-mode .balance-grid { display: grid !important; gap: 0; }
 .pdf-mode .grid-cell { 
   border: 1px solid #aaa !important; 
   border-bottom: var(--row-border, 1px solid #aaa) !important; 
 }
 
-/* CRÍTICO: Desactivar position: sticky para que html2canvas no lo corte */
+/* CRÍTICO: Desactivar position: sticky y transformaciones */
 .pdf-mode .header-corner, .pdf-mode .header-company, .pdf-mode .header-bank {
   position: static !important;
   transform: none !important;
@@ -302,23 +311,3 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   color: #000 !important;
 }
 .pdf-mode input[type=checkbox] { accent-color: #000; }
-
-/* Modo de impresión tradicional (si se usa Ctrl+P) */
-@media print {
-  @page { size: landscape; margin: 10mm; }
-  body { background: #fff; color: #000; width: fit-content !important; }
-  body::before { display: none; }
-  .app-header, .tab-nav, .section-actions, .btn-delete-row, .btn-delete-col, .btn-add-mov, .btn-del-mov, .btn-del-invoice, .btn-del-tax-company, .cell-toggle, .nav-controls { display: none !important; }
-  .app-main { padding: 0; overflow: visible !important; }
-  .table-scroll-wrapper { overflow: visible !important; max-height: none !important; border: none !important; background: transparent !important; box-shadow: none !important; width: fit-content !important; }
-  .balance-grid { display: grid !important; gap: 0; }
-  .grid-cell { border: 1px solid #aaa !important; border-bottom: var(--row-border, 1px solid #aaa) !important; }
-  .header-corner, .header-company, .header-bank { position: static !important; transform: none !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .balance-cell { background: transparent !important; }
-  .cell-disabled { background: #eee !important; border: 1px solid #ccc !important; }
-  .field-input, .mov-importe, .mov-obs, .inv-field, .tax-value-input, .bank-input, .notes-textarea { background: transparent !important; border: 1px solid transparent !important; border-bottom: 1px dotted #ccc !important; color: #000 !important; box-shadow: none !important; resize: none !important; }
-  .field-calc { background: transparent !important; border: 1px solid #ccc !important; color: #000 !important; }
-  input[type=checkbox] { accent-color: #000; }
-  .section { display: none; }
-  .section.active { display: block; width: fit-content !important; }
-}
