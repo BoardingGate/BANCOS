@@ -196,16 +196,13 @@ function renderBalances() {
     'rgba(131, 24, 67, 0.15)', 'rgba(20, 83, 45, 0.15)', 'rgba(112, 26, 117, 0.15)', 'rgba(59, 7, 100, 0.15)'
   ];
 
-  // Top Left Header con Botones de Navegación
+  // Top Left Header con Botones de Navegación en UNA LÍNEA y sin título
   html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2);">'
-    + '<span class="corner-label"></span>'
     + '<div class="nav-controls">'
-    + '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C0;</button>'
-    + '<div style="display:flex; flex-direction:column; gap:4px;">'
+    +   '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C4;</button>'
     +   '<button class="nav-btn" onclick="navScroll(\'up\')" title="Arriba">&#x25B2;</button>'
     +   '<button class="nav-btn" onclick="navScroll(\'down\')" title="Abajo">&#x25BC;</button>'
-    + '</div>'
-    + '<button class="nav-btn" onclick="navScroll(\'right\')" title="Derecha">&#x25B6;</button>'
+    +   '<button class="nav-btn" onclick="navScroll(\'right\')" title="Derecha">&#x25BA;</button>'
     + '</div></div>';
   
   // Headers de Empresas
