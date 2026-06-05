@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="description" content="Control integral de saldos bancarios y conciliacion."/>
   <title>Control Bancario</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <!-- Librería para generar el PDF directamente -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link rel="stylesheet" href="style.css"/>
 </head>
@@ -13,57 +15,80 @@
 <header class="app-header">
   <div class="header-left">
     <div class="logo-icon">&#x1F3E6;</div>
-    <nav class="tab-nav">
-      <button class="tab-btn active" data-section="balances">Saldos</button>
-      <button class="tab-btn" data-section="invoices">Facturas</button>
-      <button class="tab-btn" data-section="taxes">Impuestos</button>
-      <button class="tab-btn" data-section="notes">Notas</button>
-    </nav>
+    <div>
+      <h1 class="app-title">Control Bancario</h1>
+      <p class="app-subtitle">Panel de Gesti&#xF3;n de Saldos y Conciliaci&#xF3;n</p>
+    </div>
   </div>
-
   <div class="header-right">
-    <div id="actions-balances" class="tab-actions">
-      <button class="btn btn-secondary" id="btn-add-bank">+ Banco</button>
-      <button class="btn btn-primary" id="btn-add-company">+ Empresa</button>
-      <button class="btn btn-ghost" onclick="downloadPDF('section-balances', 'Saldos')">&#x1F4BE; PDF</button>
-    </div>
-    <div id="actions-invoices" class="tab-actions hidden">
-      <button class="btn btn-primary" id="btn-add-invoice">+ Fila</button>
-      <button class="btn btn-ghost" onclick="downloadPDF('section-invoices', 'Facturas')">&#x1F4BE; PDF</button>
-    </div>
-    <div id="actions-taxes" class="tab-actions hidden">
-      <button class="btn btn-primary" id="btn-add-tax-company">+ Empresa</button>
-      <button class="btn btn-ghost" onclick="downloadPDF('section-taxes', 'Impuestos')">&#x1F4BE; PDF</button>
-    </div>
-    <div id="actions-notes" class="tab-actions hidden">
-      <button class="btn btn-ghost" id="btn-clear-notes">Limpiar Notas</button>
-      <button class="btn btn-ghost" onclick="downloadPDF('section-notes', 'Notas')">&#x1F4BE; PDF</button>
-    </div>
-
-    <div class="header-divider"></div>
-    <span class="save-indicator" id="save-indicator">&#x2713; Guardado</span>
-    <button class="btn btn-danger" id="btn-clear" title="LIMPIAR TODO">&#x1F5D1;</button>
+    <span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
+    <button class="btn btn-ghost" id="btn-clear">&#x1F5D1; Limpiar todo</button>
   </div>
 </header>
-
+<nav class="tab-nav">
+  <button class="tab-btn active" data-section="balances">&#x1F4CA; Saldos y Movimientos</button>
+  <button class="tab-btn" data-section="invoices">&#x1F4C4; Facturas</button>
+  <button class="tab-btn" data-section="taxes">&#x1F3DB; Impuestos</button>
+  <button class="tab-btn" data-section="notes">&#x1F4DD; Notas</button>
+</nav>
 <main class="app-main">
+
   <section id="section-balances" class="section active">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Saldos y Movimientos Pendientes</h2>
+          </div>
+      <div class="section-actions">
+        <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-balances', 'Saldos_Movimientos')">&#x1F4BE; Exportar PDF</button>
+        <button class="btn btn-secondary" id="btn-add-bank">+ Banco</button>
+        <button class="btn btn-primary" id="btn-add-company">+ Empresa</button>
+      </div>
+    </div>
     <div class="table-scroll-wrapper" id="wrapper-balances">
       <div id="grid-balances" class="balance-grid"></div>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot dot-actual"></span>Saldo Actual</span>
+      <span class="legend-item"><span class="legend-dot dot-punteado"></span>Saldo Punteado</span>
+      <span class="legend-item"><span class="legend-dot dot-conciliado"></span>Saldo Conciliado (auto)</span>
+      <span class="legend-item"><span class="legend-dot dot-otra"></span>Otra Anotaci&#xF3;n</span>
     </div>
   </section>
 
   <section id="section-invoices" class="section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Facturas Recurrentes</h2>
+        <p class="section-desc">Control mensual de cobros recurrentes (alquileres, servicios, suministros).</p>
+      </div>
+      <div class="section-actions">
+        <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-invoices', 'Facturas')">&#x1F4BE; Exportar PDF</button>
+        <button class="btn btn-primary" id="btn-add-invoice">+ A&#xF1;adir Fila</button>
+      </div>
+    </div>
     <div class="table-scroll-wrapper">
-      <table class="data-table" id="table-invoices">
+      <table class="data-table invoices-table" id="table-invoices">
         <thead>
           <tr>
-            <th class="col-fit">E</th><th class="col-fit">F</th><th class="col-fit">M</th>
-            <th class="col-fit">A</th><th class="col-fit">M</th><th class="col-fit">J</th>
-            <th class="col-fit">J</th><th class="col-fit">A</th><th class="col-fit">S</th>
-            <th class="col-fit">O</th><th class="col-fit">N</th><th class="col-fit">D</th>
-            <th class="col-fit">Proveedor</th><th class="col-fit">Cuenta</th><th class="col-fit">Importe</th>
-            <th class="col-fit">Banco</th><th class="col-fit">Tipo</th><th class="col-expand">Observaciones</th><th></th>
+            <th class="col-fit th-month" title="Enero">E</th>
+            <th class="col-fit th-month" title="Febrero">F</th>
+            <th class="col-fit th-month" title="Marzo">M</th>
+            <th class="col-fit th-month" title="Abril">A</th>
+            <th class="col-fit th-month" title="Mayo">M</th>
+            <th class="col-fit th-month" title="Junio">J</th>
+            <th class="col-fit th-month" title="Julio">J</th>
+            <th class="col-fit th-month" title="Agosto">A</th>
+            <th class="col-fit th-month" title="Septiembre">S</th>
+            <th class="col-fit th-month" title="Octubre">O</th>
+            <th class="col-fit th-month" title="Noviembre">N</th>
+            <th class="col-fit th-month" title="Diciembre">D</th>
+            <th class="col-fit">Descripci&#xF3;n / Proveedor</th>
+            <th class="col-fit">C&#xF3;d. Contable</th>
+            <th class="col-fit">Importe</th>
+            <th class="col-fit">Banco</th>
+            <th class="col-fit">Tipo Facturaci&#xF3;n</th>
+            <th class="col-expand">Observaciones</th>
+            <th class="col-fit"></th>
           </tr>
         </thead>
         <tbody id="invoices-body"></tbody>
@@ -72,23 +97,50 @@
   </section>
 
   <section id="section-taxes" class="section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Control de Impuestos</h2>
+        <p class="section-desc">IVA, IGIC, IRPF, Mod. 202 y Mod. 349 por empresa.</p>
+      </div>
+      <div class="section-actions">
+        <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-taxes', 'Impuestos')">&#x1F4BE; Exportar PDF</button>
+        <button class="btn btn-primary" id="btn-add-tax-company">+ A&#xF1;adir Empresa</button>
+      </div>
+    </div>
     <div class="table-scroll-wrapper">
-      <table class="data-table" id="table-taxes"></table>
+      <table class="data-table taxes-table" id="table-taxes"></table>
     </div>
   </section>
 
   <section id="section-notes" class="section">
-    <textarea id="notes-area" class="notes-textarea" placeholder="Escribe tus notas libres aquí..."></textarea>
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Bloc de Notas</h2>
+        <p class="section-desc">Espacio libre para anotaciones, recordatorios y comentarios.</p>
+      </div>
+      <div class="section-actions">
+        <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-notes', 'Notas')">&#x1F4BE; Exportar PDF</button>
+        <button class="btn btn-ghost btn-sm" id="btn-clear-notes">&#x1F5D1; Limpiar</button>
+      </div>
+    </div>
+    <div class="notes-container">
+      <textarea id="notes-area" class="notes-textarea" placeholder="Escribe aqu&#xED; tus anotaciones libremente..." spellcheck="false"></textarea>
+      <div class="notes-footer">
+        <span id="notes-charcount">0 caracteres</span>
+        <span id="notes-linecount">0 l&#xED;neas</span>
+      </div>
+    </div>
   </section>
+
 </main>
 
 <div id="confirm-overlay" class="modal-overlay hidden">
-  <div class="modal">
-    <div class="modal-header"><h3>Confirmar</h3></div>
-    <div class="modal-body"><p id="confirm-message"></p></div>
+  <div class="modal confirm-modal">
+    <div class="modal-header"><h3>&#x26A0; Confirmar acci&#xF3;n</h3></div>
+    <div class="modal-body"><p id="confirm-message">&#xBF;Est&#xE1;s seguro?</p></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" id="confirm-cancel">No</button>
-      <button class="btn btn-danger" id="confirm-ok">Sí</button>
+      <button class="btn btn-ghost" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
     </div>
   </div>
 </div>
