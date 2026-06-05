@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg-primary:#0d0f1a;--bg-secondary:#12152b;--bg-input:rgba(0,0,0,0.25);
   --accent:#6366f1;--accent-light:#818cf8;--accent-glow:rgba(99,102,241,0.3);
   --teal:#06b6d4;--teal-light:#67e8f9;--emerald:#10b981;--amber:#f59e0b;
@@ -59,37 +59,57 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .balance-grid{display:grid;min-width:max-content}
 .grid-cell{border:1px solid var(--border);padding:10px;transition:background var(--transition)}
 
-/* CABECERAS DE COLORES DISTINTOS Y STICKY */
+/* BOTONES DE NAVEGACIÓN (ESQUINA SUPERIOR) */
 .header-corner{
   position:sticky; top:0; left:0; z-index:30;
-  display:flex;align-items:center;justify-content:center;min-height:48px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 8px;
 }
+.corner-label{font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;text-align:center}
+.nav-controls {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+}
+.nav-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+  border-radius: 4px; cursor: pointer; padding: 4px; font-size: 10px;
+  display:flex; align-items:center; justify-content:center; transition: all 0.2s ease;
+}
+.nav-btn:hover { background: rgba(99,102,241,0.5); border-color: rgba(99,102,241,0.8); }
+
+/* CABECERAS DE COLORES DISTINTOS Y STICKY */
 .header-company{
   position:sticky; top:0; z-index:20;
   display:flex;align-items:center;justify-content:center;min-height:48px;
 }
 .header-bank{
   position:sticky; left:0; z-index:20;
-  display:flex;align-items:center;
+  display:flex;align-items:flex-start;
 }
-.corner-label{font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;text-align:center}
-
-.header-editable-wrapper{display:flex;align-items:center;gap:6px;width:100%}
+.header-editable-wrapper{display:flex;align-items:flex-start;gap:6px;width:100%}
 .header-input{background:transparent;border:none;border-bottom:1px solid transparent;color:#fff;font-family:inherit;font-size:13px;font-weight:600;padding:3px 4px;width:100%;transition:border-color var(--transition);text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.8)}
 .header-input:focus{outline:none;border-bottom-color:var(--accent);text-align:left}
-.bank-input{text-align:left}
+
+/* TEXTAREA DE 6 LINEAS PARA EL BANCO */
+.bank-input{
+  resize: vertical; min-height: 110px; text-align: left; white-space: pre-wrap;
+  font-size: 12px; font-weight: 400; line-height: 1.4; padding: 6px;
+  background: rgba(0,0,0,0.15); border-radius: 4px;
+}
+.bank-input:focus { background: rgba(0,0,0,0.3); }
+
 .btn-delete-row,.btn-delete-col{background:transparent;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:10px;padding:2px 4px;border-radius:3px;transition:all var(--transition);flex-shrink:0;opacity:0}
 .header-editable-wrapper:hover .btn-delete-row,.header-editable-wrapper:hover .btn-delete-col{opacity:1;color:rgba(255,255,255,0.9)}
 .btn-delete-row:hover,.btn-delete-col:hover{color:#ef4444!important}
 
-/* CELDAS COMBINADAS: SALDOS + MOVIMIENTOS */
+/* CELDAS COMBINADAS: SALDOS + MOVIMIENTOS (-15% ANCHO, FONDOS TENUES) */
 .balance-cell{
-  background:rgba(18,21,43,0.5);
-  min-width:200px; /* Reducido 30% respecto al anterior */
+  background-color: var(--cell-bg, rgba(18,21,43,0.5));
+  min-width: 170px; /* Reducido otro 15% (de 200px a 170px) */
   position:relative; z-index:10;
   display:flex; flex-direction:column;
 }
-.balance-cell:hover{background:rgba(25,29,55,0.7)}
+.balance-cell:hover{
+  background-image: linear-gradient(rgba(255,255,255,0.06), rgba(255,255,255,0.06));
+}
 
 /* SISTEMA DE ACTIVADO/DESACTIVADO CELDAS */
 .cell-toggle {
@@ -210,7 +230,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   .app-header, .tab-nav, .section-actions, 
   .btn-delete-row, .btn-delete-col, .btn-add-mov, 
   .btn-del-mov, .btn-del-invoice, .btn-del-tax-company,
-  .cell-toggle {
+  .cell-toggle, .nav-controls {
     display: none !important;
   }
   
@@ -237,7 +257,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   .balance-cell { background: transparent !important; }
   .cell-disabled { background: #eee !important; border: 1px solid #ccc !important; }
   
-  .field-input, .mov-importe, .mov-obs, .inv-field, .tax-value-input {
+  .field-input, .mov-importe, .mov-obs, .inv-field, .tax-value-input, .bank-input {
     background: transparent !important;
     border: 1px solid transparent !important;
     border-bottom: 1px dotted #ccc !important;
