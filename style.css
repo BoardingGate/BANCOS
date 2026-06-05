@@ -270,6 +270,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 }
 
 .pdf-mode .table-scroll-wrapper {
+  display: inline-block !important; /* CRÍTICO: Fuerza al contenedor a crecer al ancho real */
   overflow: visible !important;
   max-height: none !important;
   border: none !important;
