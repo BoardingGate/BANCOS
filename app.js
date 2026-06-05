@@ -109,7 +109,7 @@ function updateConciliado(bi, ci) {
 window.downloadPDF = function(sectionId, filenamePrefix) {
   const section = document.getElementById(sectionId);
   
-  // 1. Sincronizar todos los inputs y textareas para que html2canvas pueda "ver" sus valores
+  // 1. Sincronizar todos los inputs y textareas para la captura
   section.querySelectorAll('input, textarea, select').forEach(el => {
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
       el.setAttribute('value', el.value);
@@ -127,21 +127,30 @@ window.downloadPDF = function(sectionId, filenamePrefix) {
     }
   });
 
-  // 2. Activar modo PDF (Fondo blanco, sin botones, sin scrolls)
+  // 2. Activar modo PDF
   document.body.classList.add('pdf-mode');
 
-  // 3. Opciones del PDF (Apaisado)
+  // 3. Obtener el ancho real absoluto de la tabla (sin importar la pantalla)
+  const realWidth = section.scrollWidth;
+
+  // 4. Opciones del PDF: Forzar ajuste al ancho y permitir salto de página vertical
   const opt = {
-    margin:       10,
+    margin:       [10, 10, 10, 10],
     filename:     `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true }, 
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    image:        { type: 'jpeg', quality: 1 },
+    html2canvas:  { 
+      scale: 2, 
+      useCORS: true,
+      windowWidth: realWidth, // Obliga a "ver" toda la tabla a lo ancho
+      width: realWidth        // Fija el ancho del lienzo a toda la tabla
+    }, 
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+    pagebreak: { mode: 'avoid-all' } // Intenta no cortar texto a la mitad al saltar de página hacia abajo
   };
 
-  // 4. Generar y limpiar
+  // 5. Generar y limpiar
   html2pdf().set(opt).from(section).save().then(() => {
-    document.body.classList.remove('pdf-mode'); // Restaurar diseño oscuro
+    document.body.classList.remove('pdf-mode'); // Restaurar diseño
   });
 };
 
