@@ -109,7 +109,7 @@ function updateConciliado(bi, ci) {
 window.downloadPDF = function(sectionId, filenamePrefix) {
   const section = document.getElementById(sectionId);
 
-  // 1. TRUCO CRÍTICO: Resetear los scrolls a 0,0 para evitar cortes en html2canvas
+  // 1. Resetear scrolls para evitar cortes
   window.scrollTo(0, 0);
   const wrapper = section.querySelector('.table-scroll-wrapper');
   if (wrapper) wrapper.scrollTo(0, 0);
@@ -135,10 +135,13 @@ window.downloadPDF = function(sectionId, filenamePrefix) {
   // 3. Activar modo PDF
   document.body.classList.add('pdf-mode');
 
-  // 4. DAR TIEMPO (300ms) para que el navegador redimensione sin bordes antes de la foto
+  // 4. DAR TIEMPO (500ms) al navegador para redibujar sin bordes
   setTimeout(() => {
+    // Calculamos el ancho absoluto real de la tabla generada
+    const contentWidth = section.scrollWidth;
+
     const opt = {
-      margin:       5, // Márgenes pequeños para aprovechar papel
+      margin:       [10, 5, 10, 5], // Márgenes: arriba, derecha, abajo, izquierda
       filename:     `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.pdf`,
       image:        { type: 'jpeg', quality: 1 },
       html2canvas:  { 
@@ -146,7 +149,8 @@ window.downloadPDF = function(sectionId, filenamePrefix) {
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: document.documentElement.scrollWidth // Fuerza a ver el ancho absoluto
+        width: contentWidth, // Obliga a capturar el ancho exacto
+        windowWidth: contentWidth // Finge que la pantalla es igual de ancha que la tabla
       }, 
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
@@ -154,7 +158,7 @@ window.downloadPDF = function(sectionId, filenamePrefix) {
     html2pdf().set(opt).from(section).save().then(() => {
       document.body.classList.remove('pdf-mode'); // Restaurar la pantalla normal
     });
-  }, 600);
+  }, 500);
 };
 
 // ─── NAVEGACION RAPIDA (SCROLL) ───────────────────────────
