@@ -1,12 +1,11 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Control Bancario Pro</title>
+  <title>Control Bancario</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
-  <!-- Librería para PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link rel="stylesheet" href="style.css"/>
 </head>
@@ -23,7 +22,6 @@
   </div>
 
   <div class="header-right">
-    <!-- Acciones dinámicas según pestaña -->
     <div id="actions-balances" class="tab-actions">
       <button class="btn btn-secondary" id="btn-add-bank">+ Banco</button>
       <button class="btn btn-primary" id="btn-add-company">+ Empresa</button>
@@ -43,8 +41,8 @@
     </div>
 
     <div class="header-divider"></div>
-    <span class="save-indicator" id="save-indicator">Sincronizado</span>
-    <button class="btn btn-danger" id="btn-clear" title="BORRAR TODO">&#x1F5D1;</button>
+    <span class="save-indicator" id="save-indicator">&#x2713; Guardado</span>
+    <button class="btn btn-danger" id="btn-clear" title="LIMPIAR TODO">&#x1F5D1;</button>
   </div>
 </header>
 
@@ -64,7 +62,8 @@
             <th class="col-fit">A</th><th class="col-fit">M</th><th class="col-fit">J</th>
             <th class="col-fit">J</th><th class="col-fit">A</th><th class="col-fit">S</th>
             <th class="col-fit">O</th><th class="col-fit">N</th><th class="col-fit">D</th>
-            <th>Proveedor</th><th>Cuenta</th><th>Importe</th><th>Banco</th><th>Tipo</th><th class="col-expand">Observaciones</th><th></th>
+            <th class="col-fit">Proveedor</th><th class="col-fit">Cuenta</th><th class="col-fit">Importe</th>
+            <th class="col-fit">Banco</th><th class="col-fit">Tipo</th><th class="col-expand">Observaciones</th><th></th>
           </tr>
         </thead>
         <tbody id="invoices-body"></tbody>
@@ -79,21 +78,20 @@
   </section>
 
   <section id="section-notes" class="section">
-    <textarea id="notes-area" class="notes-textarea" placeholder="Escribe aquí tus notas..."></textarea>
+    <textarea id="notes-area" class="notes-textarea" placeholder="Escribe tus notas libres aquí..."></textarea>
   </section>
 </main>
 
 <div id="confirm-overlay" class="modal-overlay hidden">
   <div class="modal">
-    <div class="modal-header"><h3>Confirmar acción</h3></div>
+    <div class="modal-header"><h3>Confirmar</h3></div>
     <div class="modal-body"><p id="confirm-message"></p></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" id="confirm-cancel">Cancelar</button>
-      <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
+      <button class="btn btn-ghost" id="confirm-cancel">No</button>
+      <button class="btn btn-danger" id="confirm-ok">Sí</button>
     </div>
   </div>
 </div>
-
 <script src="app.js"></script>
 </body>
 </html>
