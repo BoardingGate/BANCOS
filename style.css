@@ -77,8 +77,8 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   color: #fff;
   border-radius: 6px; 
   cursor: pointer; 
-  width: 46px;       /* Ancho del botón (antes era automático) */
-  height: 36px;      /* Alto del botón (antes era automático) */
+  width: 40px;       /* Ancho del botón (antes era automático) */
+  height: 30px;      /* Alto del botón (antes era automático) */
   font-size: 16px;   /* Tamaño de la flecha (antes era 10px) */
   display: flex; 
   align-items: center; 
