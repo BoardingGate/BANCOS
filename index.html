@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Control Bancario</title>
+  <title>Control Bancario Pro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <!-- Librería para PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link rel="stylesheet" href="style.css"/>
 </head>
@@ -14,36 +15,36 @@
   <div class="header-left">
     <div class="logo-icon">&#x1F3E6;</div>
     <nav class="tab-nav">
-      <button class="tab-btn active" data-section="balances" title="Saldos">Saldos</button>
-      <button class="tab-btn" data-section="invoices" title="Facturas">Facturas</button>
-      <button class="tab-btn" data-section="taxes" title="Impuestos">Impuestos</button>
-      <button class="tab-btn" data-section="notes" title="Notas">Notas</button>
+      <button class="tab-btn active" data-section="balances">Saldos</button>
+      <button class="tab-btn" data-section="invoices">Facturas</button>
+      <button class="tab-btn" data-section="taxes">Impuestos</button>
+      <button class="tab-btn" data-section="notes">Notas</button>
     </nav>
   </div>
 
   <div class="header-right">
-    <!-- Botones Dinámicos (cambian según la pestaña) -->
+    <!-- Acciones dinámicas según pestaña -->
     <div id="actions-balances" class="tab-actions">
-      <button class="btn btn-secondary btn-sm" id="btn-add-bank">+ Banco</button>
-      <button class="btn btn-primary btn-sm" id="btn-add-company">+ Empresa</button>
-      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-balances', 'Saldos')">&#x1F4BE; PDF</button>
+      <button class="btn btn-secondary" id="btn-add-bank">+ Banco</button>
+      <button class="btn btn-primary" id="btn-add-company">+ Empresa</button>
+      <button class="btn btn-ghost" onclick="downloadPDF('section-balances', 'Saldos')">&#x1F4BE; PDF</button>
     </div>
     <div id="actions-invoices" class="tab-actions hidden">
-      <button class="btn btn-primary btn-sm" id="btn-add-invoice">+ Fila</button>
-      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-invoices', 'Facturas')">&#x1F4BE; PDF</button>
+      <button class="btn btn-primary" id="btn-add-invoice">+ Fila</button>
+      <button class="btn btn-ghost" onclick="downloadPDF('section-invoices', 'Facturas')">&#x1F4BE; PDF</button>
     </div>
     <div id="actions-taxes" class="tab-actions hidden">
-      <button class="btn btn-primary btn-sm" id="btn-add-tax-company">+ Empresa</button>
-      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-taxes', 'Impuestos')">&#x1F4BE; PDF</button>
+      <button class="btn btn-primary" id="btn-add-tax-company">+ Empresa</button>
+      <button class="btn btn-ghost" onclick="downloadPDF('section-taxes', 'Impuestos')">&#x1F4BE; PDF</button>
     </div>
     <div id="actions-notes" class="tab-actions hidden">
-      <button class="btn btn-ghost btn-sm" id="btn-clear-notes">&#x1F5D1; Limpiar</button>
-      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-notes', 'Notas')">&#x1F4BE; PDF</button>
+      <button class="btn btn-ghost" id="btn-clear-notes">Limpiar Notas</button>
+      <button class="btn btn-ghost" onclick="downloadPDF('section-notes', 'Notas')">&#x1F4BE; PDF</button>
     </div>
 
     <div class="header-divider"></div>
-    <span class="save-indicator" id="save-indicator">&#x2713; OK</span>
-    <button class="btn btn-danger btn-sm" id="btn-clear" title="Limpiar Todo">&#x1F5D1;</button>
+    <span class="save-indicator" id="save-indicator">Sincronizado</span>
+    <button class="btn btn-danger" id="btn-clear" title="BORRAR TODO">&#x1F5D1;</button>
   </div>
 </header>
 
@@ -56,15 +57,14 @@
 
   <section id="section-invoices" class="section">
     <div class="table-scroll-wrapper">
-      <table class="data-table invoices-table" id="table-invoices">
+      <table class="data-table" id="table-invoices">
         <thead>
           <tr>
-            <th class="col-fit th-month">E</th><th class="col-fit th-month">F</th><th class="col-fit th-month">M</th>
-            <th class="col-fit th-month">A</th><th class="col-fit th-month">M</th><th class="col-fit th-month">J</th>
-            <th class="col-fit th-month">J</th><th class="col-fit th-month">A</th><th class="col-fit th-month">S</th>
-            <th class="col-fit th-month">O</th><th class="col-fit th-month">N</th><th class="col-fit th-month">D</th>
-            <th class="col-fit">Proveedor</th><th class="col-fit">Cuenta</th><th class="col-fit">Importe</th>
-            <th class="col-fit">Banco</th><th class="col-fit">Tipo</th><th class="col-expand">Observaciones</th><th></th>
+            <th class="col-fit">E</th><th class="col-fit">F</th><th class="col-fit">M</th>
+            <th class="col-fit">A</th><th class="col-fit">M</th><th class="col-fit">J</th>
+            <th class="col-fit">J</th><th class="col-fit">A</th><th class="col-fit">S</th>
+            <th class="col-fit">O</th><th class="col-fit">N</th><th class="col-fit">D</th>
+            <th>Proveedor</th><th>Cuenta</th><th>Importe</th><th>Banco</th><th>Tipo</th><th class="col-expand">Observaciones</th><th></th>
           </tr>
         </thead>
         <tbody id="invoices-body"></tbody>
@@ -74,25 +74,26 @@
 
   <section id="section-taxes" class="section">
     <div class="table-scroll-wrapper">
-      <table class="data-table taxes-table" id="table-taxes"></table>
+      <table class="data-table" id="table-taxes"></table>
     </div>
   </section>
 
   <section id="section-notes" class="section">
-    <textarea id="notes-area" class="notes-textarea" placeholder="Notas libres..."></textarea>
+    <textarea id="notes-area" class="notes-textarea" placeholder="Escribe aquí tus notas..."></textarea>
   </section>
 </main>
 
 <div id="confirm-overlay" class="modal-overlay hidden">
-  <div class="modal confirm-modal">
-    <div class="modal-header"><h3>Confirmar</h3></div>
-    <div class="modal-body"><p id="confirm-message">¿Seguro?</p></div>
+  <div class="modal">
+    <div class="modal-header"><h3>Confirmar acción</h3></div>
+    <div class="modal-body"><p id="confirm-message"></p></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" id="confirm-cancel">No</button>
-      <button class="btn btn-danger" id="confirm-ok">Sí</button>
+      <button class="btn btn-ghost" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
     </div>
   </div>
 </div>
+
 <script src="app.js"></script>
 </body>
 </html>
