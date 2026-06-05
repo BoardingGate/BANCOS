@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const STORAGE_KEY = 'banking-control-v2';
 const MONTH_LABELS = ['E','F','M','A','M','J','J','A','S','O','N','D'];
@@ -47,16 +47,13 @@ function parseCurrency(str) {
   let hasDot = str.includes('.');
   
   if (hasDot && !hasComma) {
-    // Si tiene un punto y solo 1 o 2 decimales, asumimos notación anglosajona
     let parts = str.split('.');
     if (parts.length === 2 && parts[1].length <= 2) {
       return parseFloat(str); 
     } else {
-      // Si tiene más, era el punto de mil
       return parseFloat(str.replace(/\./g, '')); 
     }
   } else if (hasComma) {
-    // Reemplaza puntos de mil por nada, y comas decimales por punto nativo
     return parseFloat(str.replace(/\./g, '').replace(',', '.'));
   }
   
@@ -108,19 +105,47 @@ function updateConciliado(bi, ci) {
   el.className = 'field-calc ' + (v<0?'calc-negative':v===0?'calc-zero':'');
 }
 
+// ─── NAVEGACION RAPIDA (SCROLL) ───────────────────────────
+window.navScroll = function(direction) {
+  const wrapper = document.getElementById('wrapper-balances');
+  if (!wrapper) return;
+  const step = 400; // píxeles por clic
+  switch(direction) {
+    case 'left': wrapper.scrollBy({ left: -step, behavior: 'smooth' }); break;
+    case 'right': wrapper.scrollBy({ left: step, behavior: 'smooth' }); break;
+    case 'up': wrapper.scrollBy({ top: -step, behavior: 'smooth' }); break;
+    case 'down': wrapper.scrollBy({ top: step, behavior: 'smooth' }); break;
+  }
+};
+
 // ─── RENDER COMBINED GRID ──────────────────────────────────
 function renderBalances() {
   const g = document.getElementById('grid-balances');
   const nc = data.companies.length;
-  // Ancho base bajado a 200px (aprox 30% menos)
-  g.style.gridTemplateColumns = '220px repeat('+nc+', minmax(200px,1fr))';
+  // Ancho base del panel bancos a 240px (para texto libre) y resto a 170px (15% menos)
+  g.style.gridTemplateColumns = '240px repeat('+nc+', minmax(170px,1fr))';
   let html = '';
 
   const companyColors = ['#1e3a8a', '#064e3b', '#78350f', '#4c1d95', '#831843', '#14532d', '#701a75', '#3b0764'];
   const bankColors = ['#0f766e', '#b45309', '#be123c', '#4338ca', '#1d4ed8', '#15803d', '#a21caf', '#b91c1c'];
+  
+  // Colores tenues (transparencia 0.15) extraídos de companyColors para el fondo de cada columna
+  const companyFaintColors = [
+    'rgba(30, 58, 138, 0.15)', 'rgba(6, 78, 59, 0.15)', 'rgba(120, 53, 15, 0.15)', 'rgba(76, 29, 149, 0.15)', 
+    'rgba(131, 24, 67, 0.15)', 'rgba(20, 83, 45, 0.15)', 'rgba(112, 26, 117, 0.15)', 'rgba(59, 7, 100, 0.15)'
+  ];
 
-  // Top Left Header
-  html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2);"><span class="corner-label">Entidad / Empresa</span></div>';
+  // Top Left Header con Botones de Navegación
+  html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2);">'
+    + '<span class="corner-label">Entidad / Empresa</span>'
+    + '<div class="nav-controls">'
+    + '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C0;</button>'
+    + '<div style="display:flex; flex-direction:column; gap:4px;">'
+    +   '<button class="nav-btn" onclick="navScroll(\'up\')" title="Arriba">&#x25B2;</button>'
+    +   '<button class="nav-btn" onclick="navScroll(\'down\')" title="Abajo">&#x25BC;</button>'
+    + '</div>'
+    + '<button class="nav-btn" onclick="navScroll(\'right\')" title="Derecha">&#x25B6;</button>'
+    + '</div></div>';
   
   // Headers de Empresas
   data.companies.forEach((c,ci) => {
@@ -133,7 +158,7 @@ function renderBalances() {
   // Filas por Entidad
   data.banks.forEach((b,bi) => {
     html += '<div class="grid-cell header-bank" style="background-color: '+bankColors[bi % bankColors.length]+'; border-right: 2px solid rgba(255,255,255,0.2);"><div class="header-editable-wrapper">'
-      + '<input type="text" class="header-input bank-input" data-bi="'+bi+'" value="'+esc(b)+'" placeholder="Banco '+(bi+1)+'"/>'
+      + '<textarea class="header-input bank-input" data-bi="'+bi+'" placeholder="Banco '+(bi+1)+'\n...\n..." rows="6">'+esc(b)+'</textarea>'
       + '<button class="btn-delete-row" data-bi="'+bi+'" title="Eliminar banco">\u2715</button>'
       + '</div></div>';
     
@@ -145,6 +170,7 @@ function renderBalances() {
       const hasActual = bal.saldoActual!==undefined && bal.saldoActual!=='';
       const concText = hasActual ? (formatCurrency(cv)||'0,00') : '\u2014';
       const concClass = hasActual ? (cv<0?'calc-negative':cv===0?'calc-zero':'') : '';
+      const faintColor = companyFaintColors[ci % companyFaintColors.length];
       
       const movs = data.movements[key] || [];
       let movItems = movs.map((m,mi) =>
@@ -160,7 +186,7 @@ function renderBalances() {
         + '</div></div>'
       ).join('');
 
-      html += '<div class="grid-cell balance-cell ' + (isDisabled ? 'cell-disabled' : '') + '">'
+      html += '<div class="grid-cell balance-cell ' + (isDisabled ? 'cell-disabled' : '') + '" style="--cell-bg: ' + faintColor + ';">'
         + '<label class="cell-toggle" title="Activar/Desactivar cuenta"><input type="checkbox" class="cell-activate-check" data-bi="'+bi+'" data-ci="'+ci+'" '+(isDisabled?'':'checked')+'/></label>'
         + '<div class="cell-content">'
         + '<div class="balance-fields">'
