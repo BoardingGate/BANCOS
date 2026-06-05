@@ -10,7 +10,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;font-size:13px;line-height:1.5}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;font-size:13px;line-height:1.5;transition: background 0.3s;}
 body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 20%,rgba(99,102,241,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(6,182,212,0.06) 0%,transparent 50%);pointer-events:none;z-index:0}
 .app-header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(13,15,26,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-strong);box-shadow:var(--shadow)}
 .header-left{display:flex;align-items:center;gap:14px}
@@ -103,7 +103,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 /* CELDAS COMBINADAS: SALDOS + MOVIMIENTOS (-15% ANCHO, FONDOS TENUES) */
 .balance-cell{
   background-color: var(--cell-bg, rgba(18,21,43,0.5));
-  min-width: 170px; /* Reducido otro 15% (de 200px a 170px) */
+  min-width: 170px;
   position:relative; z-index:10;
   display:flex; flex-direction:column;
 }
@@ -218,58 +218,74 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
 
-/* FORMATO DE IMPRESIÓN MEJORADO (APAISADO) */
+
+/* ====== REGLAS PARA LA EXPORTACIÓN DEL PDF ====== */
+.pdf-mode {
+  background: #fff !important; 
+  color: #000 !important;
+}
+.pdf-mode::before { display: none !important; }
+
+.pdf-mode .app-header, .pdf-mode .tab-nav, .pdf-mode .section-actions, 
+.pdf-mode .btn-delete-row, .pdf-mode .btn-delete-col, .pdf-mode .btn-add-mov, 
+.pdf-mode .btn-del-mov, .pdf-mode .btn-del-invoice, .pdf-mode .btn-del-tax-company,
+.pdf-mode .cell-toggle, .pdf-mode .nav-controls {
+  display: none !important;
+}
+
+.pdf-mode .app-main { padding: 10px !important; }
+
+.pdf-mode .table-scroll-wrapper {
+  overflow: visible !important;
+  max-height: none !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.pdf-mode .balance-grid { display: grid !important; gap: 0; }
+.pdf-mode .grid-cell { 
+  border: 1px solid #ddd !important; 
+  border-bottom: var(--row-border, 1px solid #ddd) !important; 
+}
+
+.pdf-mode .header-corner, .pdf-mode .header-company, .pdf-mode .header-bank {
+  position: static !important;
+  color: #fff !important; 
+}
+
+.pdf-mode .balance-cell { background: transparent !important; }
+.pdf-mode .cell-disabled { background: #eee !important; border: 1px solid #ccc !important; }
+
+.pdf-mode .field-input, .pdf-mode .mov-importe, .pdf-mode .mov-obs, .pdf-mode .inv-field, .pdf-mode .tax-value-input, .pdf-mode .bank-input, .pdf-mode .notes-textarea {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-bottom: 1px dotted #ccc !important;
+  color: #000 !important;
+  box-shadow: none !important;
+}
+.pdf-mode .field-calc {
+  background: transparent !important;
+  border: 1px solid #ccc !important;
+  color: #000 !important;
+}
+.pdf-mode input[type=checkbox] { accent-color: #000; }
+
+/* Mantener el media print nativo por si acaso */
 @media print {
-  @page {
-    size: landscape;
-    margin: 10mm;
-  }
+  @page { size: landscape; margin: 10mm; }
   body { background: #fff; color: #000; }
   body::before { display: none; }
-  
-  .app-header, .tab-nav, .section-actions, 
-  .btn-delete-row, .btn-delete-col, .btn-add-mov, 
-  .btn-del-mov, .btn-del-invoice, .btn-del-tax-company,
-  .cell-toggle, .nav-controls {
-    display: none !important;
-  }
-  
+  .app-header, .tab-nav, .section-actions, .btn-delete-row, .btn-delete-col, .btn-add-mov, .btn-del-mov, .btn-del-invoice, .btn-del-tax-company, .cell-toggle, .nav-controls { display: none !important; }
   .app-main { padding: 0; }
-  
-  .table-scroll-wrapper {
-    overflow: visible !important;
-    max-height: none !important;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-  
+  .table-scroll-wrapper { overflow: visible !important; max-height: none !important; border: none !important; background: transparent !important; box-shadow: none !important; }
   .balance-grid { display: grid !important; gap: 0; }
   .grid-cell { border: 1px solid #ddd !important; border-bottom: var(--row-border, 1px solid #ddd) !important; }
-  
-  .header-corner, .header-company, .header-bank {
-    position: static !important;
-    color: #fff !important; 
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  
+  .header-corner, .header-company, .header-bank { position: static !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .balance-cell { background: transparent !important; }
   .cell-disabled { background: #eee !important; border: 1px solid #ccc !important; }
-  
-  .field-input, .mov-importe, .mov-obs, .inv-field, .tax-value-input, .bank-input {
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    border-bottom: 1px dotted #ccc !important;
-    color: #000 !important;
-    box-shadow: none !important;
-  }
-  .field-calc {
-    background: transparent !important;
-    border: 1px solid #ccc !important;
-    color: #000 !important;
-  }
-  
+  .field-input, .mov-importe, .mov-obs, .inv-field, .tax-value-input, .bank-input, .notes-textarea { background: transparent !important; border: 1px solid transparent !important; border-bottom: 1px dotted #ccc !important; color: #000 !important; box-shadow: none !important; }
+  .field-calc { background: transparent !important; border: 1px solid #ccc !important; color: #000 !important; }
   input[type=checkbox] { accent-color: #000; }
   .section { display: none; }
   .section.active { display: block; }
