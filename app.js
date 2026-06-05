@@ -122,7 +122,7 @@ window.navScroll = function(direction) {
 function renderBalances() {
   const g = document.getElementById('grid-balances');
   const nc = data.companies.length;
-  // Ancho base del panel bancos a 240px (para texto libre) y resto a 170px (15% menos)
+  // Ancho base del panel bancos a 240px (para texto libre) y resto a 170px
   g.style.gridTemplateColumns = '240px repeat('+nc+', minmax(170px,1fr))';
   let html = '';
 
@@ -157,7 +157,10 @@ function renderBalances() {
 
   // Filas por Entidad
   data.banks.forEach((b,bi) => {
-    html += '<div class="grid-cell header-bank" style="background-color: '+bankColors[bi % bankColors.length]+'; border-right: 2px solid rgba(255,255,255,0.2);"><div class="header-editable-wrapper">'
+    const bColor = bankColors[bi % bankColors.length];
+    
+    // Aplicando var(--row-border) que sobreescribe el borde inferior de CSS
+    html += '<div class="grid-cell header-bank" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 5px solid '+bColor+';"><div class="header-editable-wrapper">'
       + '<textarea class="header-input bank-input" data-bi="'+bi+'" placeholder="Banco '+(bi+1)+'\n...\n..." rows="6">'+esc(b)+'</textarea>'
       + '<button class="btn-delete-row" data-bi="'+bi+'" title="Eliminar banco">\u2715</button>'
       + '</div></div>';
@@ -186,7 +189,7 @@ function renderBalances() {
         + '</div></div>'
       ).join('');
 
-      html += '<div class="grid-cell balance-cell ' + (isDisabled ? 'cell-disabled' : '') + '" style="--cell-bg: ' + faintColor + ';">'
+      html += '<div class="grid-cell balance-cell ' + (isDisabled ? 'cell-disabled' : '') + '" style="--cell-bg: ' + faintColor + '; --row-border: 5px solid '+bColor+';">'
         + '<label class="cell-toggle" title="Activar/Desactivar cuenta"><input type="checkbox" class="cell-activate-check" data-bi="'+bi+'" data-ci="'+ci+'" '+(isDisabled?'':'checked')+'/></label>'
         + '<div class="cell-content">'
         + '<div class="balance-fields">'
