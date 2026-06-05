@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Control Bancario - Gestión Integral</title>
+  <meta name="description" content="Control integral de saldos bancarios y conciliacion."/>
+  <title>Control Bancario</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <!-- Librería para generar el PDF directamente -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
   <style>
-    /* VARIABLES Y ESTILOS ORIGINALES */
     :root {
       --bg-primary:#0d0f1a;--bg-secondary:#12152b;--bg-input:rgba(0,0,0,0.25);
       --accent:#6366f1;--accent-light:#818cf8;--accent-glow:rgba(99,102,241,0.3);
@@ -21,169 +22,387 @@
       --shadow-lg:0 8px 40px rgba(0,0,0,0.55);
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;font-size:13px;line-height:1.5;}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;font-size:13px;line-height:1.5;transition: background 0.3s;}
     body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 20%,rgba(99,102,241,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(6,182,212,0.06) 0%,transparent 50%);pointer-events:none;z-index:0}
-
-    /* HEADER UNIFICADO EN UNA LÍNEA */
-    .app-header{
-      position:sticky;top:0;z-index:100;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:6px 20px;
-      background:rgba(13,15,26,0.95);backdrop-filter:blur(12px);
-      border-bottom:1px solid var(--border-strong);
-      height: 50px;
-    }
+    
+    /* CABECERO COMPACTO INTEGRADO */
+    .app-header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(13,15,26,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-strong);box-shadow:var(--shadow);gap:12px}
     .header-left{display:flex;align-items:center;gap:12px}
-    .logo-icon{font-size:22px;filter:drop-shadow(0 0 10px rgba(99,102,241,0.5))}
-    .app-title{font-size:16px;font-weight:700;background:linear-gradient(135deg,#6366f1,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-
-    .tab-nav{display:flex;gap:4px;margin-left:20px;flex:1}
-    .tab-btn{background:transparent;border:none;color:var(--text-muted);padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-weight:500;transition:all var(--transition);white-space:nowrap}
+    .logo-icon{font-size:20px;filter:drop-shadow(0 0 6px rgba(99,102,241,0.5))}
+    .app-title{font-size:15px;font-weight:700;background:linear-gradient(135deg,#6366f1,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.3px}
+    
+    /* NAVEGACIÓN EN LÍNEA DENTRO DEL CABECERO */
+    .tab-nav-inline{display:flex;gap:3px;margin-left:8px}
+    .tab-btn{background:transparent;border:1px solid transparent;color:var(--text-muted);padding:4px 10px;border-radius:var(--radius-sm);cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;transition:all var(--transition)}
     .tab-btn:hover{background:rgba(255,255,255,0.04);color:var(--text-primary)}
-    .tab-btn.active{background:rgba(99,102,241,0.2);color:var(--accent-light);border:1px solid rgba(99,102,241,0.3)}
-
-    .header-right{display:flex;align-items:center;gap:10px}
-    .context-buttons{display:flex;align-items:center;gap:8px}
-    .save-indicator{font-size:11px;color:var(--text-muted);transition:color var(--transition)}
+    .tab-btn.active{background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(6,182,212,0.1));color:var(--accent-light);border:1px solid rgba(99,102,241,0.25)}
+    
+    .header-right{display:flex;align-items:center;gap:12px}
+    .save-indicator{font-size:11px;color:var(--text-muted);transition:color var(--transition);white-space:nowrap}
     .save-indicator.saved{color:var(--emerald)}
-
-    .app-main{position:relative;z-index:1;padding:15px}
+    
+    /* CONTENEDORES DINÁMICOS DE ACCIÓN */
+    .dynamic-actions{display:flex;align-items:center;gap:6px;border-right:1px solid var(--border-strong);padding-right:12px}
+    .dynamic-actions.hidden{display:none !important}
+    
+    .app-main{position:relative;z-index:1;max-width:100%;padding:12px}
     .section{display:none}
     .section.active{display:block;animation:fadeIn 0.2s ease}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-
-    /* BOTONES */
-    .btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;transition:all var(--transition);white-space:nowrap}
-    .btn-primary{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff}
-    .btn-secondary{background:rgba(6,182,212,0.1);color:var(--teal-light);border-color:rgba(6,182,212,0.3)}
-    .btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border-strong)}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;transition:all var(--transition);white-space:nowrap}
+    .btn-primary{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;box-shadow:0 2px 8px rgba(99,102,241,0.2)}
+    .btn-primary:hover{background:linear-gradient(135deg,#818cf8,#6366f1);transform:translateY(-1px)}
+    .btn-secondary{background:rgba(6,182,212,0.1);color:var(--teal-light);border-color:rgba(6,182,212,0.25)}
+    .btn-secondary:hover{background:rgba(6,182,212,0.18);transform:translateY(-1px)}
+    .btn-ghost{background:transparent;color:var(--text-secondary);border-color:var(--border-strong)}
     .btn-ghost:hover{background:rgba(255,255,255,0.04);color:var(--text-primary)}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+    .btn-danger:hover{background:linear-gradient(135deg,#f87171,#ef4444)}
+    .btn-sm{padding:4px 8px;font-size:11px}
+    .btn-icon-danger{background:transparent;border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.6);padding:2px 5px;border-radius:4px;cursor:pointer;font-size:11px;transition:all var(--transition);font-family:inherit}
+    .btn-icon-danger:hover{background:rgba(239,68,68,0.15);color:#ef4444;border-color:rgba(239,68,68,0.4)}
 
-    /* TABLAS Y GRIDS ORIGINALES */
+    /* TABLAS Y GRIDS */
     .table-scroll-wrapper{
-      overflow:auto;max-height:calc(100vh - 100px);
-      position:relative;border-radius:var(--radius);border:1px solid var(--border);
-      background:rgba(18,21,43,0.6);backdrop-filter:blur(8px);
+      overflow:auto;
+      max-height:calc(100vh - 100px);
+      position:relative;
+      border-radius:var(--radius);
+      border:1px solid var(--border);
+      background:rgba(18,21,43,0.6);
+      backdrop-filter:blur(8px);
+      margin-bottom:8px;
     }
     .balance-grid{display:grid;min-width:max-content}
-    .grid-cell{border:1px solid var(--border); border-bottom:var(--row-border, 1px solid var(--border)); padding:10px;}
+    .grid-cell{border:1px solid var(--border); border-bottom:var(--row-border, 1px solid var(--border)); padding:8px; transition:background var(--transition)}
 
-    /* HEADER CORNER CON NAV COMPACTA */
-    .header-corner { position: sticky; top: 0; left: 0; z-index: 50; display: flex; align-items: center; justify-content: center; min-height: 40px; padding: 4px; background: #0d0f1a !important; }
+    /* NAVEGACIÓN DE REJILLA */
+    .header-corner {
+      position: sticky; top: 0; left: 0; z-index: 30;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 40px !important;
+      padding: 4px !important;
+    }
     .nav-controls { display: flex; flex-direction: row; gap: 4px; }
-    .nav-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: #fff; border-radius: 4px; cursor: pointer; width: 34px; height: 28px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-    .nav-btn:hover { background: rgba(99,102,241,0.6); }
+    .nav-btn {
+      background: rgba(255,255,255,0.12); 
+      border: 1px solid rgba(255,255,255,0.2); 
+      color: #fff;
+      border-radius: 4px; 
+      cursor: pointer; 
+      width: 32px;
+      height: 26px;
+      font-size: 11px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover { 
+      background: rgba(99,102,241,0.6); 
+      border-color: rgba(99,102,241,0.9);
+    }
 
-    .header-company{ position:sticky; top:0; z-index:40; display:flex;align-items:center;justify-content:center;min-height:48px; }
-    .header-bank{ position:sticky; left:0; z-index:40; display:flex;align-items:flex-start; }
-    .header-editable-wrapper{display:flex;align-items:flex-start;gap:6px;width:100%}
-    .header-input{background:transparent;border:none;border-bottom:1px solid transparent;color:#fff;font-family:inherit;font-size:13px;font-weight:600;padding:3px 4px;width:100%;text-align:center;}
-    
-    .bank-input{ resize: vertical; min-height: 110px; text-align: left; white-space: pre-wrap; font-size: 12px; padding: 6px; background: rgba(0,0,0,0.15); border-radius: 4px; color: #fff; border:none; width:100%;}
-    
-    .balance-cell{ background-color: var(--cell-bg, rgba(18,21,43,0.5)); min-width: 170px; position:relative; display:flex; flex-direction:column; }
-    .cell-toggle { position: absolute; top: 6px; right: 6px; z-index: 20; cursor: pointer; background: rgba(0,0,0,0.3); padding: 2px; border-radius: 4px; display: flex; }
-    .cell-disabled { background: #030408 !important; border: 1px dashed rgba(255,255,255,0.08) !important; }
+    /* CABECERAS Y COLUMNAS */
+    .header-company{
+      position:sticky; top:0; z-index:20;
+      display:flex;align-items:center;justify-content:center;min-height:40px;
+    }
+    .header-bank{
+      position:sticky; left:0; z-index:20;
+      display:flex;align-items:flex-start;
+    }
+    .header-editable-wrapper{display:flex;align-items:flex-start;gap:4px;width:100%}
+    .header-input{background:transparent;border:none;border-bottom:1px solid transparent;color:#fff;font-family:inherit;font-size:12px;font-weight:600;padding:2px 4px;width:100%;transition:border-color var(--transition);text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.8)}
+    .header-input:focus{outline:none;border-bottom-color:var(--accent);text-align:left}
+
+    .bank-input{
+      resize: vertical; min-height: 90px; text-align: left; white-space: pre-wrap;
+      font-size: 11px; font-weight: 400; line-height: 1.3; padding: 4px;
+      background: rgba(0,0,0,0.15); border-radius: 4px;
+    }
+    .bank-input:focus { background: rgba(0,0,0,0.3); }
+
+    .btn-delete-row,.btn-delete-col{background:transparent;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:10px;padding:2px 4px;border-radius:3px;transition:all var(--transition);flex-shrink:0;opacity:0}
+    .header-editable-wrapper:hover .btn-delete-row,.header-editable-wrapper:hover .btn-delete-col{opacity:1;color:rgba(255,255,255,0.9)}
+    .btn-delete-row:hover,.btn-delete-col:hover{color:#ef4444!important}
+
+    /* DETALLE DE SALDOS */
+    .balance-cell{
+      background-color: var(--cell-bg, rgba(18,21,43,0.5));
+      min-width: 170px;
+      position:relative; z-index:10;
+      display:flex; flex-direction:column;
+    }
+    .balance-cell:hover{
+      background-image: linear-gradient(rgba(255,255,255,0.04), rgba(255,255,255,0.04));
+    }
+
+    .cell-toggle {
+      position: absolute; top: 4px; right: 4px; z-index: 20; cursor: pointer;
+      background: rgba(0,0,0,0.3); padding: 2px; border-radius: 4px; display: flex; align-items: center;
+    }
+    .cell-toggle input[type="checkbox"] {
+      width: 11px; height: 11px; accent-color: var(--emerald); cursor: pointer; margin: 0;
+    }
+    .cell-disabled {
+      background: #030408 !important;
+      border: 1px dashed rgba(255,255,255,0.06) !important;
+    }
+    .cell-disabled:hover { background: #05060b !important; }
     .cell-disabled .cell-content { display: none; }
 
+    .cell-content { display: flex; flex-direction: column; width: 100%; }
+    .balance-fields{display:flex;flex-direction:column;gap:4px}
+    .balance-field{display:flex;flex-direction:column;gap:1px}
     .field-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding-left:2px}
-    .label-actual{color:rgba(6,182,212,0.8)}.label-punteado{color:rgba(139,92,246,0.8)}.label-conciliado{color:rgba(16,185,129,0.8)}.label-otra{color:rgba(245,158,11,0.8)}
-    .field-input{background:var(--bg-input);border:1px solid var(--border);border-radius:4px;color:var(--text-primary);font-family:inherit;font-size:11px;padding:4px 6px;width:100%}
-    .field-calc{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-left:2px solid rgba(16,185,129,0.5);border-radius:4px;color:var(--emerald);padding:4px 6px;font-weight:700;min-height:28px;text-align:right}
-    .calc-negative{color:#ef4444;border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.06)}
+    .label-actual{color:rgba(6,182,212,0.8)}.label-punteado{color:rgba(139,92,246,0.8)}.label-conciliado{color:rgba(16,185,129,0.8)}.label-otra{color:rgba(245,158,11,0.8)}.label-obs{color:var(--text-muted)}
+    .field-input{background:var(--bg-input);border:1px solid var(--border);border-radius:4px;color:var(--text-primary);font-family:inherit;font-size:11px;padding:3px 5px;transition:all var(--transition);width:100%}
+    .field-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
 
-    .movements-divider{font-size:10px;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-strong);margin:12px 0 6px;padding-bottom:4px;font-weight:600}
-    .movement-item{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;padding:6px;margin-bottom:5px}
-    .mov-importe{width:100%;background:var(--bg-input);border:1px solid var(--border);color:white;font-size:11px;padding:3px;text-align:right}
+    .input-actual, .field-calc {
+      font-weight: 700 !important;
+      font-size: 12px !important;
+    }
+    .input-actual{border-left:2px solid rgba(6,182,212,0.4)}.input-punteado{border-left:2px solid rgba(139,92,246,0.4)}
+    .field-calc{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-left:2px solid rgba(16,185,129,0.5);border-radius:4px;color:var(--emerald);padding:3px 5px;font-variant-numeric:tabular-nums;min-height:24px}
+    .calc-negative{color:#ef4444;border-color:rgba(239,68,68,0.3);border-left-color:rgba(239,68,68,0.6);background:rgba(239,68,68,0.06)}
+    .calc-zero{color:var(--text-muted);border-color:var(--border);border-left-color:var(--border-strong);background:transparent}
+
+    .movements-divider{font-size:9px;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-strong);margin:10px 0 5px;padding-bottom:3px;font-weight:600;letter-spacing:0.5px}
+    .movements-list{display:flex;flex-direction:column;gap:4px}
+
+    .movement-item{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;padding:4px;transition:all var(--transition)}
+    .movement-item.mov-conciliado{background:rgba(16,185,129,0.07);border-color:rgba(16,185,129,0.2);opacity:0.7}
+    .mov-row1{display:flex;align-items:center;gap:4px;margin-bottom:3px}.mov-row2{display:flex}
+    .mov-importe{flex:1;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;color:var(--text-primary);font-family:inherit;font-size:10px;padding:2px 4px;min-width:0;text-align:right}
+    .mov-importe:focus{outline:none;border-color:var(--accent)}
+    .mov-obs{width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;color:var(--text-secondary);font-family:inherit;font-size:10px;padding:2px 4px}
+    .mov-obs:focus{outline:none;border-color:var(--accent);color:var(--text-primary)}
+    .mov-check-label{display:flex;align-items:center;gap:2px;cursor:pointer;flex-shrink:0}
+    .mov-check-label input[type=checkbox]{width:11px;height:11px;accent-color:var(--emerald);cursor:pointer}
+    .check-text{font-size:9px;color:var(--text-muted);white-space:nowrap}
+    .btn-del-mov{background:transparent;border:1px solid rgba(239,68,68,0.15);color:rgba(239,68,68,0.5);cursor:pointer;font-size:9px;padding:1px 4px;border-radius:3px;transition:all var(--transition);font-family:inherit;flex-shrink:0}
+    .btn-del-mov:hover{background:rgba(239,68,68,0.12);color:#ef4444}
+    .btn-add-mov{background:rgba(99,102,241,0.08);border:1px dashed rgba(99,102,241,0.25);color:var(--accent-light);cursor:pointer;font-size:9px;padding:4px 6px;border-radius:5px;transition:all var(--transition);font-family:inherit;width:100%;margin-top:6px}
+    .btn-add-mov:hover{background:rgba(99,102,241,0.14);border-style:solid}
+
+    /* TABLAS TRADICIONALES */
+    .data-table{width:100%;border-collapse:collapse;font-size:11px; table-layout: auto}
+    .col-fit { width: 1%; white-space: nowrap }
+    .col-expand { width: 100% }
+
+    .data-table th{background:rgba(99,102,241,0.1);color:var(--text-secondary);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding:6px;border:1px solid var(--border)}
+    .data-table td{border:1px solid var(--border);padding:3px;vertical-align:middle}
+    .data-table tbody tr:hover td{background:rgba(255,255,255,0.02)}
+    .th-month{width:26px;text-align:center;background:rgba(6,182,212,0.08)!important;color:var(--teal-light)!important;font-size:10px!important;padding:6px 2px!important}
+    .td-month{text-align:center;padding:3px 1px!important}
+    .month-check-label{display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .month-check-label input[type=checkbox]{display:none}
+    .month-dot{width:12px;height:12px;border:2px solid rgba(6,182,212,0.3);border-radius:50%;transition:all 0.15s ease;display:block}
+    .month-dot.dot-checked{background:linear-gradient(135deg,#06b6d4,#10b981);border-color:transparent;box-shadow:0 0 5px rgba(6,182,212,0.5)}
+    .month-check-label:hover .month-dot{border-color:rgba(6,182,212,0.6)}
+
+    .inv-field{background:var(--bg-input);border:1px solid transparent;border-radius:3px;color:var(--text-primary);font-family:inherit;font-size:11px;padding:3px 4px;width:100%;transition:all var(--transition)}
+    .inv-field:focus{outline:none;border-color:var(--accent);background:rgba(0,0,0,0.3)}
+    .inv-narrow{min-width:70px}
+    .inv-desc{min-width:130px}
+    .inv-select{background:var(--bg-input);border:1px solid transparent;color:var(--text-primary);font-family:inherit;font-size:11px;padding:3px 4px;border-radius:3px;width:100%;cursor:pointer; min-width:85px}
+    .inv-select:focus{outline:none;border-color:var(--accent)}
+    .inv-select option{background:#1a1d2e}
+
+    .tax-row-header{text-align:left!important;background:rgba(99,102,241,0.1)!important;white-space:nowrap;padding:6px 10px!important}
+    .tax-row-label{font-weight:600;font-size:10px;color:var(--text-secondary);padding:5px 10px!important;background:rgba(99,102,241,0.05);white-space:nowrap}
+    .tax-company-header{display:flex;align-items:center;gap:4px; min-width:130px}
+    .tax-company-input{background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text-primary);font-family:inherit;font-size:11px;font-weight:600;padding:2px;width:100%;text-align:center;transition:border-color var(--transition)}
+    .tax-company-input:focus{outline:none;border-bottom-color:var(--accent)}
+    .tax-value-input{background:var(--bg-input);border:1px solid transparent;border-radius:3px;color:var(--text-primary);font-family:inherit;font-size:11px;padding:4px 5px;width:100%;text-align:right;transition:all var(--transition)}
+    .tax-value-input:focus{outline:none;border-color:var(--accent);background:rgba(0,0,0,0.3)}
+
+    /* SECCIÓN NOTAS */
+    .notes-container{display:flex;flex-direction:column;gap:6px}
+    .notes-textarea{width:100%;min-height:calc(100vh - 160px);background:rgba(18,21,43,0.8);border:1px solid var(--border-strong);border-radius:var(--radius);color:var(--text-primary);font-family:'Inter',monospace;font-size:12px;line-height:1.7;padding:14px;resize:vertical;transition:border-color var(--transition);backdrop-filter:blur(8px)}
+    .notes-textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
+    .notes-textarea::placeholder{color:var(--text-muted);font-style:italic}
+    .notes-footer{display:flex;gap:12px;font-size:10px;color:var(--text-muted);padding:0 2px}
     
-    .data-table{width:100%;border-collapse:collapse;font-size:12px;}
-    .data-table th{background:rgba(99,102,241,0.1);color:var(--text-secondary);font-size:10px;padding:8px;border:1px solid var(--border);}
-    .data-table td{border:1px solid var(--border);padding:4px;}
-
-    .notes-textarea{width:100%;min-height:calc(100vh - 120px);background:rgba(18,21,43,0.8);border:1px solid var(--border-strong);border-radius:var(--radius);color:var(--text-primary);padding:20px;font-family:monospace;resize:none}
-
-    /* REGLAS PDF PARA ELIMINAR DESPLAZAMIENTOS */
-    .pdf-mode, .pdf-mode body { background: #fff !important; color: #000 !important; margin: 0 !important; padding: 0 !important; }
-    .pdf-mode .app-header, .pdf-mode .btn-add-mov, .pdf-mode .cell-toggle, .pdf-mode .nav-controls, .pdf-mode .btn-delete-row, .pdf-mode .btn-delete-col { display: none !important; }
-    .pdf-mode .table-scroll-wrapper { overflow: visible !important; max-height: none !important; width: max-content !important; border: none !important; }
-    .pdf-mode .grid-cell { border: 1px solid #aaa !important; }
-    .pdf-mode .field-input, .pdf-mode .bank-input { color: #000 !important; background: transparent !important; border-bottom: 1px solid #ccc !important; }
+    .legend{display:flex;align-items:center;gap:12px;padding:4px;flex-wrap:wrap;margin-top:2px}
+    .legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-muted)}
+    .legend-dot{width:7px;height:7px;border-radius:50%}
+    .dot-actual{background:#06b6d4}.dot-punteado{background:#8b5cf6}.dot-conciliado{background:#10b981}.dot-otra{background:#f59e0b}
     
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000}
-    .modal{background:var(--bg-secondary);border-radius:var(--radius-lg);padding:20px;min-width:300px;border:1px solid var(--border-strong)}
-    .hidden{display:none}
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fadeIn 0.15s ease}
+    .modal-overlay.hidden{display:none}
+    .modal{background:var(--bg-secondary);border:1px solid var(--border-strong);border-radius:var(--radius-lg);min-width:320px;max-width:480px;box-shadow:var(--shadow-lg);animation:slideUp 0.2s ease}
+    @keyframes slideUp{from{transform:translateY(15px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .confirm-modal{min-width:340px}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+    .modal-header h3{font-size:13px;font-weight:600}
+    .modal-body{padding:14px 16px;color:var(--text-secondary);font-size:12px}
+    .modal-footer{display:flex;gap:6px;justify-content:flex-end;padding:10px 16px;border-top:1px solid var(--border)}
+    
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+
+    /* ====== NORMAS DE EXPORTACIÓN PDF ====== */
+    .pdf-mode, .pdf-mode body, .pdf-mode html {
+      background: #fff !important; 
+      color: #000 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: max-content !important;
+      min-width: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      box-sizing: border-box !important;
+    }
+    .pdf-mode::before { display: none !important; }
+
+    .pdf-mode .app-header, .pdf-mode .tab-nav-inline, .pdf-mode .btn-delete-row, 
+    .pdf-mode .btn-delete-col, .pdf-mode .btn-add-mov, .pdf-mode .btn-del-mov, 
+    .pdf-mode .btn-del-invoice, .pdf-mode .btn-del-tax-company, .pdf-mode .cell-toggle, 
+    .pdf-mode .nav-controls, .pdf-mode .dynamic-actions {
+      display: none !important;
+    }
+
+    .pdf-mode .app-main, .pdf-mode .section { 
+      margin: 0 !important;
+      padding: 8px !important; 
+      width: max-content !important;
+      max-width: none !important;
+      display: block !important;
+      overflow: visible !important;
+    }
+
+    .pdf-mode .table-scroll-wrapper {
+      display: inline-block !important;
+      overflow: visible !important;
+      max-height: none !important;
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      width: max-content !important; 
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .pdf-mode .balance-grid { display: grid !important; gap: 0; }
+    .pdf-mode .grid-cell { 
+      border: 1px solid #aaa !important; 
+      border-bottom: var(--row-border, 1px solid #aaa) !important; 
+    }
+
+    .pdf-mode .header-corner, .pdf-mode .header-company, .pdf-mode .header-bank {
+      position: static !important;
+      transform: none !important;
+      color: #fff !important; 
+    }
+
+    .pdf-mode .balance-cell { background: transparent !important; }
+    .pdf-mode .cell-disabled { background: #eee !important; border: 1px solid #ccc !important; }
+
+    .pdf-mode .field-input, .pdf-mode .mov-importe, .pdf-mode .mov-obs, 
+    .pdf-mode .inv-field, .pdf-mode .tax-value-input, .pdf-mode .bank-input, 
+    .pdf-mode .notes-textarea {
+      background: transparent !important;
+      border: 1px solid transparent !important;
+      border-bottom: 1px dotted #ccc !important;
+      color: #000 !important;
+      box-shadow: none !important;
+      resize: none !important;
+    }
+    .pdf-mode .field-calc {
+      background: transparent !important;
+      border: 1px solid #ccc !important;
+      color: #000 !important;
+    }
+    .pdf-mode input[type=checkbox] { accent-color: #000; }
   </style>
 </head>
 <body>
 
 <header class="app-header">
   <div class="header-left">
-    <div class="logo-icon">🏦</div>
-    <h1 class="app-title">Bancos</h1>
+    <div class="logo-icon">&#x1F3E6;</div>
+    <h1 class="app-title">Control Bancario</h1>
+    <nav class="tab-nav-inline">
+      <button class="tab-btn active" data-section="balances">&#x1F4CA; Saldos y Movimientos</button>
+      <button class="tab-btn" data-section="invoices">&#x1F4C4; Facturas</button>
+      <button class="tab-btn" data-section="taxes">&#x1F3DB; Impuestos</button>
+      <button class="tab-btn" data-section="notes">&#x1F4DD; Notas</button>
+    </nav>
   </div>
-
-  <nav class="tab-nav">
-    <button class="tab-btn active" data-section="balances">Saldos y Movimientos</button>
-    <button class="tab-btn" data-section="invoices">Facturas</button>
-    <button class="tab-btn" data-section="taxes">Impuestos</button>
-    <button class="tab-btn" data-section="notes">Notas</button>
-  </nav>
-
   <div class="header-right">
-    <div class="context-buttons">
-        <!-- BOTONES CONTEXTUALES (Se controlan por JS) -->
-        <div id="ctx-balances" class="ctx-group">
-            <button class="btn btn-ghost" onclick="downloadPDF('section-balances', 'Saldos')">PDF</button>
-            <button class="btn btn-secondary" id="btn-add-bank">+ Banco</button>
-            <button class="btn btn-primary" id="btn-add-company">+ Empresa</button>
-        </div>
-        <div id="ctx-invoices" class="ctx-group" style="display:none">
-            <button class="btn btn-ghost" onclick="downloadPDF('section-invoices', 'Facturas')">PDF</button>
-            <button class="btn btn-primary" id="btn-add-invoice">+ Fila</button>
-        </div>
-        <div id="ctx-taxes" class="ctx-group" style="display:none">
-            <button class="btn btn-ghost" onclick="downloadPDF('section-taxes', 'Impuestos')">PDF</button>
-            <button class="btn btn-primary" id="btn-add-tax-company">+ Empresa</button>
-        </div>
-        <div id="ctx-notes" class="ctx-group" style="display:none">
-            <button class="btn btn-ghost" onclick="downloadPDF('section-notes', 'Notas')">PDF</button>
-            <button class="btn btn-ghost" id="btn-clear-notes">Limpiar</button>
-        </div>
+    <!-- Acciones contextuales dinámicas -->
+    <div class="dynamic-actions" id="actions-balances">
+      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-balances', 'Saldos_Movimientos')">&#x1F4BE; Exportar PDF</button>
+      <button class="btn btn-secondary btn-sm" id="btn-add-bank">+ Banco</button>
+      <button class="btn btn-primary btn-sm" id="btn-add-company">+ Empresa</button>
     </div>
     
-    <div style="width: 1px; height: 20px; background: var(--border-strong); margin: 0 5px;"></div>
-    <span class="save-indicator" id="save-indicator">✓ Guardado</span>
-    <button class="btn btn-ghost btn-danger" id="btn-clear" style="padding: 5px;" title="Borrar todo">🗑️</button>
+    <div class="dynamic-actions hidden" id="actions-invoices">
+      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-invoices', 'Facturas')">&#x1F4BE; Exportar PDF</button>
+      <button class="btn btn-primary btn-sm" id="btn-add-invoice">+ Añadir Fila</button>
+    </div>
+    
+    <div class="dynamic-actions hidden" id="actions-taxes">
+      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-taxes', 'Impuestos')">&#x1F4BE; Exportar PDF</button>
+      <button class="btn btn-primary btn-sm" id="btn-add-tax-company">+ Añadir Empresa</button>
+    </div>
+    
+    <div class="dynamic-actions hidden" id="actions-notes">
+      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-notes', 'Notas')">&#x1F4BE; Exportar PDF</button>
+      <button class="btn btn-ghost btn-sm" id="btn-clear-notes">&#x1F5D1; Limpiar Notas</button>
+    </div>
+
+    <span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
+    <button class="btn btn-ghost btn-sm" id="btn-clear">&#x1F5D1; Limpiar todo</button>
   </div>
 </header>
 
 <main class="app-main">
-  <!-- SECCION SALDOS -->
+
   <section id="section-balances" class="section active">
     <div class="table-scroll-wrapper" id="wrapper-balances">
       <div id="grid-balances" class="balance-grid"></div>
     </div>
-    <div class="legend" style="display:flex; gap:15px; font-size:10px; margin-top:10px; opacity:0.6">
-        <span><b style="color:var(--teal)">●</b> Saldo Actual</span>
-        <span><b style="color:var(--accent-light)">●</b> Punteado</span>
-        <span><b style="color:var(--emerald)">●</b> Conciliado (Auto)</span>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot dot-actual"></span>Saldo Actual</span>
+      <span class="legend-item"><span class="legend-dot dot-punteado"></span>Saldo Punteado</span>
+      <span class="legend-item"><span class="legend-dot dot-conciliado"></span>Saldo Conciliado (auto)</span>
+      <span class="legend-item"><span class="legend-dot dot-otra"></span>Otra Anotación</span>
     </div>
   </section>
 
-  <!-- SECCION FACTURAS -->
   <section id="section-invoices" class="section">
     <div class="table-scroll-wrapper">
-      <table class="data-table" id="table-invoices">
+      <table class="data-table invoices-table" id="table-invoices">
         <thead>
           <tr>
-            <th colspan="12">Meses (E-D)</th>
-            <th>Descripción / Proveedor</th>
-            <th>Cód. Contable</th>
-            <th>Importe</th>
-            <th>Banco</th>
-            <th>Tipo</th>
-            <th>Obs</th>
-            <th></th>
+            <th class="col-fit th-month" title="Enero">E</th>
+            <th class="col-fit th-month" title="Febrero">F</th>
+            <th class="col-fit th-month" title="Marzo">M</th>
+            <th class="col-fit th-month" title="Abril">A</th>
+            <th class="col-fit th-month" title="Mayo">M</th>
+            <th class="col-fit th-month" title="Junio">J</th>
+            <th class="col-fit th-month" title="Julio">J</th>
+            <th class="col-fit th-month" title="Agosto">A</th>
+            <th class="col-fit th-month" title="Septiembre">S</th>
+            <th class="col-fit th-month" title="Octubre">O</th>
+            <th class="col-fit th-month" title="Noviembre">N</th>
+            <th class="col-fit th-month" title="Diciembre">D</th>
+            <th class="col-fit">Descripción / Proveedor</th>
+            <th class="col-fit">Cód. Contable</th>
+            <th class="col-fit">Importe</th>
+            <th class="col-fit">Banco</th>
+            <th class="col-fit">Tipo Facturación</th>
+            <th class="col-expand">Observaciones</th>
+            <th class="col-fit"></th>
           </tr>
         </thead>
         <tbody id="invoices-body"></tbody>
@@ -191,25 +410,31 @@
     </div>
   </section>
 
-  <!-- SECCION IMPUESTOS -->
   <section id="section-taxes" class="section">
     <div class="table-scroll-wrapper">
-      <table class="data-table" id="table-taxes"></table>
+      <table class="data-table taxes-table" id="table-taxes"></table>
     </div>
   </section>
 
-  <!-- SECCION NOTAS -->
   <section id="section-notes" class="section">
-    <textarea id="notes-area" class="notes-textarea" placeholder="Escribe aquí tus anotaciones libremente..."></textarea>
+    <div class="notes-container">
+      <textarea id="notes-area" class="notes-textarea" placeholder="Escribe aquí tus anotaciones libremente..." spellcheck="false"></textarea>
+      <div class="notes-footer">
+        <span id="notes-charcount">0 caracteres</span>
+        <span id="notes-linecount">0 líneas</span>
+      </div>
+    </div>
   </section>
+
 </main>
 
 <div id="confirm-overlay" class="modal-overlay hidden">
-  <div class="modal">
-    <p id="confirm-message" style="margin-bottom:20px">¿Estás seguro?</p>
-    <div style="display:flex; justify-content:flex-end; gap:10px">
-        <button class="btn btn-ghost" id="confirm-cancel">Cancelar</button>
-        <button class="btn btn-primary" id="confirm-ok">Confirmar</button>
+  <div class="modal confirm-modal">
+    <div class="modal-header"><h3>&#x26A0; Confirmar acción</h3></div>
+    <div class="modal-body"><p id="confirm-message">¿Estás seguro?</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
     </div>
   </div>
 </div>
@@ -217,45 +442,66 @@
 <script>
 'use strict';
 
-// --- CONFIGURACION Y ESTADO ---
 const STORAGE_KEY = 'banking-control-v2';
 const MONTH_LABELS = ['E','F','M','A','M','J','J','A','S','O','N','D'];
-const TAX_KEYS = ['iva','igic','irpf','mod202','mod349','obs'];
+const MONTH_NAMES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const TAX_ROWS = ['IVA','IGIC','IRPF','Mod. 202','Mod. 349','Observaciones'];
+const TAX_KEYS = ['iva','igic','irpf','mod202','mod349','obs'];
 
 let data = {
-  banks: ['Banco 1','Banco 2','Banco 3'],
-  companies: ['Empresa 1','Empresa 2','Empresa 3'],
-  balances: {}, movements: {}, disabledCells: {},
-  invoices: [], taxCompanies: ['Empresa A'],
-  taxValues: {}, notes: ''
+  banks: ['Banco 1','Banco 2','Banco 3','Banco 4'],
+  companies: ['Empresa 1','Empresa 2','Empresa 3','Empresa 4','Empresa 5','Empresa 6'],
+  balances: {},
+  movements: {},
+  disabledCells: {},
+  invoices: [],
+  taxCompanies: ['Empresa A','Empresa B'],
+  taxValues: {},
+  notes: ''
 };
 
-// --- PERSISTENCIA ---
+// ─── PERSISTENCIA ────────────────────────────────────────
 function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  const el = document.getElementById('save-indicator');
-  el.classList.add('saved');
-  setTimeout(() => el.classList.remove('saved'), 1500);
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); showSaved(); } catch(e) {}
 }
 function loadData() {
-  const s = localStorage.getItem(STORAGE_KEY);
-  if (s) Object.assign(data, JSON.parse(s));
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) { const p = JSON.parse(s); Object.assign(data, p); }
+    if (!data.disabledCells) data.disabledCells = {};
+  } catch(e) {}
 }
 
-// --- FORMATEO ORIGINAL ---
+// ─── FORMATO NUMÉRICO ──────────────────────────────────
 function formatCurrency(n) {
   if (n === '' || n === null || n === undefined) return '';
   const v = parseFloat(n);
   if (isNaN(v)) return '';
   return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 }
+
 function parseCurrency(str) {
-  if (!str) return '';
+  if (str === null || str === undefined || str === '') return '';
   str = String(str).trim();
-  return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+  
+  let hasComma = str.includes(',');
+  let hasDot = str.includes('.');
+  
+  if (hasDot && !hasComma) {
+    let parts = str.split('.');
+    if (parts.length === 2 && parts[1].length <= 2) {
+      return parseFloat(str); 
+    } else {
+      return parseFloat(str.replace(/\./g, '')); 
+    }
+  } else if (hasComma) {
+    return parseFloat(str.replace(/\./g, '').replace(',', '.'));
+  }
+  
+  return parseFloat(str);
 }
 
+// ─── CÁLCULO ─────────────────────────────────────────
 function calcConciliado(bi, ci) {
   const key = bi+'-'+ci;
   const bal = data.balances[key] || {};
@@ -265,219 +511,483 @@ function calcConciliado(bi, ci) {
   return actual + pending;
 }
 
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── INDICADOR DE GUARDADO ─────────────────────────────
+let saveTimer;
+function showSaved() {
+  const el = document.getElementById('save-indicator');
+  el.textContent = '\u2713 Guardado';
+  el.classList.add('saved');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ el.classList.remove('saved'); el.textContent='\u2713 Datos guardados'; }, 2000);
+}
+
+// ─── DIÁLOGO DE CONFIRMACIÓN ──────────────────────────────
+let confirmCb = null;
+function confirm_(msg, cb) {
+  document.getElementById('confirm-message').textContent = msg;
+  document.getElementById('confirm-overlay').classList.remove('hidden');
+  confirmCb = cb;
+}
+
+// ─── ACTUALIZACIÓN DE CONCILIADO ──────────────────────────
 function updateConciliado(bi, ci) {
   const el = document.getElementById('conc-'+bi+'-'+ci);
   if (!el) return;
-  const val = calcConciliado(bi, ci);
-  el.textContent = formatCurrency(val) || '0,00';
-  el.className = 'field-calc ' + (val < 0 ? 'calc-negative' : '');
+  const bal = data.balances[bi+'-'+ci] || {};
+  const hasActual = bal.saldoActual !== undefined && bal.saldoActual !== '';
+  if (!hasActual) { el.textContent = '\u2014'; el.className = 'field-calc'; return; }
+  const v = calcConciliado(bi, ci);
+  el.textContent = formatCurrency(v) || '0,00';
+  el.className = 'field-calc ' + (v<0?'calc-negative':v===0?'calc-zero':'');
 }
 
-// --- GENERAR PDF (ARREGLO DE DESPLAZAMIENTO) ---
-window.downloadPDF = function(sectionId, filename) {
+// ─── GENERACIÓN DE PDF ───────────────────────────────────
+window.downloadPDF = function(sectionId, filenamePrefix) {
   const section = document.getElementById(sectionId);
+
   window.scrollTo(0, 0);
+  const wrapper = section.querySelector('.table-scroll-wrapper');
+  if (wrapper) wrapper.scrollTo(0, 0);
+  
+  section.querySelectorAll('input, textarea, select').forEach(el => {
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      el.setAttribute('value', el.value);
+      if (el.tagName === 'TEXTAREA') el.innerHTML = el.value;
+      if (el.type === 'checkbox') {
+        if (el.checked) el.setAttribute('checked', 'checked');
+        else el.removeAttribute('checked');
+      }
+    }
+    if (el.tagName === 'SELECT') {
+      Array.from(el.options).forEach(opt => {
+        if (opt.selected) opt.setAttribute('selected', 'selected');
+        else opt.removeAttribute('selected');
+      });
+    }
+  });
+
   document.body.classList.add('pdf-mode');
+
+  const realWidth = section.scrollWidth;
+  section.style.width = realWidth + 'px';
+  section.style.maxWidth = 'none';
 
   setTimeout(() => {
     const opt = {
-      margin: 10,
-      filename: `${filename}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
+      margin:       [10, 5, 10, 5],
+      filename:     `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.pdf`,
+      image:        { type: 'jpeg', quality: 1 },
+      html2canvas:  { 
         scale: 2, 
-        useCORS: true, 
-        scrollX: 0, 
-        scrollY: 0, 
-        x: 0 // CRÍTICO: Fuerza origen en 0
-      },
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+        width: realWidth,
+        windowWidth: Math.max(3000, realWidth + 200) 
+      }, 
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
+
     html2pdf().set(opt).from(section).save().then(() => {
       document.body.classList.remove('pdf-mode');
+      section.style.width = '';
+      section.style.maxWidth = '';
     });
-  }, 300);
+  }, 500);
 };
 
-// --- RENDER GRID PRINCIPAL ---
+// ─── NAVEGACIÓN RÁPIDA (SCROLL) ───────────────────────────
+window.navScroll = function(direction) {
+  const wrapper = document.getElementById('wrapper-balances');
+  if (!wrapper) return;
+  const step = 400; 
+  switch(direction) {
+    case 'left': wrapper.scrollBy({ left: -step, behavior: 'smooth' }); break;
+    case 'right': wrapper.scrollBy({ left: step, behavior: 'smooth' }); break;
+    case 'up': wrapper.scrollBy({ top: -step, behavior: 'smooth' }); break;
+    case 'down': wrapper.scrollBy({ top: step, behavior: 'smooth' }); break;
+  }
+};
+
+// ─── RENDERIZADO CUADRÍCULA COMBINADA ──────────────────────
 function renderBalances() {
   const g = document.getElementById('grid-balances');
   const nc = data.companies.length;
   g.style.gridTemplateColumns = '240px repeat('+nc+', minmax(170px,1fr))';
+  let html = '';
+
+  const companyColors = ['#1e3a8a', '#064e3b', '#78350f', '#4c1d95', '#831843', '#14532d', '#701a75', '#3b0764'];
+  const bankColors = ['#0f766e', '#b45309', '#be123c', '#4338ca', '#1d4ed8', '#15803d', '#a21caf', '#b91c1c'];
   
-  const companyColors = ['#1e3a8a', '#064e3b', '#78350f', '#4c1d95', '#831843'];
-  const bankColors = ['#0f766e', '#b45309', '#be123c', '#4338ca'];
-  const faintColors = ['rgba(30,58,138,0.1)','rgba(6,78,59,0.1)','rgba(120,53,15,0.1)','rgba(76,29,149,0.1)','rgba(131,24,67,0.1)'];
+  const companyFaintColors = [
+    'rgba(30, 58, 138, 0.15)', 'rgba(6, 78, 59, 0.15)', 'rgba(120, 53, 15, 0.15)', 'rgba(76, 29, 149, 0.15)', 
+    'rgba(131, 24, 67, 0.15)', 'rgba(20, 83, 45, 0.15)', 'rgba(112, 26, 117, 0.15)', 'rgba(59, 7, 100, 0.15)'
+  ];
 
-  let html = `<div class="grid-cell header-corner">
-    <div class="nav-controls">
-      <button class="nav-btn" onclick="navScroll('left')">◀</button>
-      <button class="nav-btn" onclick="navScroll('up')">▲</button>
-      <button class="nav-btn" onclick="navScroll('down')">▼</button>
-      <button class="nav-btn" onclick="navScroll('right')">▶</button>
-    </div>
-  </div>`;
-
-  data.companies.forEach((c, ci) => {
-    html += `<div class="grid-cell header-company" style="background:${companyColors[ci%5]}">
-      <div class="header-editable-wrapper">
-        <input class="header-input company-input" data-ci="${ci}" value="${c}">
-        <button class="btn-delete-col" onclick="confirmDelete('col', ${ci})">×</button>
-      </div>
-    </div>`;
+  // Controladores de navegación esquina superior izquierda
+  html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2);">'
+    + '<div class="nav-controls">'
+    + '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C0;</button>'
+    + '<div style="display:flex; flex-direction:column; gap:4px;">'
+    +   '<button class="nav-btn" onclick="navScroll(\'up\')" title="Arriba">&#x25B2;</button>'
+    +   '<button class="nav-btn" onclick="navScroll(\'down\')" title="Abajo">&#x25BC;</button>'
+    + '</div>'
+    + '<button class="nav-btn" onclick="navScroll(\'right\')" title="Derecha">&#x25B6;</button>'
+    + '</div></div>';
+  
+  // Encabezados de Empresas
+  data.companies.forEach((c,ci) => {
+    html += '<div class="grid-cell header-company" style="background-color: '+companyColors[ci % companyColors.length]+'; border-bottom: 2px solid rgba(255,255,255,0.2);"><div class="header-editable-wrapper">'
+      + '<input type="text" class="header-input company-input" data-ci="'+ci+'" value="'+esc(c)+'" placeholder="Empresa '+(ci+1)+'"/>'
+      + '<button class="btn-delete-col" data-ci="'+ci+'" title="Eliminar empresa">\u2715</button>'
+      + '</div></div>';
   });
 
-  data.banks.forEach((b, bi) => {
-    const bCol = bankColors[bi%4];
-    html += `<div class="grid-cell header-bank" style="background:${bCol}; --row-border: 5px solid ${bCol}">
-      <div class="header-editable-wrapper">
-        <textarea class="bank-input" data-bi="${bi}">${b}</textarea>
-        <button class="btn-delete-row" onclick="confirmDelete('row', ${bi})">×</button>
-      </div>
-    </div>`;
-
-    data.companies.forEach((_, ci) => {
+  // Filas por Entidad Bancaria
+  data.banks.forEach((b,bi) => {
+    const bColor = bankColors[bi % bankColors.length];
+    
+    html += '<div class="grid-cell header-bank" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 5px solid '+bColor+';"><div class="header-editable-wrapper">'
+      + '<textarea class="header-input bank-input" data-bi="'+bi+'" placeholder="Banco '+(bi+1)+'\n...\n..." rows="6">'+esc(b)+'</textarea>'
+      + '<button class="btn-delete-row" data-bi="'+bi+'" title="Eliminar banco">\u2715</button>'
+      + '</div></div>';
+    
+    data.companies.forEach((_,ci) => {
       const key = bi+'-'+ci;
-      const isDisabled = data.disabledCells[key];
+      const isDisabled = data.disabledCells[key] === true;
       const bal = data.balances[key] || {};
-      const cv = calcConciliado(bi, ci);
+      const cv = calcConciliado(bi,ci);
+      const hasActual = bal.saldoActual!==undefined && bal.saldoActual!=='';
+      const concText = hasActual ? (formatCurrency(cv)||'0,00') : '\u2014';
+      const concClass = hasActual ? (cv<0?'calc-negative':cv===0?'calc-zero':'') : '';
+      const faintColor = companyFaintColors[ci % companyFaintColors.length];
+      
+      const movs = data.movements[key] || [];
+      let movItems = movs.map((m,mi) =>
+        '<div class="movement-item'+(m.conciliado?' mov-conciliado':'')+'" data-mi="'+mi+'">'
+        + '<div class="mov-row1">'
+        + '<input type="text" class="mov-importe fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'" data-field="importe" value="'+esc(formatCurrency(m.importe))+'" placeholder="Importe"/>'
+        + '<label class="mov-check-label" title="Conciliado">'
+        + '<input type="checkbox" class="mov-conciliado-check" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'"'+(m.conciliado?' checked':'')+'/>'
+        + '<span class="check-text">Conc.</span></label>'
+        + '<button class="btn-del-mov" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'" title="Eliminar">\u2715</button>'
+        + '</div><div class="mov-row2">'
+        + '<input type="text" class="mov-obs" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'" data-field="observacion" value="'+esc(m.observacion||'')+'" placeholder="Observación..."/>'
+        + '</div></div>'
+      ).join('');
 
-      html += `<div class="grid-cell balance-cell ${isDisabled?'cell-disabled':''}" style="--cell-bg:${faintColors[ci%5]}; --row-border: 5px solid ${bCol}">
-        <label class="cell-toggle"><input type="checkbox" class="cell-activate-check" data-bi="${bi}" data-ci="${ci}" ${isDisabled?'':'checked'}></label>
-        <div class="cell-content">
-          <label class="field-label label-actual">Actual</label>
-          <input class="field-input fmt-num" data-bi="${bi}" data-ci="${ci}" data-field="saldoActual" value="${formatCurrency(bal.saldoActual)}">
-          
-          <label class="field-label label-punteado">Punteado</label>
-          <input class="field-input fmt-num" data-bi="${bi}" data-ci="${ci}" data-field="saldoPunteado" value="${formatCurrency(bal.saldoPunteado)}">
-          
-          <label class="field-label label-conciliado">Conciliado</label>
-          <div class="field-calc ${cv<0?'calc-negative':''}" id="conc-${bi}-${ci}">${formatCurrency(cv)}</div>
-
-          <div class="movements-divider">Pendientes</div>
-          <div class="movs-container">
-            ${(data.movements[key] || []).map((m, mi) => `
-              <div class="movement-item ${m.conciliado?'mov-conciliado':''}">
-                <input class="mov-importe fmt-num" data-bi="${bi}" data-ci="${ci}" data-mi="${mi}" data-field="importe" value="${formatCurrency(m.importe)}">
-                <input type="text" class="field-input" data-bi="${bi}" data-ci="${ci}" data-mi="${mi}" data-field="observacion" value="${m.observacion||''}" placeholder="Obs..." style="font-size:9px; margin-top:2px">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:3px">
-                    <label style="font-size:9px"><input type="checkbox" class="mov-conciliado-check" data-bi="${bi}" data-ci="${ci}" data-mi="${mi}" ${m.conciliado?'checked':''}> OK</label>
-                    <button onclick="deleteMov(${bi},${ci},${mi})" style="color:red; background:none; border:none; cursor:pointer">×</button>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-          <button class="btn btn-secondary" style="width:100%; font-size:9px; padding:2px" onclick="addMov(${bi},${ci})">+ Movimiento</button>
-        </div>
-      </div>`;
+      html += '<div class="grid-cell balance-cell ' + (isDisabled ? 'cell-disabled' : '') + '" style="--cell-bg: ' + faintColor + '; --row-border: 5px solid '+bColor+';">'
+        + '<label class="cell-toggle" title="Activar/Desactivar cuenta"><input type="checkbox" class="cell-activate-check" data-bi="'+bi+'" data-ci="'+ci+'" '+(isDisabled?'':'checked')+'/></label>'
+        + '<div class="cell-content">'
+        + '<div class="balance-fields">'
+        + '<div class="balance-field"><label class="field-label label-actual">Saldo Actual</label>'
+        + '<input type="text" class="field-input input-actual fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoActual" value="'+esc(formatCurrency(bal.saldoActual))+'" placeholder="0,00"/></div>'
+        + '<div class="balance-field"><label class="field-label label-punteado">Saldo Punteado</label>'
+        + '<input type="text" class="field-input input-punteado fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoPunteado" value="'+esc(formatCurrency(bal.saldoPunteado))+'" placeholder="0,00"/></div>'
+        + '<div class="balance-field"><label class="field-label label-conciliado">Saldo Conciliado</label>'
+        + '<div class="field-calc '+concClass+'" id="conc-'+bi+'-'+ci+'">'+concText+'</div></div>'
+        + '<div class="balance-field"><label class="field-label label-otra">Otra Anotación</label>'
+        + '<input type="text" class="field-input" data-bi="'+bi+'" data-ci="'+ci+'" data-field="otraAnotacion" value="'+esc(bal.otraAnotacion||'')+'" placeholder="..."/></div>'
+        + '<div class="balance-field"><label class="field-label label-obs">Observaciones</label>'
+        + '<input type="text" class="field-input" data-bi="'+bi+'" data-ci="'+ci+'" data-field="observaciones" value="'+esc(bal.observaciones||'')+'" placeholder="..."/></div>'
+        + '</div>'
+        + '<div class="movements-divider">Movimientos Pendientes</div>'
+        + '<div class="movements-list" id="movs-'+bi+'-'+ci+'">'+movItems+'</div>'
+        + '<button class="btn-add-mov" data-bi="'+bi+'" data-ci="'+ci+'">\uFF0B Añadir Mov.</button>'
+        + '</div></div>';
     });
   });
+
   g.innerHTML = html;
 }
 
-// --- LOGICA DE EVENTOS ---
+// ─── RENDERIZADO FACTURAS ──────────────────────────────────
+function renderInvoices() {
+  document.getElementById('invoices-body').innerHTML = data.invoices.map((inv,i) => {
+    const months = MONTH_LABELS.map((ml,mi) =>
+      '<td class="td-month"><label class="month-check-label" title="'+MONTH_NAMES[mi]+'">'
+      +'<input type="checkbox" class="inv-month-check" data-i="'+i+'" data-mi="'+mi+'"'+(inv.months[mi]?' checked':'')+'/>'
+      +'<span class="month-dot'+(inv.months[mi]?' dot-checked':'')+'" data-i="'+i+'" data-mi="'+mi+'"></span>'
+      +'</label></td>'
+    ).join('');
+    return '<tr class="invoice-row">'
+      + months
+      + '<td><input type="text" class="inv-field inv-desc" data-i="'+i+'" data-field="descripcion" value="'+esc(inv.descripcion||'')+'" placeholder="Proveedor..."/></td>'
+      + '<td><input type="text" class="inv-field inv-acc" data-i="'+i+'" data-field="codigoContable" value="'+esc(inv.codigoContable||'')+'" placeholder="Cuenta..."/></td>'
+      + '<td><input type="text" class="inv-field inv-imp fmt-num" data-i="'+i+'" data-field="importe" value="'+esc(formatCurrency(inv.importe))+'" placeholder="0,00"/></td>'
+      + '<td><input type="text" class="inv-field inv-bank" data-i="'+i+'" data-field="banco" value="'+esc(inv.banco||'')+'" placeholder="Banco..."/></td>'
+      + '<td><select class="inv-field inv-select" data-i="'+i+'" data-field="tipoFacturacion">'
+        + '<option value="">Seleccionar...</option>'
+        + ['mensual','trimestral','semestral','anual'].map(t=>'<option value="'+t+'"'+(inv.tipoFacturacion===t?' selected':'')+'>'+t.charAt(0).toUpperCase()+t.slice(1)+'</option>').join('')
+        + '</select></td>'
+      + '<td><input type="text" class="inv-field" data-i="'+i+'" data-field="observaciones" value="'+esc(inv.observaciones||'')+'" placeholder="Obs..."/></td>'
+      + '<td><button class="btn-icon-danger btn-del-invoice" data-i="'+i+'" title="Eliminar">\uD83D\uDDD1</button></td>'
+      + '</tr>';
+  }).join('');
+}
+
+// ─── RENDERIZADO IMPUESTOS ─────────────────────────────────
+function renderTaxes() {
+  const t = document.getElementById('table-taxes');
+  const cos = data.taxCompanies;
+  let html = '<thead><tr><th class="tax-row-header col-fit">Concepto</th>'
+    + cos.map((c,ci) =>
+        '<th><div class="tax-company-header">'
+        +'<input type="text" class="tax-company-input" data-ci="'+ci+'" value="'+esc(c)+'" placeholder="Empresa..."/>'
+        +'<button class="btn-icon-danger btn-del-tax-company" data-ci="'+ci+'" title="Eliminar">\u2715</button>'
+        +'</div></th>'
+      ).join('')
+    + '</tr></thead><tbody>';
+  TAX_ROWS.forEach((row,ri) => {
+    const isObs = TAX_KEYS[ri]==='obs';
+    html += '<tr><td class="tax-row-label">'+row+'</td>'
+      + cos.map((_,ci) => {
+          const k = TAX_KEYS[ri]+'-'+ci;
+          const v = data.taxValues[k]||'';
+          const valStr = isObs ? v : formatCurrency(v);
+          return '<td><input type="text" class="tax-value-input'+(isObs?'':' tax-amount fmt-num')+'" data-row="'+TAX_KEYS[ri]+'" data-ci="'+ci+'" value="'+esc(valStr)+'" placeholder="'+(isObs?'Observaciones...':'0,00')+'"/></td>';
+        }).join('')
+      + '</tr>';
+  });
+  html += '</tbody>';
+  t.innerHTML = html;
+}
+
+function renderAll() {
+  renderBalances();
+  renderInvoices();
+  renderTaxes();
+}
+
+// ─── EVENTOS Y LÓGICA DE INTERFACES ───────────────────────
 function setupEvents() {
-  // Navegación de pestañas
+
+  document.addEventListener('focusout', e => {
+    if (e.target.classList.contains('fmt-num')) {
+      e.target.value = formatCurrency(parseCurrency(e.target.value));
+    }
+  });
+
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn, .section, .ctx-group').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.section, .ctx-group').forEach(el => el.style.display = 'none');
-      
+      const targetSec = btn.dataset.section;
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
       btn.classList.add('active');
-      const target = btn.dataset.section;
-      document.getElementById('section-'+target).classList.add('active');
-      document.getElementById('ctx-'+target).style.display = 'flex';
+      document.getElementById('section-'+targetSec).classList.add('active');
+      
+      // Conmutar botones dinámicos en el cabecero
+      document.querySelectorAll('.dynamic-actions').forEach(el => el.classList.add('hidden'));
+      const activeActions = document.getElementById('actions-' + targetSec);
+      if (activeActions) activeActions.classList.remove('hidden');
     });
   });
 
-  // Inputs del Grid
-  document.getElementById('grid-balances').addEventListener('change', e => {
-    const el = e.target;
-    const bi = el.dataset.bi, ci = el.dataset.ci, key = bi+'-'+ci;
+  document.getElementById('btn-add-bank').addEventListener('click', () => {
+    data.banks.push('Banco '+(data.banks.length+1));
+    saveData(); renderAll();
+  });
+  document.getElementById('btn-add-company').addEventListener('click', () => {
+    data.companies.push('Empresa '+(data.companies.length+1));
+    saveData(); renderAll();
+  });
 
+  // GRID DE BALANCES - Entradas de datos
+  document.getElementById('grid-balances').addEventListener('input', e => {
+    const el = e.target;
+    if (el.classList.contains('company-input')) {
+      data.companies[+el.dataset.ci] = el.value;
+      saveData();
+      return;
+    }
+    if (el.classList.contains('bank-input')) {
+      data.banks[+el.dataset.bi] = el.value;
+      saveData();
+      return;
+    }
+    if (el.dataset.field && el.dataset.bi!==undefined) {
+      const bi=+el.dataset.bi, ci=+el.dataset.ci, key=bi+'-'+ci;
+      const isMov = el.classList.contains('mov-importe') || el.classList.contains('mov-obs');
+      
+      if (isMov) {
+        const mi=+el.dataset.mi;
+        if (!data.movements[key] || !data.movements[key][mi]) return;
+        data.movements[key][mi][el.dataset.field] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
+        saveData();
+        if (el.dataset.field==='importe') updateConciliado(bi,ci);
+      } else {
+        if (!data.balances[key]) data.balances[key]={};
+        data.balances[key][el.dataset.field] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
+        saveData();
+        if (el.dataset.field==='saldoActual') updateConciliado(bi,ci);
+      }
+    }
+  });
+
+  // GRID DE BALANCES - Clics y Checkboxes
+  document.getElementById('grid-balances').addEventListener('click', e => {
+    if (e.target.classList.contains('btn-delete-row')) {
+      const bi = +e.target.dataset.bi;
+      confirm_('Eliminar banco "'+data.banks[bi]+'" y todos sus datos?', () => {
+        const nb={}, nm={}, nd={};
+        Object.keys(data.balances).forEach(k=>{ if(!k.startsWith(bi+'-')) nb[k]=data.balances[k]; });
+        Object.keys(data.movements).forEach(k=>{ if(!k.startsWith(bi+'-')) nm[k]=data.movements[k]; });
+        Object.keys(data.disabledCells).forEach(k=>{ if(!k.startsWith(bi+'-')) nd[k]=data.disabledCells[k]; });
+        data.banks.splice(bi,1); data.balances=nb; data.movements=nm; data.disabledCells=nd;
+        saveData(); renderBalances();
+      });
+    }
+    if (e.target.classList.contains('btn-delete-col')) {
+      const ci = +e.target.dataset.ci;
+      confirm_('Eliminar empresa "'+data.companies[ci]+'" y todos sus datos?', () => {
+        const nb={}, nm={}, nd={};
+        Object.keys(data.balances).forEach(k=>{ if(!k.endsWith('-'+ci)) nb[k]=data.balances[k]; });
+        Object.keys(data.movements).forEach(k=>{ if(!k.endsWith('-'+ci)) nm[k]=data.movements[k]; });
+        Object.keys(data.disabledCells).forEach(k=>{ if(!k.endsWith('-'+ci)) nd[k]=data.disabledCells[k]; });
+        data.companies.splice(ci,1); data.balances=nb; data.movements=nm; data.disabledCells=nd;
+        saveData(); renderBalances();
+      });
+    }
+    if (e.target.classList.contains('btn-add-mov')) {
+      const bi=+e.target.dataset.bi, ci=+e.target.dataset.ci, key=bi+'-'+ci;
+      if (!data.movements[key]) data.movements[key]=[];
+      data.movements[key].push({importe:'',observacion:'',conciliado:false});
+      saveData(); renderBalances(); 
+    }
+    if (e.target.classList.contains('btn-del-mov')) {
+      const bi=+e.target.dataset.bi, ci=+e.target.dataset.ci, mi=+e.target.dataset.mi, key=bi+'-'+ci;
+      data.movements[key].splice(mi,1);
+      saveData(); renderBalances();
+    }
+  });
+
+  document.getElementById('grid-balances').addEventListener('change', e => {
+    const el=e.target;
+    if (el.classList.contains('mov-conciliado-check')) {
+      const bi=+el.dataset.bi, ci=+el.dataset.ci, mi=+el.dataset.mi, key=bi+'-'+ci;
+      data.movements[key][mi].conciliado = el.checked;
+      const item=el.closest('.movement-item');
+      if(item) item.classList.toggle('mov-conciliado',el.checked);
+      saveData(); updateConciliado(bi,ci);
+    }
     if (el.classList.contains('cell-activate-check')) {
+      const bi=el.dataset.bi, ci=el.dataset.ci, key=bi+'-'+ci;
       data.disabledCells[key] = !el.checked;
       saveData(); renderBalances();
     }
-    if (el.classList.contains('mov-conciliado-check')) {
-      data.movements[key][el.dataset.mi].conciliado = el.checked;
-      saveData(); updateConciliado(bi, ci);
+  });
+
+  // FACTURAS
+  document.getElementById('btn-add-invoice').addEventListener('click', () => {
+    data.invoices.push({months:new Array(12).fill(false),descripcion:'',codigoContable:'',importe:'',banco:'',tipoFacturacion:'',observaciones:''});
+    saveData(); renderInvoices();
+  });
+
+  document.getElementById('invoices-body').addEventListener('input', e => {
+    const el=e.target;
+    if (el.classList.contains('inv-field')&&el.dataset.field) {
+      data.invoices[+el.dataset.i][el.dataset.field] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
+      saveData();
     }
   });
 
-  document.getElementById('grid-balances').addEventListener('focusout', e => {
-    const el = e.target;
-    if (el.classList.contains('fmt-num')) {
-      const val = parseCurrency(el.value);
-      const bi = el.dataset.bi, ci = el.dataset.ci, key = bi+'-'+ci;
-      
-      if (el.dataset.mi !== undefined) {
-        data.movements[key][el.dataset.mi].importe = val;
-      } else {
-        if (!data.balances[key]) data.balances[key] = {};
-        data.balances[key][el.dataset.field] = val;
-      }
-      el.value = formatCurrency(val);
-      saveData(); updateConciliado(bi, ci);
+  document.getElementById('invoices-body').addEventListener('change', e => {
+    const el=e.target;
+    if (el.classList.contains('inv-month-check')) {
+      const i=+el.dataset.i, mi=+el.dataset.mi;
+      data.invoices[i].months[mi]=el.checked;
+      const dot=el.nextElementSibling;
+      if(dot) dot.classList.toggle('dot-checked',el.checked);
+      saveData(); return;
+    }
+    if (el.classList.contains('inv-select')) {
+      data.invoices[+el.dataset.i][el.dataset.field]=el.value;
+      saveData();
     }
   });
 
-  // Botones añadir
-  document.getElementById('btn-add-bank').onclick = () => { data.banks.push('Nuevo Banco'); saveData(); renderBalances(); };
-  document.getElementById('btn-add-company').onclick = () => { data.companies.push('Nueva Empresa'); saveData(); renderBalances(); };
-  document.getElementById('btn-clear').onclick = () => {
-    if(confirm('¿BORRAR TODO?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); }
-  };
+  document.getElementById('invoices-body').addEventListener('click', e => {
+    if (e.target.classList.contains('btn-del-invoice')) {
+      confirm_('¿Eliminar esta factura recurrente?', () => {
+        data.invoices.splice(+e.target.dataset.i,1);
+        saveData(); renderInvoices();
+      });
+    }
+  });
+
+  // IMPUESTOS
+  document.getElementById('btn-add-tax-company').addEventListener('click', () => {
+    data.taxCompanies.push('Empresa '+(data.taxCompanies.length+1));
+    saveData(); renderTaxes();
+  });
+
+  document.getElementById('table-taxes').addEventListener('input', e => {
+    const el=e.target;
+    if (el.classList.contains('tax-company-input')) {
+      data.taxCompanies[+el.dataset.ci]=el.value;
+      saveData(); return;
+    }
+    if (el.classList.contains('tax-value-input')) {
+      data.taxValues[el.dataset.row+'-'+el.dataset.ci] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
+      saveData();
+    }
+  });
+
+  document.getElementById('table-taxes').addEventListener('click', e => {
+    if (e.target.classList.contains('btn-del-tax-company')) {
+      const ci=+e.target.dataset.ci;
+      confirm_('¿Eliminar empresa "'+data.taxCompanies[ci]+'"?', () => {
+        data.taxCompanies.splice(ci,1);
+        TAX_KEYS.forEach(k=>{ delete data.taxValues[k+'-'+ci]; });
+        saveData(); renderTaxes();
+      });
+    }
+  });
+
+  // NOTAS
+  const notesEl = document.getElementById('notes-area');
+  notesEl.addEventListener('input', () => {
+    data.notes=notesEl.value; saveData(); updateNotesCount();
+  });
+  document.getElementById('btn-clear-notes').addEventListener('click', () => {
+    confirm_('¿Limpiar todas las notas?', ()=>{ data.notes=''; notesEl.value=''; saveData(); updateNotesCount(); });
+  });
+
+  // MODAL DE CONFIRMACIÓN
+  document.getElementById('confirm-cancel').addEventListener('click', ()=>{ document.getElementById('confirm-overlay').classList.add('hidden'); confirmCb=null; });
+  document.getElementById('confirm-ok').addEventListener('click', ()=>{
+    document.getElementById('confirm-overlay').classList.add('hidden');
+    if(confirmCb){ confirmCb(); confirmCb=null; }
+  });
+  document.getElementById('confirm-overlay').addEventListener('click', e=>{
+    if(e.target===document.getElementById('confirm-overlay')){ document.getElementById('confirm-overlay').classList.add('hidden'); confirmCb=null; }
+  });
+
+  // RESETEAR DATOS GENERALES
+  document.getElementById('btn-clear').addEventListener('click', ()=>{
+    confirm_('¿Eliminar TODOS los datos guardados en la aplicación? Esta acción no se puede deshacer.', ()=>{ localStorage.removeItem(STORAGE_KEY); location.reload(); });
+  });
 }
 
-function addMov(bi, ci) {
-  const key = bi+'-'+ci;
-  if (!data.movements[key]) data.movements[key] = [];
-  data.movements[key].push({importe: 0, conciliado: false, observacion: ''});
-  saveData(); renderBalances();
-}
-function deleteMov(bi, ci, mi) {
-  data.movements[bi+'-'+ci].splice(mi, 1);
-  saveData(); renderBalances();
+function updateNotesCount() {
+  const t=document.getElementById('notes-area').value;
+  document.getElementById('notes-charcount').textContent=t.length+' caracteres';
+  document.getElementById('notes-linecount').textContent=(t?t.split('\n').length:0)+' líneas';
 }
 
-// (Otras funciones de render para Invoices y Taxes simplificadas para este ejemplo pero manteniendo tu estructura)
-function renderInvoices() {
-    const body = document.getElementById('invoices-body');
-    body.innerHTML = data.invoices.map((inv, i) => `
-        <tr>
-            <td colspan="12">${MONTH_LABELS.map((m, mi) => `<input type="checkbox" ${inv.meses?.[mi]?'checked':''} onchange="updateInvMes(${i}, ${mi}, this.checked)">`).join('')}</td>
-            <td><input class="field-input" value="${inv.desc||''}" oninput="data.invoices[${i}].desc=this.value;saveData()"></td>
-            <td><input class="field-input" value="${inv.cta||''}" oninput="data.invoices[${i}].cta=this.value;saveData()"></td>
-            <td><input class="field-input fmt-num" value="${formatCurrency(inv.imp)}" onblur="data.invoices[${i}].imp=parseCurrency(this.value);saveData();this.value=formatCurrency(parseCurrency(this.value))"></td>
-            <td><input class="field-input" value="${inv.bank||''}" oninput="data.invoices[${i}].bank=this.value;saveData()"></td>
-            <td><input class="field-input" value="${inv.tipo||''}" oninput="data.invoices[${i}].tipo=this.value;saveData()"></td>
-            <td><input class="field-input" value="${inv.obs||''}" oninput="data.invoices[${i}].obs=this.value;saveData()"></td>
-            <td><button onclick="data.invoices.splice(${i},1);saveData();renderInvoices()">×</button></td>
-        </tr>
-    `).join('');
-}
-document.getElementById('btn-add-invoice').onclick = () => { data.invoices.push({meses:[], desc:'', imp:0}); saveData(); renderInvoices(); };
-
-function navScroll(dir) {
-    const el = document.getElementById('wrapper-balances');
-    if(dir==='left') el.scrollBy(-250, 0);
-    if(dir==='right') el.scrollBy(250, 0);
-    if(dir==='up') el.scrollBy(0, -250);
-    if(dir==='down') el.scrollBy(0, 250);
-}
-
-// --- INICIO ---
-window.onload = () => {
+// ─── INICIALIZACIÓN ───────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
   loadData();
-  renderBalances();
-  renderInvoices();
-  // renderTaxes();
+  renderAll();
+  document.getElementById('notes-area').value = data.notes||'';
+  updateNotesCount();
   setupEvents();
-  document.getElementById('notes-area').value = data.notes;
-  document.getElementById('notes-area').oninput = (e) => { data.notes = e.target.value; saveData(); };
-};
+});
 </script>
-
 </body>
 </html>
