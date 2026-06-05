@@ -66,14 +66,30 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 }
 .corner-label{font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;text-align:center}
 .nav-controls {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+  display: flex; 
+  align-items: center; 
+  gap: 6px; 
+  margin-top: 8px;
 }
 .nav-btn {
-  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff;
-  border-radius: 4px; cursor: pointer; padding: 4px; font-size: 10px;
-  display:flex; align-items:center; justify-content:center; transition: all 0.2s ease;
+  background: rgba(255,255,255,0.15); 
+  border: 1px solid rgba(255,255,255,0.3); 
+  color: #fff;
+  border-radius: 6px; 
+  cursor: pointer; 
+  width: 36px;       /* Ancho del botón (antes era automático) */
+  height: 36px;      /* Alto del botón (antes era automático) */
+  font-size: 16px;   /* Tamaño de la flecha (antes era 10px) */
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  transition: all 0.2s ease;
 }
-.nav-btn:hover { background: rgba(99,102,241,0.5); border-color: rgba(99,102,241,0.8); }
+.nav-btn:hover { 
+  background: rgba(99,102,241,0.6); 
+  border-color: rgba(99,102,241,0.9); 
+  transform: scale(1.05); /* Efecto para que crezca un poquito al pasar el ratón */
+}
 
 /* CABECERAS DE COLORES DISTINTOS Y STICKY */
 .header-company{
