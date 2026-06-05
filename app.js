@@ -1,4 +1,4 @@
-'use strict';
+'use strict'; 
 
 const STORAGE_KEY = 'banking-control-v2';
 const MONTH_LABELS = ['E','F','M','A','M','J','J','A','S','O','N','D'];
