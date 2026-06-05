@@ -262,6 +262,7 @@
       width: auto !important;
       height: auto !important;
       overflow: visible !important;
+      position: relative !important;
     }
     .pdf-mode::before { display: none !important; }
 
@@ -284,8 +285,8 @@
     .pdf-mode .app-main {
       padding: 0 !important;
       margin: 0 !important;
-      width: auto !important;
-      max-width: none !important;
+      position: static !important;
+      width: 100% !important;
     }
 
     .pdf-mode .section {
@@ -295,6 +296,17 @@
       width: auto !important;
       max-width: none !important;
       overflow: visible !important;
+    }
+
+    .pdf-mode .section.active {
+      display: block !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: max-content !important;
+      box-sizing: border-box !important;
     }
 
     /* Quitar límites de scroll en PDF */
@@ -641,7 +653,7 @@ window.downloadPDF = function(sectionId, filenamePrefix) {
 
   setTimeout(() => {
     const opt = {
-      margin:       [8, 8, 8, 8], // Márgenes físicos óptimos en mm
+      margin:       [8, 8, 8, 8], // Margenes físicos óptimos en mm
       filename:     `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { 
