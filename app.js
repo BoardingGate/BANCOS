@@ -105,11 +105,51 @@ function updateConciliado(bi, ci) {
   el.className = 'field-calc ' + (v<0?'calc-negative':v===0?'calc-zero':'');
 }
 
+// ─── GENERAR PDF ──────────────────────────────────────────
+window.downloadPDF = function(sectionId, filenamePrefix) {
+  const section = document.getElementById(sectionId);
+  
+  // 1. Sincronizar todos los inputs y textareas para que html2canvas pueda "ver" sus valores
+  section.querySelectorAll('input, textarea, select').forEach(el => {
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      el.setAttribute('value', el.value);
+      if (el.tagName === 'TEXTAREA') el.innerHTML = el.value;
+      if (el.type === 'checkbox') {
+        if (el.checked) el.setAttribute('checked', 'checked');
+        else el.removeAttribute('checked');
+      }
+    }
+    if (el.tagName === 'SELECT') {
+      Array.from(el.options).forEach(opt => {
+        if (opt.selected) opt.setAttribute('selected', 'selected');
+        else opt.removeAttribute('selected');
+      });
+    }
+  });
+
+  // 2. Activar modo PDF (Fondo blanco, sin botones, sin scrolls)
+  document.body.classList.add('pdf-mode');
+
+  // 3. Opciones del PDF (Apaisado)
+  const opt = {
+    margin:       10,
+    filename:     `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true }, 
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+  };
+
+  // 4. Generar y limpiar
+  html2pdf().set(opt).from(section).save().then(() => {
+    document.body.classList.remove('pdf-mode'); // Restaurar diseño oscuro
+  });
+};
+
 // ─── NAVEGACION RAPIDA (SCROLL) ───────────────────────────
 window.navScroll = function(direction) {
   const wrapper = document.getElementById('wrapper-balances');
   if (!wrapper) return;
-  const step = 400; // píxeles por clic
+  const step = 400; 
   switch(direction) {
     case 'left': wrapper.scrollBy({ left: -step, behavior: 'smooth' }); break;
     case 'right': wrapper.scrollBy({ left: step, behavior: 'smooth' }); break;
@@ -159,7 +199,7 @@ function renderBalances() {
   data.banks.forEach((b,bi) => {
     const bColor = bankColors[bi % bankColors.length];
     
-    // Aplicando var(--row-border) que sobreescribe el borde inferior de CSS
+    // Aplicando var(--row-border) que sobreescribe el borde inferior de CSS (Groso 5px)
     html += '<div class="grid-cell header-bank" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 5px solid '+bColor+';"><div class="header-editable-wrapper">'
       + '<textarea class="header-input bank-input" data-bi="'+bi+'" placeholder="Banco '+(bi+1)+'\n...\n..." rows="6">'+esc(b)+'</textarea>'
       + '<button class="btn-delete-row" data-bi="'+bi+'" title="Eliminar banco">\u2715</button>'
