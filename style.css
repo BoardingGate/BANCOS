@@ -60,36 +60,42 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .grid-cell{border:1px solid var(--border); border-bottom:var(--row-border, 1px solid var(--border)); padding:10px; transition:background var(--transition)}
 
 /* BOTONES DE NAVEGACIÓN (ESQUINA SUPERIOR) */
-.header-corner{
-  position:sticky; top:0; left:0; z-index:30;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 8px;
-}
+
 .corner-label{font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;text-align:center}
+/* BOTONES DE NAVEGACIÓN COMPACTOS EN UNA LÍNEA */
+.header-corner {
+  position: sticky; top: 0; left: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 40px !important; /* Altura reducida */
+  padding: 4px !important;
+}
+
 .nav-controls {
   display: flex; 
-  align-items: center; 
-  gap: 6px; 
-  margin-top: 8px;
+  flex-direction: row; /* Fuerza la línea única */
+  gap: 4px; 
 }
+
 .nav-btn {
-  background: rgba(255,255,255,0.15); 
-  border: 1px solid rgba(255,255,255,0.3); 
+  background: rgba(255,255,255,0.12); 
+  border: 1px solid rgba(255,255,255,0.25); 
   color: #fff;
-  border-radius: 6px; 
+  border-radius: 4px; 
   cursor: pointer; 
-  width: 25px;       /* Ancho del botón (antes era automático) */
-  height: 25px;      /* Alto del botón (antes era automático) */
-  font-size: 16px;   /* Tamaño de la flecha (antes era 10px) */
+  width: 38px;  /* Ancho cómodo */
+  height: 30px; /* Altura baja para no engordar la fila */
+  font-size: 14px; 
   display: flex; 
   align-items: center; 
   justify-content: center; 
   transition: all 0.2s ease;
 }
+
 .nav-btn:hover { 
   background: rgba(99,102,241,0.6); 
-  border-color: rgba(99,102,241,0.9); 
-  transform: scale(1.05); /* Efecto para que crezca un poquito al pasar el ratón */
+  border-color: rgba(99,102,241,0.9);
 }
+
 
 /* CABECERAS DE COLORES DISTINTOS Y STICKY */
 .header-company{
