@@ -108,8 +108,13 @@ function updateConciliado(bi, ci) {
 // ─── GENERAR PDF ──────────────────────────────────────────
 window.downloadPDF = function(sectionId, filenamePrefix) {
   const section = document.getElementById(sectionId);
+
+  // 1. TRUCO CRÍTICO: Resetear los scrolls a 0,0 para evitar cortes en html2canvas
+  window.scrollTo(0, 0);
+  const wrapper = section.querySelector('.table-scroll-wrapper');
+  if (wrapper) wrapper.scrollTo(0, 0);
   
-  // 1. Sincronizar todos los inputs y textareas para la captura
+  // 2. Sincronizar inputs
   section.querySelectorAll('input, textarea, select').forEach(el => {
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
       el.setAttribute('value', el.value);
@@ -127,31 +132,29 @@ window.downloadPDF = function(sectionId, filenamePrefix) {
     }
   });
 
-  // 2. Activar modo PDF
+  // 3. Activar modo PDF
   document.body.classList.add('pdf-mode');
 
-  // 3. Obtener el ancho real absoluto de la tabla (sin importar la pantalla)
-  const realWidth = section.scrollWidth;
+  // 4. DAR TIEMPO (300ms) para que el navegador redimensione sin bordes antes de la foto
+  setTimeout(() => {
+    const opt = {
+      margin:       5, // Márgenes pequeños para aprovechar papel
+      filename:     `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.pdf`,
+      image:        { type: 'jpeg', quality: 1 },
+      html2canvas:  { 
+        scale: 2, 
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: document.documentElement.scrollWidth // Fuerza a ver el ancho absoluto
+      }, 
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
 
-  // 4. Opciones del PDF: Forzar ajuste al ancho y permitir salto de página vertical
-  const opt = {
-    margin:       [10, 10, 10, 10],
-    filename:     `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.pdf`,
-    image:        { type: 'jpeg', quality: 1 },
-    html2canvas:  { 
-      scale: 2, 
-      useCORS: true,
-      windowWidth: realWidth, // Obliga a "ver" toda la tabla a lo ancho
-      width: realWidth        // Fija el ancho del lienzo a toda la tabla
-    }, 
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-    pagebreak: { mode: 'avoid-all' } // Intenta no cortar texto a la mitad al saltar de página hacia abajo
-  };
-
-  // 5. Generar y limpiar
-  html2pdf().set(opt).from(section).save().then(() => {
-    document.body.classList.remove('pdf-mode'); // Restaurar diseño
-  });
+    html2pdf().set(opt).from(section).save().then(() => {
+      document.body.classList.remove('pdf-mode'); // Restaurar la pantalla normal
+    });
+  }, 600);
 };
 
 // ─── NAVEGACION RAPIDA (SCROLL) ───────────────────────────
