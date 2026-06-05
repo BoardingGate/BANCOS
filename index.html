@@ -7,6 +7,8 @@
   <title>Control Bancario</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <!-- Librería para generar el PDF directamente -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -38,7 +40,7 @@
         <p class="section-desc">Saldos por entidad y empresa. Usa el check superior derecho para activar/desactivar celdas (cuentas no operativas).</p>
       </div>
       <div class="section-actions">
-        <button class="btn btn-ghost btn-sm" onclick="window.print()">&#x1F5A8; Imprimir</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-balances', 'Saldos_Movimientos')">&#x1F4BE; Exportar PDF</button>
         <button class="btn btn-secondary" id="btn-add-bank">+ Banco</button>
         <button class="btn btn-primary" id="btn-add-company">+ Empresa</button>
       </div>
@@ -61,7 +63,7 @@
         <p class="section-desc">Control mensual de cobros recurrentes (alquileres, servicios, suministros).</p>
       </div>
       <div class="section-actions">
-        <button class="btn btn-ghost btn-sm" onclick="window.print()">&#x1F5A8; Imprimir</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-invoices', 'Facturas')">&#x1F4BE; Exportar PDF</button>
         <button class="btn btn-primary" id="btn-add-invoice">+ A&#xF1;adir Fila</button>
       </div>
     </div>
@@ -102,7 +104,7 @@
         <p class="section-desc">IVA, IGIC, IRPF, Mod. 202 y Mod. 349 por empresa.</p>
       </div>
       <div class="section-actions">
-        <button class="btn btn-ghost btn-sm" onclick="window.print()">&#x1F5A8; Imprimir</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-taxes', 'Impuestos')">&#x1F4BE; Exportar PDF</button>
         <button class="btn btn-primary" id="btn-add-tax-company">+ A&#xF1;adir Empresa</button>
       </div>
     </div>
@@ -118,7 +120,7 @@
         <p class="section-desc">Espacio libre para anotaciones, recordatorios y comentarios.</p>
       </div>
       <div class="section-actions">
-        <button class="btn btn-ghost btn-sm" onclick="window.print()">&#x1F5A8; Imprimir</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-notes', 'Notas')">&#x1F4BE; Exportar PDF</button>
         <button class="btn btn-ghost btn-sm" id="btn-clear-notes">&#x1F5D1; Limpiar</button>
       </div>
     </div>
