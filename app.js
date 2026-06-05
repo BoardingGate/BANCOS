@@ -211,7 +211,7 @@ function renderBalances() {
       + '</div></div>';
   });
 
-  // Filas por Entidad
+  // Filas por Entidad 
   data.banks.forEach((b,bi) => {
     const bColor = bankColors[bi % bankColors.length];
     
