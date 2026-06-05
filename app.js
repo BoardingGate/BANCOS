@@ -109,12 +109,12 @@ function updateConciliado(bi, ci) {
 window.downloadPDF = function(sectionId, filenamePrefix) {
   const section = document.getElementById(sectionId);
 
-  // 1. Resetear scrolls para evitar cortes
+  // 1. Resetear scrolls al inicio para evitar recortes
   window.scrollTo(0, 0);
   const wrapper = section.querySelector('.table-scroll-wrapper');
   if (wrapper) wrapper.scrollTo(0, 0);
   
-  // 2. Sincronizar inputs
+  // 2. Sincronizar inputs para la captura
   section.querySelectorAll('input, textarea, select').forEach(el => {
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
       el.setAttribute('value', el.value);
@@ -135,13 +135,15 @@ window.downloadPDF = function(sectionId, filenamePrefix) {
   // 3. Activar modo PDF
   document.body.classList.add('pdf-mode');
 
-  // 4. DAR TIEMPO (500ms) al navegador para redibujar sin bordes
-  setTimeout(() => {
-    // Calculamos el ancho absoluto real de la tabla generada
-    const contentWidth = section.scrollWidth;
+  // 4. Calculamos el ancho real de la tabla generada y la forzamos a ese tamaño
+  const realWidth = section.scrollWidth;
+  section.style.width = realWidth + 'px';
+  section.style.maxWidth = 'none';
 
+  // 5. DAR TIEMPO (500ms) al navegador para pintar el monitor "gigante"
+  setTimeout(() => {
     const opt = {
-      margin:       [10, 5, 10, 5], // Márgenes: arriba, derecha, abajo, izquierda
+      margin:       [10, 5, 10, 5], // Márgenes del folio
       filename:     `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.pdf`,
       image:        { type: 'jpeg', quality: 1 },
       html2canvas:  { 
@@ -149,18 +151,21 @@ window.downloadPDF = function(sectionId, filenamePrefix) {
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        width: contentWidth, // Obliga a capturar el ancho exacto
-        windowWidth: contentWidth // Finge que la pantalla es igual de ancha que la tabla
+        width: realWidth,
+        // EL TRUCO: Simulamos un monitor gigantesco de 3000px (o más) para que no corte la derecha
+        windowWidth: Math.max(3000, realWidth + 200) 
       }, 
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
     html2pdf().set(opt).from(section).save().then(() => {
-      document.body.classList.remove('pdf-mode'); // Restaurar la pantalla normal
+      // 6. Restaurar la pantalla a su estado normal
+      document.body.classList.remove('pdf-mode');
+      section.style.width = '';
+      section.style.maxWidth = '';
     });
   }, 500);
 };
-
 // ─── NAVEGACION RAPIDA (SCROLL) ───────────────────────────
 window.navScroll = function(direction) {
   const wrapper = document.getElementById('wrapper-balances');
