@@ -193,7 +193,7 @@ function renderBalances() {
 
   // Top Left Header con Botones de Navegación
   html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2);">'
-    + '<span class="corner-label">Entidad / Empresa</span>'
+    + '<span class="corner-label"></span>'
     + '<div class="nav-controls">'
     + '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C0;</button>'
     + '<div style="display:flex; flex-direction:column; gap:4px;">'
