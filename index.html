@@ -831,53 +831,41 @@ const reportStyles = `
     font-family: 'Inter', -apple-system, sans-serif;
     color: #111;
     background: #fff;
-    margin: 24px;
-    font-size: 11px;
-    line-height: 1.4;
+    margin: 12px;
+    font-size: 10px;
+    line-height: 1.3;
   }
   h1 {
-    font-size: 16px;
+    font-size: 13px;
     margin-bottom: 2px;
     color: #0f172a;
     border-bottom: 2px solid #6366f1;
-    padding-bottom: 6px;
-  }
-  h2 {
-    font-size: 12px;
-    margin-top: 6px;
-    margin-bottom: 8px;
-    color: #1e1b4b;
-    background: rgba(0, 0, 0, 0.04);
-    padding: 6px 10px;
-    border-left: 4px solid #6366f1;
-    border-radius: 2px;
+    padding-bottom: 4px;
+    font-weight: 700;
   }
   .meta {
-    font-size: 9px;
+    font-size: 8px;
     color: #64748b;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
   table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 12px;
-    page-break-inside: avoid;
-    background: #fff;
   }
   th {
     background: #f8fafc;
-    color: #334155;
+    color: #1e293b;
     font-weight: 700;
     text-align: left;
-    padding: 6px 8px;
-    border: 1px solid #cbd5e1;
-    font-size: 10px;
-    text-transform: uppercase;
+    padding: 4px 6px;
+    border: 1px solid #94a3b8;
+    font-size: 9px;
   }
   td {
-    padding: 6px 8px;
+    padding: 4px 6px;
     border: 1px solid #cbd5e1;
-    vertical-align: middle;
+    vertical-align: top;
   }
   .bold {
     font-weight: 700;
@@ -885,28 +873,94 @@ const reportStyles = `
   .text-right {
     text-align: right;
   }
-  .page-break {
-    page-break-after: auto;
-    page-break-inside: avoid;
+  
+  /* ESTILOS DE MATRIZ DE SALDOS EN REPORTE DE HOJA ÚNICA */
+  .print-matrix-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 7.5px;
+    line-height: 1.2;
   }
-  .sub-title {
-    font-size: 9px;
+  .print-matrix-table th, .print-matrix-table td {
+    border: 1px solid #94a3b8;
+    padding: 3px;
+    vertical-align: top;
+    overflow: hidden;
+  }
+  .print-matrix-table th {
+    background-color: #0f172a;
+    color: #ffffff;
     font-weight: 700;
+    text-align: center;
+    font-size: 8px;
+  }
+  .print-bank-col {
+    background-color: #0f766e;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 8px;
+    padding: 4px;
+    vertical-align: middle;
+  }
+  .print-cell-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .p-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 1px;
+  }
+  .p-row:last-child {
+    border-bottom: none;
+  }
+  .p-lbl {
+    font-size: 6px;
     text-transform: uppercase;
+    font-weight: 600;
+    color: #64748b;
+  }
+  .p-lbl.act { color: #0891b2; }
+  .p-lbl.pun { color: #7c3aed; }
+  .p-lbl.conc { color: #16a34a; }
+  .print-mov-item {
+    font-size: 6px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px dashed #cbd5e1;
+    border-radius: 2px;
+    padding: 1px 2px;
+    margin-top: 1px;
     color: #475569;
-    margin-top: 2px;
-    margin-bottom: 4px;
   }
-  .mov-list {
-    margin: 0;
-    padding-left: 14px;
-    font-size: 10px;
+  .cell-print-disabled {
+    background-color: #f1f5f9 !important;
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(148, 163, 184, 0.1) 5px, rgba(148, 163, 184, 0.1) 10px) !important;
+    color: #94a3b8 !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    font-style: italic;
+    font-size: 6.5px;
   }
-  .mov-list li {
-    margin-bottom: 1px;
+
+  /* CONFIGURACIÓN DIRECTA DE ORIENTACIÓN HORIZONTAL PARA EL NAVEGADOR */
+  @media print {
+    @page {
+      size: landscape;
+      margin: 8mm;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    .page-break {
+      page-break-inside: avoid;
+    }
   }
   
-  /* MATRIZ DE MESES EN REPORTE IMPRESO */
+  /* MATRIZ DE MESES EN REPORTE DE FACTURAS */
   .print-months-matrix {
     display: flex;
     gap: 3px;
@@ -935,84 +989,80 @@ const reportStyles = `
 `;
 
 function generateBalancesPrintHTML() {
-  let html = `<h1>Informe de Saldos y Movimientos Bancarios</h1>`;
-  html += `<p class="meta">Generado automáticamente el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')}</p>`;
+  const nc = data.companies.length;
+  let html = `<h1>Reporte Matriz de Saldos y Movimientos</h1>`;
+  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')} - Cuadrícula de Escala Ajustada para Hoja Única</p>`;
 
-  // Colores pastel diferenciados y legibles para distinguir empresas en impresión
-  const printCompanyColors = [
-    '#f8fafc', // Slate suave
-    '#f0fdf4', // Esmeralda suave
-    '#f0f9ff', // Sky suave
-    '#fffbeb', // Ámbar suave
-    '#fdf2f8', // Rosa suave
-    '#faf5ff', // Púrpura suave
-    '#f0fdfa', // Teal suave
-    '#fef2f2'  // Rojo suave
-  ];
+  html += `<table class="print-matrix-table">`;
+  
+  // Establecer proporción de anchos exacta de forma matemática
+  html += `<colgroup>
+    <col style="width: 14%;" />
+    ${data.companies.map(() => `<col style="width: ${86 / nc}%;" />`).join('')}
+  </colgroup>`;
 
-  data.companies.forEach((company, ci) => {
-    let hasActiveData = false;
-    data.banks.forEach((_, bi) => {
-      if (data.disabledCells[bi + '-' + ci] !== true) {
-        hasActiveData = true;
-      }
-    });
+  // Encabezados de Empresa
+  html += `<thead><tr>
+    <th style="background-color: #0f172a; color: #fff;">Entidades / Empresas</th>`;
+  data.companies.forEach((company) => {
+    html += `<th style="background-color: #1e3a8a; color: #fff; font-size: 8px; font-weight: 700; padding: 4px;">${esc(company)}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
 
-    if (!hasActiveData) return;
+  // Filas por Entidad Bancaria
+  data.banks.forEach((bank, bi) => {
+    const bankNameClean = bank.split('\n')[0];
+    html += `<tr>`;
+    html += `<td class="print-bank-col">${esc(bankNameClean)}</td>`;
 
-    const bgColor = printCompanyColors[ci % printCompanyColors.length];
-
-    html += `<div class="report-section page-break" style="background-color: ${bgColor}; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 20px;">`;
-    html += `<h2>Empresa: ${esc(company)}</h2>`;
-    html += `<table>
-      <thead>
-        <tr>
-          <th>Entidad Bancaria</th>
-          <th class="text-right" style="width: 100px;">S. Actual</th>
-          <th class="text-right" style="width: 100px;">S. Punteado</th>
-          <th class="text-right" style="width: 100px;">S. Conciliado</th>
-          <th>Otras Anotaciones</th>
-          <th>Observaciones</th>
-        </tr>
-      </thead>
-      <tbody>`;
-
-    data.banks.forEach((bank, bi) => {
+    // Celdas por Empresa
+    data.companies.forEach((_, ci) => {
       const key = bi + '-' + ci;
-      if (data.disabledCells[key] === true) return;
+      const isDisabled = data.disabledCells[key] === true;
 
-      const bal = data.balances[key] || {};
-      const sc = calcConciliado(bi, ci);
-      const bankClean = bank.split('\n')[0];
+      if (isDisabled) {
+        html += `<td class="cell-print-disabled">Inactiva</td>`;
+      } else {
+        const bal = data.balances[key] || {};
+        const sc = calcConciliado(bi, ci);
+        
+        // Movimientos pendientes compactly
+        const movs = data.movements[key] || [];
+        const pendingMovs = movs.filter(m => !m.conciliado);
+        let movsHTML = '';
+        if (pendingMovs.length > 0) {
+          movsHTML += `<div style="margin-top: 2px; border-top: 1px dashed #cbd5e1; padding-top: 2px;">`;
+          pendingMovs.forEach(m => {
+            movsHTML += `<div class="print-mov-item"><strong>${formatCurrency(m.importe)}</strong> ${esc(m.observacion || '')}</div>`;
+          });
+          movsHTML += `</div>`;
+        }
 
-      html += `<tr>
-        <td class="bold">${esc(bankClean)}</td>
-        <td class="text-right">${formatCurrency(bal.saldoActual) || '0,00'}</td>
-        <td class="text-right">${formatCurrency(bal.saldoPunteado) || '0,00'}</td>
-        <td class="text-right bold" style="background-color: #f8fafc;">${formatCurrency(sc) || '0,00'}</td>
-        <td>${esc(bal.otraAnotacion || '')}</td>
-        <td>${esc(bal.observaciones || '')}</td>
-      </tr>`;
-
-      const movs = data.movements[key] || [];
-      const pendingMovs = movs.filter(m => !m.conciliado);
-      if (pendingMovs.length > 0) {
-        html += `<tr>
-          <td colspan="6" style="padding-left: 18px; background: rgba(255,255,255,0.6); border-top: none;">
-            <div class="sub-title">Movimientos pendientes de conciliar (${esc(bankClean)}):</div>
-            <ul class="mov-list">`;
-        pendingMovs.forEach(m => {
-          html += `<li><strong>${formatCurrency(m.importe)}</strong> - ${esc(m.observacion || 'Sin descripción')}</li>`;
-        });
-        html += `</ul>
-          </td>
-        </tr>`;
+        html += `<td>
+          <div class="print-cell-box">
+            <div class="p-row">
+              <span class="p-lbl act">Act:</span>
+              <span class="bold">${formatCurrency(bal.saldoActual) || '0,00'}</span>
+            </div>
+            <div class="p-row">
+              <span class="p-lbl pun">Pun:</span>
+              <span>${formatCurrency(bal.saldoPunteado) || '0,00'}</span>
+            </div>
+            <div class="p-row" style="background-color: #f0fdf4;">
+              <span class="p-lbl conc">Conc:</span>
+              <span class="bold" style="color: #16a34a;">${formatCurrency(sc) || '0,00'}</span>
+            </div>
+            ${bal.otraAnotacion ? `<div class="p-row" style="color: #475569;"><span class="p-lbl" style="color: #b45309;">Otr:</span> <span>${esc(bal.otraAnotacion)}</span></div>` : ''}
+            ${bal.observaciones ? `<div style="font-size: 6px; color: #64748b; margin-top: 1px; line-height: 1.1;"><strong>Obs:</strong> ${esc(bal.observaciones)}</div>` : ''}
+            ${movsHTML}
+          </div>
+        </td>`;
       }
     });
-
-    html += `</tbody></table></div>`;
+    html += `</tr>`;
   });
 
+  html += `</tbody></table>`;
   return html;
 }
 
@@ -1034,7 +1084,6 @@ function generateInvoicesPrintHTML() {
     <tbody>`;
 
   data.invoices.forEach(inv => {
-    // Reconstrucción lineal exacta de la matriz de checked/punteado
     let dotsHTML = '<div class="print-months-matrix">';
     MONTH_LABELS.forEach((label, idx) => {
       const isActive = inv.months[idx] === true;
