@@ -844,12 +844,13 @@ const reportStyles = `
   }
   h2 {
     font-size: 12px;
-    margin-top: 18px;
-    margin-bottom: 6px;
-    color: #4f46e5;
-    background: #f1f5f9;
-    padding: 4px 8px;
-    border-radius: 4px;
+    margin-top: 6px;
+    margin-bottom: 8px;
+    color: #1e1b4b;
+    background: rgba(0, 0, 0, 0.04);
+    padding: 6px 10px;
+    border-left: 4px solid #6366f1;
+    border-radius: 2px;
   }
   .meta {
     font-size: 9px;
@@ -861,6 +862,7 @@ const reportStyles = `
     border-collapse: collapse;
     margin-bottom: 12px;
     page-break-inside: avoid;
+    background: #fff;
   }
   th {
     background: #f8fafc;
@@ -874,8 +876,8 @@ const reportStyles = `
   }
   td {
     padding: 6px 8px;
-    border: 1px solid #e2e8f0;
-    vertical-align: top;
+    border: 1px solid #cbd5e1;
+    vertical-align: middle;
   }
   .bold {
     font-weight: 700;
@@ -885,11 +887,7 @@ const reportStyles = `
   }
   .page-break {
     page-break-after: auto;
-  }
-  @media print {
-    .page-break {
-      page-break-inside: avoid;
-    }
+    page-break-inside: avoid;
   }
   .sub-title {
     font-size: 9px;
@@ -907,19 +905,50 @@ const reportStyles = `
   .mov-list li {
     margin-bottom: 1px;
   }
-  .months-badge {
-    font-size: 9px;
-    background: #f1f5f9;
+  
+  /* MATRIZ DE MESES EN REPORTE IMPRESO */
+  .print-months-matrix {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    align-items: center;
+  }
+  .m-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    font-size: 8px;
+    font-weight: 700;
+    color: #94a3b8;
     border: 1px solid #cbd5e1;
-    padding: 2px 4px;
-    border-radius: 3px;
-    display: inline-block;
+    background: #ffffff;
+    line-height: 1;
+  }
+  .m-dot.active {
+    background: #06b6d4;
+    border-color: #06b6d4;
+    color: #ffffff;
   }
 `;
 
 function generateBalancesPrintHTML() {
   let html = `<h1>Informe de Saldos y Movimientos Bancarios</h1>`;
   html += `<p class="meta">Generado automáticamente el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')}</p>`;
+
+  // Colores pastel diferenciados y legibles para distinguir empresas en impresión
+  const printCompanyColors = [
+    '#f8fafc', // Slate suave
+    '#f0fdf4', // Esmeralda suave
+    '#f0f9ff', // Sky suave
+    '#fffbeb', // Ámbar suave
+    '#fdf2f8', // Rosa suave
+    '#faf5ff', // Púrpura suave
+    '#f0fdfa', // Teal suave
+    '#fef2f2'  // Rojo suave
+  ];
 
   data.companies.forEach((company, ci) => {
     let hasActiveData = false;
@@ -931,7 +960,9 @@ function generateBalancesPrintHTML() {
 
     if (!hasActiveData) return;
 
-    html += `<div class="report-section page-break">`;
+    const bgColor = printCompanyColors[ci % printCompanyColors.length];
+
+    html += `<div class="report-section page-break" style="background-color: ${bgColor}; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 20px;">`;
     html += `<h2>Empresa: ${esc(company)}</h2>`;
     html += `<table>
       <thead>
@@ -967,7 +998,7 @@ function generateBalancesPrintHTML() {
       const pendingMovs = movs.filter(m => !m.conciliado);
       if (pendingMovs.length > 0) {
         html += `<tr>
-          <td colspan="6" style="padding-left: 18px; background: #fafafa; border-top: none;">
+          <td colspan="6" style="padding-left: 18px; background: rgba(255,255,255,0.6); border-top: none;">
             <div class="sub-title">Movimientos pendientes de conciliar (${esc(bankClean)}):</div>
             <ul class="mov-list">`;
         pendingMovs.forEach(m => {
@@ -991,7 +1022,7 @@ function generateInvoicesPrintHTML() {
   html += `<table>
     <thead>
       <tr>
-        <th>Meses Activos</th>
+        <th style="width: 220px; text-align: center;">E F M A M J J A S O N D</th>
         <th>Descripción / Proveedor</th>
         <th>Código Contable</th>
         <th class="text-right">Importe</th>
@@ -1003,9 +1034,16 @@ function generateInvoicesPrintHTML() {
     <tbody>`;
 
   data.invoices.forEach(inv => {
-    const activeMonths = inv.months.map((m, idx) => m ? MONTH_LABELS[idx] : '').filter(Boolean).join(', ');
+    // Reconstrucción lineal exacta de la matriz de checked/punteado
+    let dotsHTML = '<div class="print-months-matrix">';
+    MONTH_LABELS.forEach((label, idx) => {
+      const isActive = inv.months[idx] === true;
+      dotsHTML += `<span class="m-dot${isActive ? ' active' : ''}" title="${MONTH_NAMES[idx]}">${label}</span>`;
+    });
+    dotsHTML += '</div>';
+
     html += `<tr>
-      <td><span class="months-badge">${esc(activeMonths || 'Sin meses')}</span></td>
+      <td>${dotsHTML}</td>
       <td class="bold">${esc(inv.descripcion)}</td>
       <td>${esc(inv.codigoContable)}</td>
       <td class="text-right bold">${formatCurrency(inv.importe) || '0,00'}</td>
