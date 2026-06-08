@@ -171,6 +171,54 @@
     .calc-negative{color:#ef4444;border-color:rgba(239,68,68,0.3);border-left-color:rgba(239,68,68,0.6);background:rgba(239,68,68,0.06)}
     .calc-zero{color:var(--text-muted);border-color:var(--border);border-left-color:var(--border-strong);background:transparent}
 
+    /* CONTENEDOR PARA ENTRADAS CON ACCIONES */
+    .input-group-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .input-group-wrapper .field-input {
+      padding-right: 22px !important;
+    }
+    .input-group-wrapper .input-actual {
+      padding-right: 38px !important;
+    }
+    .input-group-actions {
+      display: flex;
+      gap: 2px;
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+    }
+    .action-btn-mini {
+      background: rgba(13, 15, 26, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      font-size: 8px;
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+      transition: all var(--transition);
+      padding: 0;
+      line-height: 1;
+    }
+    .action-btn-mini:hover {
+      color: #fff;
+      background: var(--accent);
+      border-color: var(--accent-light);
+    }
+    .action-btn-mini.clear-field-btn:hover {
+      background: var(--danger);
+      border-color: #f87171;
+    }
+
     .movements-divider{font-size:9px;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-strong);margin:10px 0 5px;padding-bottom:3px;font-weight:600;letter-spacing:0.5px}
     .movements-list{display:flex;flex-direction:column;gap:4px}
 
@@ -277,6 +325,7 @@
     .pdf-mode .btn-del-tax-company, 
     .pdf-mode .cell-toggle, 
     .pdf-mode .nav-controls, 
+    .pdf-mode .input-group-actions,
     .pdf-mode .dynamic-actions {
       display: none !important;
     }
@@ -396,6 +445,7 @@
       <button class="tab-btn" data-section="invoices">&#x1F4C4; Facturas</button>
       <button class="tab-btn" data-section="taxes">&#x1F3DB; Impuestos</button>
       <button class="tab-btn" data-section="notes">&#x1F4DD; Notas</button>
+      <button class="tab-btn" data-section="backup">&#x1F4BE; Copia Seguridad</button>
     </nav>
   </div>
   <div class="header-right">
@@ -419,6 +469,10 @@
     <div class="dynamic-actions hidden" id="actions-notes">
       <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-notes', 'Notas')">&#x1F4BE; Exportar PDF</button>
       <button class="btn btn-ghost btn-sm" id="btn-clear-notes">&#x1F5D1; Limpiar Notas</button>
+    </div>
+
+    <div class="dynamic-actions hidden" id="actions-backup">
+      <button class="btn btn-primary btn-sm" onclick="exportBackup(false)">&#x1F4E5; Descargar Copia</button>
     </div>
 
     <span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
@@ -487,6 +541,47 @@
     </div>
   </section>
 
+  <!-- SECCIÓN DE COPIA DE SEGURIDAD -->
+  <section id="section-backup" class="section">
+    <div class="table-scroll-wrapper" style="padding: 24px; color: var(--text-primary); max-width: 650px; margin: 0 auto; background: rgba(18,21,43,0.85);">
+      <h2 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--accent-light); display: flex; align-items: center; gap: 8px;">
+        &#x1F4BE; Gestión de Copias de Seguridad
+      </h2>
+      <p style="margin-bottom: 20px; color: var(--text-secondary); line-height: 1.5;">
+        Permite salvaguardar toda la información introducida en la web o restaurar estados anteriores a partir de archivos JSON compatibles.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 16px; background: rgba(0,0,0,0.25); padding: 18px; border-radius: var(--radius); border: 1px solid var(--border-strong);">
+        <!-- Exportar -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <h3 style="font-size: 13px; font-weight: 600; color: var(--teal-light);">Guardar copia actual</h3>
+          <p style="color: var(--text-muted); font-size: 11px; line-height: 1.4;">
+            Descarga un archivo con formato conteniendo toda la estructura de bancos, empresas, saldos, facturas, impuestos y anotaciones. Se aconseja guardar este archivo en su carpeta <strong>Proyectos</strong> dentro de su Escritorio con el nombre de fichero <strong>DATOSBANCARIOS.json</strong>.
+          </p>
+          <div style="margin-top: 4px;">
+            <button class="btn btn-primary btn-sm" onclick="exportBackup(false)">&#x1F4E5; Descargar Backup</button>
+          </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 6px 0;"/>
+
+        <!-- Importar -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <h3 style="font-size: 13px; font-weight: 600; color: var(--amber);">Restaurar copia de seguridad</h3>
+          <p style="color: var(--text-muted); font-size: 11px; line-height: 1.4;">
+            Seleccione un archivo de copia de seguridad previo en su equipo. <strong>Atención:</strong> Esta acción sobrescribirá por completo toda la información actual almacenada en su navegador.
+          </p>
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+            <input type="file" id="input-restore-file" accept=".json" style="display: none;" />
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('input-restore-file').click()">&#x1F4C1; Examinar archivo...</button>
+            <span id="selected-backup-name" style="font-size: 11px; color: var(--text-muted);">Sin archivo seleccionado</span>
+            <button class="btn btn-danger btn-sm" id="btn-import-backup" style="display: none;">Ejecutar Restauración</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <div id="confirm-overlay" class="modal-overlay hidden">
@@ -532,6 +627,27 @@ function loadData() {
     if (!data.disabledCells) data.disabledCells = {};
   } catch(e) {}
 }
+
+// ─── EXPORTACIÓN / COPIA DE SEGURIDAD ───────────────────
+window.exportBackup = function(isAuto = false) {
+  try {
+    const dataStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'DATOSBANCARIOS.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (!isAuto) {
+      showSaved();
+    }
+  } catch(e) {
+    console.error("No se pudo descargar la copia de seguridad:", e);
+  }
+};
 
 // ─── FORMATO NUMÉRICO ──────────────────────────────────
 function formatCurrency(n) {
@@ -767,9 +883,20 @@ function renderBalances() {
         + '<div class="cell-content">'
         + '<div class="balance-fields">'
         + '<div class="balance-field"><label class="field-label label-actual">Saldo Actual</label>'
-        + '<input type="text" class="field-input input-actual fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoActual" value="'+esc(formatCurrency(bal.saldoActual))+'" placeholder="0,00"/></div>'
+        + '<div class="input-group-wrapper">'
+        + '<input type="text" class="field-input input-actual fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoActual" value="'+esc(formatCurrency(bal.saldoActual))+'" placeholder="0,00"/>'
+        + '<div class="input-group-actions">'
+        + '<button type="button" class="action-btn-mini copy-actual-btn" data-bi="'+bi+'" data-ci="'+ci+'" title="Copiar a Saldo Punteado">&#x279D;</button>'
+        + '<button type="button" class="action-btn-mini clear-field-btn" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoActual" title="Borrar">&#x2715;</button>'
+        + '</div>'
+        + '</div></div>'
         + '<div class="balance-field"><label class="field-label label-punteado">Saldo Punteado</label>'
-        + '<input type="text" class="field-input input-punteado fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoPunteado" value="'+esc(formatCurrency(bal.saldoPunteado))+'" placeholder="0,00"/></div>'
+        + '<div class="input-group-wrapper">'
+        + '<input type="text" class="field-input input-punteado fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoPunteado" value="'+esc(formatCurrency(bal.saldoPunteado))+'" placeholder="0,00"/>'
+        + '<div class="input-group-actions">'
+        + '<button type="button" class="action-btn-mini clear-field-btn" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoPunteado" title="Borrar">&#x2715;</button>'
+        + '</div>'
+        + '</div></div>'
         + '<div class="balance-field"><label class="field-label label-conciliado">Saldo Conciliado</label>'
         + '<div class="field-calc '+concClass+'" id="conc-'+bi+'-'+ci+'">'+concText+'</div></div>'
         + '<div class="balance-field"><label class="field-label label-otra">Otra Anotación</label>'
@@ -912,6 +1039,32 @@ function setupEvents() {
 
   // GRID DE BALANCES - Clics y Checkboxes
   document.getElementById('grid-balances').addEventListener('click', e => {
+    // Copiar Saldo Actual a Punteado
+    if (e.target.closest('.copy-actual-btn')) {
+      const btn = e.target.closest('.copy-actual-btn');
+      const bi = +btn.dataset.bi, ci = +btn.dataset.ci, key = bi + '-' + ci;
+      if (!data.balances[key]) data.balances[key] = {};
+      data.balances[key].saldoPunteado = data.balances[key].saldoActual || '';
+      saveData();
+      renderBalances();
+      return;
+    }
+
+    // Borrado rápido de campos individuales
+    if (e.target.closest('.clear-field-btn')) {
+      const btn = e.target.closest('.clear-field-btn');
+      const bi = +btn.dataset.bi, ci = +btn.dataset.ci, key = bi + '-' + ci;
+      const field = btn.dataset.field;
+      if (!data.balances[key]) data.balances[key] = {};
+      data.balances[key][field] = '';
+      saveData();
+      renderBalances();
+      if (field === 'saldoActual') {
+        updateConciliado(bi, ci);
+      }
+      return;
+    }
+
     if (e.target.classList.contains('btn-delete-row')) {
       const bi = +e.target.dataset.bi;
       confirm_('Eliminar banco "'+data.banks[bi]+'" y todos sus datos?', () => {
@@ -1039,6 +1192,56 @@ function setupEvents() {
     confirm_('¿Limpiar todas las notas?', ()=>{ data.notes=''; notesEl.value=''; saveData(); updateNotesCount(); });
   });
 
+  // CONTROL DE COPIA DE SEGURIDAD (IMPORTACIÓN)
+  document.getElementById('input-restore-file').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('selected-backup-name').textContent = file.name;
+    document.getElementById('btn-import-backup').style.display = 'inline-flex';
+  });
+
+  document.getElementById('btn-import-backup').addEventListener('click', () => {
+    const fileInput = document.getElementById('input-restore-file');
+    const file = fileInput.files[0];
+    if (!file) return;
+    
+    confirm_('¿Restaurar los datos de "' + file.name + '"? Se sobrescribirán todos los datos de la aplicación.', () => {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed && typeof parsed === 'object') {
+            data = parsed;
+            // Asegurar integridad mínima de datos
+            if (!data.banks) data.banks = [];
+            if (!data.companies) data.companies = [];
+            if (!data.balances) data.balances = {};
+            if (!data.movements) data.movements = {};
+            if (!data.disabledCells) data.disabledCells = {};
+            if (!data.invoices) data.invoices = [];
+            if (!data.taxCompanies) data.taxCompanies = [];
+            if (!data.taxValues) data.taxValues = {};
+            if (data.notes === undefined) data.notes = '';
+            
+            saveData();
+            renderAll();
+            document.getElementById('notes-area').value = data.notes || '';
+            updateNotesCount();
+            
+            document.getElementById('btn-import-backup').style.display = 'none';
+            document.getElementById('selected-backup-name').textContent = 'Datos restaurados con éxito';
+            fileInput.value = '';
+          } else {
+            alert('El archivo no posee el formato compatible de Control Bancario.');
+          }
+        } catch (err) {
+          alert('Ocurrió un error al procesar el archivo de copia de seguridad.');
+        }
+      };
+      reader.readAsText(file);
+    });
+  });
+
   // MODAL DE CONFIRMACIÓN
   document.getElementById('confirm-cancel').addEventListener('click', ()=>{ document.getElementById('confirm-overlay').classList.add('hidden'); confirmCb=null; });
   document.getElementById('confirm-ok').addEventListener('click', ()=>{
@@ -1068,6 +1271,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('notes-area').value = data.notes||'';
   updateNotesCount();
   setupEvents();
+
+  // Ejecución de la copia de seguridad automática al iniciar sesión en el sitio
+  setTimeout(() => {
+    exportBackup(true);
+  }, 800);
 });
 </script>
 </body>
