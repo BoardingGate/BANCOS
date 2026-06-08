@@ -440,7 +440,10 @@
       align-items: center !important;
       justify-content: flex-start !important;
       overflow: hidden !important;
-      background: rgba(0,0,0,0.3) !important;
+    }
+    .balance-cell.col-collapsed-cell {
+      background-color: rgba(0, 0, 0, 0.4) !important;
+      background-image: none !important;
     }
     .col-collapsed-cell .cell-content,
     .col-collapsed-cell .cell-toggle,
@@ -460,8 +463,11 @@
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      background: rgba(0,0,0,0.4) !important;
       --row-border: 1px solid var(--border) !important;
+    }
+    .balance-cell.row-collapsed-cell {
+      background-color: rgba(0, 0, 0, 0.5) !important;
+      background-image: none !important;
     }
     .row-collapsed-cell .cell-content,
     .row-collapsed-cell .cell-toggle,
@@ -549,23 +555,23 @@
   <div class="header-right">
     <!-- Acciones contextuales dinámicas -->
     <div class="dynamic-actions" id="actions-balances">
-      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('balances')">&#x1F4BE; Imprimir / PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('balances')">&#x1F4BE; Imprimir Hoja Única</button>
       <button class="btn btn-secondary btn-sm" id="btn-add-bank">+ Banco</button>
       <button class="btn btn-primary btn-sm" id="btn-add-company">+ Empresa</button>
     </div>
     
     <div class="dynamic-actions hidden" id="actions-invoices">
-      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('invoices')">&#x1F4BE; Imprimir / PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('balances')">&#x1F4BE; Imprimir Hoja Única</button>
       <button class="btn btn-primary btn-sm" id="btn-add-invoice">+ Añadir Fila</button>
     </div>
     
     <div class="dynamic-actions hidden" id="actions-taxes">
-      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('taxes')">&#x1F4BE; Imprimir / PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('balances')">&#x1F4BE; Imprimir Hoja Única</button>
       <button class="btn btn-primary btn-sm" id="btn-add-tax-company">+ Añadir Empresa</button>
     </div>
     
     <div class="dynamic-actions hidden" id="actions-notes">
-      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('notes')">&#x1F4BE; Imprimir / PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('notes')">&#x1F4BE; Imprimir Notas</button>
       <button class="btn btn-ghost btn-sm" id="btn-clear-notes">&#x1F5D1; Limpiar Notas</button>
     </div>
 
@@ -573,6 +579,7 @@
       <button class="btn btn-primary btn-sm" onclick="exportBackup(false)">&#x1F4E5; Descargar Copia</button>
     </div>
 
+    <button class="btn btn-primary btn-sm" id="btn-manual-save">&#x1F4BE; Guardar Datos</button>
     <span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
     <button class="btn btn-ghost btn-sm" id="btn-clear">&#x1F5D1; Limpiar todo</button>
   </div>
@@ -710,6 +717,7 @@ let data = {
   disabledCells: {},
   collapsedBanks: {},
   collapsedCompanies: {},
+  collapsedBankColumn: false,
   invoices: [],
   taxCompanies: ['Empresa A','Empresa B'],
   taxValues: {},
@@ -718,8 +726,16 @@ let data = {
 
 // ─── PERSISTENCIA ────────────────────────────────────────
 function saveData() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); showSaved(); } catch(e) {}
+  // Función vacía para evitar guardado automático en cada cambio de campo
 }
+
+function manualSave() {
+  try { 
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
+    showSaved(); 
+  } catch(e) {}
+}
+
 function loadData() {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
@@ -727,7 +743,109 @@ function loadData() {
     if (!data.disabledCells) data.disabledCells = {};
     if (!data.collapsedBanks) data.collapsedBanks = {};
     if (!data.collapsedCompanies) data.collapsedCompanies = {};
+    if (data.collapsedBankColumn === undefined) data.collapsedBankColumn = false;
   } catch(e) {}
+}
+
+// ─── REESTRUCTURACIÓN COMPACTA TRAS ELIMINAR FILA O COLUMNA ───────────
+function reindexBalancesAndMovementsAfterRowDelete(targetBi) {
+  const newBalances = {};
+  const newMovements = {};
+  const newDisabled = {};
+  const newCollapsedBanks = {};
+
+  // Reindexar saldos
+  Object.keys(data.balances).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (bi === targetBi) return; // Descartar fila eliminada
+    const newBi = bi > targetBi ? bi - 1 : bi;
+    newBalances[newBi + '-' + ci] = data.balances[key];
+  });
+
+  // Reindexar movimientos
+  Object.keys(data.movements).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (bi === targetBi) return;
+    const newBi = bi > targetBi ? bi - 1 : bi;
+    newMovements[newBi + '-' + ci] = data.movements[key];
+  });
+
+  // Reindexar celdas inactivas
+  Object.keys(data.disabledCells).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (bi === targetBi) return;
+    const newBi = bi > targetBi ? bi - 1 : bi;
+    newDisabled[newBi + '-' + ci] = data.disabledCells[key];
+  });
+
+  // Reindexar bancos colapsados
+  Object.keys(data.collapsedBanks).forEach(key => {
+    const bi = parseInt(key, 10);
+    if (bi === targetBi) return;
+    const newBi = bi > targetBi ? bi - 1 : bi;
+    newCollapsedBanks[newBi] = data.collapsedBanks[key];
+  });
+
+  data.balances = newBalances;
+  data.movements = newMovements;
+  data.disabledCells = newDisabled;
+  data.collapsedBanks = newCollapsedBanks;
+}
+
+function reindexBalancesAndMovementsAfterColDelete(targetCi) {
+  const newBalances = {};
+  const newMovements = {};
+  const newDisabled = {};
+  const newCollapsedCompanies = {};
+
+  // Reindexar saldos
+  Object.keys(data.balances).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (ci === targetCi) return; // Descartar columna eliminada
+    const newCi = ci > targetCi ? ci - 1 : ci;
+    newBalances[bi + '-' + newCi] = data.balances[key];
+  });
+
+  // Reindexar movimientos
+  Object.keys(data.movements).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (ci === targetCi) return;
+    const newCi = ci > targetCi ? ci - 1 : ci;
+    newMovements[bi + '-' + newCi] = data.movements[key];
+  });
+
+  // Reindexar celdas inactivas
+  Object.keys(data.disabledCells).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (ci === targetCi) return;
+    const newCi = ci > targetCi ? ci - 1 : ci;
+    newDisabled[bi + '-' + newCi] = data.disabledCells[key];
+  });
+
+  // Reindexar empresas colapsadas
+  Object.keys(data.collapsedCompanies).forEach(key => {
+    const ci = parseInt(key, 10);
+    if (ci === targetCi) return;
+    const newCi = ci > targetCi ? ci - 1 : ci;
+    newCollapsedCompanies[newCi] = data.collapsedCompanies[key];
+  });
+
+  data.balances = newBalances;
+  data.movements = newMovements;
+  data.disabledCells = newDisabled;
+  data.collapsedCompanies = newCollapsedCompanies;
 }
 
 // ─── EXPORTACIÓN / COPIA DE SEGURIDAD ───────────────────
@@ -831,53 +949,42 @@ const reportStyles = `
     font-family: 'Inter', -apple-system, sans-serif;
     color: #111;
     background: #fff;
-    margin: 24px;
-    font-size: 11px;
-    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+    font-size: 8px; /* Tamaño optimizado y compacto para que todo entre en una sola página vertical */
+    line-height: 1.25;
   }
   h1 {
-    font-size: 16px;
-    margin-bottom: 2px;
+    font-size: 11px;
+    margin-bottom: 3px;
     color: #0f172a;
     border-bottom: 2px solid #6366f1;
-    padding-bottom: 6px;
-  }
-  h2 {
-    font-size: 12px;
-    margin-top: 6px;
-    margin-bottom: 8px;
-    color: #1e1b4b;
-    background: rgba(0, 0, 0, 0.04);
-    padding: 6px 10px;
-    border-left: 4px solid #6366f1;
-    border-radius: 2px;
+    padding-bottom: 2px;
+    font-weight: 700;
   }
   .meta {
-    font-size: 9px;
+    font-size: 7.5px;
     color: #64748b;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 12px;
-    page-break-inside: avoid;
-    background: #fff;
+    margin-bottom: 8px;
   }
   th {
-    background: #f8fafc;
-    color: #334155;
+    background: #1e293b;
+    color: #ffffff;
     font-weight: 700;
-    text-align: left;
-    padding: 6px 8px;
-    border: 1px solid #cbd5e1;
-    font-size: 10px;
-    text-transform: uppercase;
+    text-align: center;
+    padding: 3px 4px;
+    border: 1px solid #94a3b8;
+    font-size: 8px;
   }
   td {
-    padding: 6px 8px;
+    padding: 3px 4px;
     border: 1px solid #cbd5e1;
-    vertical-align: middle;
+    vertical-align: top;
   }
   .bold {
     font-weight: 700;
@@ -885,31 +992,102 @@ const reportStyles = `
   .text-right {
     text-align: right;
   }
-  .page-break {
-    page-break-after: auto;
-    page-break-inside: avoid;
+  
+  /* ESTILOS DE MATRIZ DE SALDOS EN REPORTE DE HOJA ÚNICA */
+  .print-matrix-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
   }
-  .sub-title {
-    font-size: 9px;
+  .print-matrix-table th, .print-matrix-table td {
+    border: 1px solid #475569;
+    padding: 4px;
+    vertical-align: top;
+    overflow: hidden;
+  }
+  .print-matrix-table th {
+    background-color: #0f172a;
+    color: #ffffff;
     font-weight: 700;
-    text-transform: uppercase;
-    color: #475569;
-    margin-top: 2px;
-    margin-bottom: 4px;
-  }
-  .mov-list {
-    margin: 0;
-    padding-left: 14px;
-    font-size: 10px;
-  }
-  .mov-list li {
-    margin-bottom: 1px;
+    text-align: center;
+    font-size: 8.5px;
   }
   
-  /* MATRIZ DE MESES EN REPORTE IMPRESO */
+  /* Cabecera vertical transpuesta para empresas (Eje Y) */
+  .print-company-col {
+    font-weight: 700;
+    font-size: 8.5px;
+    padding: 4px;
+    vertical-align: middle;
+    color: #0f172a;
+  }
+  
+  .print-cell-box {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .p-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 1px;
+    font-size: 9.5px; /* Importes principales ampliados significativamente */
+  }
+  .p-row:last-child {
+    border-bottom: none;
+  }
+  .p-lbl {
+    font-size: 7px; /* Etiquetas de campos ampliadas */
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #475569;
+  }
+  .p-lbl.act { color: #0891b2; }
+  .p-lbl.pun { color: #7c3aed; }
+  .p-lbl.conc { color: #16a34a; }
+  .print-mov-item {
+    font-size: 7.5px; /* Notas y anotaciones de movimientos ampliadas */
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px dashed #cbd5e1;
+    border-radius: 2px;
+    padding: 2px;
+    margin-top: 2px;
+    color: #334155;
+    line-height: 1.2;
+  }
+  
+  /* Distinción estética para movimientos ya conciliados */
+  .print-mov-item.is-reconciled {
+    background: rgba(22, 163, 74, 0.04) !important;
+    border-color: #bbf7d0 !important;
+    color: #15803d !important;
+  }
+  
+  /* CELDAS INACTIVAS: BLANCO ABSOLUTO Y SIN TEXTO */
+  .cell-print-disabled {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: transparent !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+
+  /* FORZAR LA IMPRESIÓN EN VERTICAL PORTRAIT */
+  @media print {
+    @page {
+      size: portrait;
+      margin: 4mm 5mm; /* Margen ultracompacto para garantizar una sola página */
+    }
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  }
+  
+  /* MATRIZ DE MESES EN REPORTE DE FACTURAS */
   .print-months-matrix {
     display: flex;
-    gap: 3px;
+    gap: 1.5px;
     justify-content: center;
     align-items: center;
   }
@@ -917,13 +1095,13 @@ const reportStyles = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 13px;
-    height: 13px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
-    font-size: 8px;
+    font-size: 5.5px;
     font-weight: 700;
     color: #94a3b8;
-    border: 1px solid #cbd5e1;
+    border: 0.5px solid #cbd5e1;
     background: #ffffff;
     line-height: 1;
   }
@@ -934,136 +1112,147 @@ const reportStyles = `
   }
 `;
 
-function generateBalancesPrintHTML() {
-  let html = `<h1>Informe de Saldos y Movimientos Bancarios</h1>`;
-  html += `<p class="meta">Generado automáticamente el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')}</p>`;
+function generateUnifiedPrintHTML() {
+  const nb = data.banks.length;
+  const nc = data.companies.length;
 
-  // Colores pastel diferenciados y legibles para distinguir empresas en impresión
-  const printCompanyColors = [
-    '#f8fafc', // Slate suave
-    '#f0fdf4', // Esmeralda suave
-    '#f0f9ff', // Sky suave
-    '#fffbeb', // Ámbar suave
-    '#fdf2f8', // Rosa suave
-    '#faf5ff', // Púrpura suave
-    '#f0fdfa', // Teal suave
-    '#fef2f2'  // Rojo suave
+  // Paleta de tonos pastel para intercalar en las filas de las empresas (Eje Y)
+  const transposedRowColors = [
+    '#f8fafc', // Slate
+    '#f0fdf4', // Emerald
+    '#f0f9ff', // Sky
+    '#fffbeb', // Amber
+    '#fdf2f8', // Rose
+    '#faf5ff', // Purple
+    '#f0fdfa', // Teal
+    '#fef2f2'  // Red
   ];
 
+  let html = `<h1>Reporte General Consolidado - Control Bancario</h1>`;
+  html += `<p class="meta">Generado automáticamente el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')} - Cuadrícula Transpuesta (Eje Vertical) optimizada para Hoja Única</p>`;
+
+  // ─── SECCIÓN 1: SALDOS Y MOVIMIENTOS (TRANSPUESTA) ───
+  html += `<table class="print-matrix-table">`;
+  
+  // Asignar proporción de anchos perfecta: Empresa = 16%, los bancos dividen el 84% restante
+  html += `<colgroup>
+    <col style="width: 16%;" />
+    ${data.banks.map(() => `<col style="width: ${84 / nb}%;" />`).join('')}
+  </colgroup>`;
+
+  // Encabezado horizontal (Bancos en el eje X)
+  html += `<thead><tr>
+    <th style="background-color: #0f172a; color: #fff; font-size: 7.5px;">Empresas / Bancos</th>`;
+  data.banks.forEach((bank) => {
+    const bankNameClean = bank.split('\n')[0];
+    html += `<th style="background-color: #0f766e; color: #fff; font-size: 7.5px; font-weight: 700; padding: 3px;">${esc(bankNameClean)}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+
+  // Filas (Empresas en el eje Y con color de fila único)
   data.companies.forEach((company, ci) => {
-    let hasActiveData = false;
+    const bgColor = transposedRowColors[ci % transposedRowColors.length];
+    html += `<tr style="background-color: ${bgColor};">`;
+    // Celda de cabecera de la Empresa
+    html += `<td class="print-company-col" style="border-left: 3px solid #6366f1;">${esc(company)}</td>`;
+
+    // Celdas por Banco
     data.banks.forEach((_, bi) => {
-      if (data.disabledCells[bi + '-' + ci] !== true) {
-        hasActiveData = true;
+      const key = bi + '-' + ci;
+      const isDisabled = data.disabledCells[key] === true;
+
+      if (isDisabled) {
+        // Celda inactiva: completamente limpia, fondo blanco, sin texto
+        html += `<td class="cell-print-disabled"></td>`;
+      } else {
+        const bal = data.balances[key] || {};
+        const sc = calcConciliado(bi, ci);
+        
+        // Procesar todos los movimientos (conciliados y pendientes)
+        const movs = data.movements[key] || [];
+        let movsHTML = '';
+        if (movs.length > 0) {
+          movsHTML += `<div style="margin-top: 2px; border-top: 1px dashed #cbd5e1; padding-top: 2px;">`;
+          movs.forEach(m => {
+            const isRec = m.conciliado === true;
+            const statusLabel = isRec ? `<span style="color: #16a34a; font-weight:700;">[C]</span>` : `<span style="color: #b45309; font-weight:700;">[P]</span>`;
+            movsHTML += `<div class="print-mov-item${isRec ? ' is-reconciled' : ''}">
+              ${statusLabel} <strong>${formatCurrency(m.importe)}</strong> ${esc(m.observacion || '')}
+            </div>`;
+          });
+          movsHTML += `</div>`;
+        }
+
+        html += `<td>
+          <div class="print-cell-box">
+            <div class="p-row">
+              <span class="p-lbl act">Act:</span>
+              <span class="bold">${formatCurrency(bal.saldoActual) || '0,00'}</span>
+            </div>
+            <div class="p-row">
+              <span class="p-lbl pun">Pun:</span>
+              <span>${formatCurrency(bal.saldoPunteado) || '0,00'}</span>
+            </div>
+            <div class="p-row" style="background-color: rgba(255,255,255,0.75);">
+              <span class="p-lbl conc">Conc:</span>
+              <span class="bold" style="color: #16a34a;">${formatCurrency(sc) || '0,00'}</span>
+            </div>
+            ${bal.otraAnotacion ? `<div class="p-row" style="color: #475569;"><span class="p-lbl" style="color: #b45309;">Otr:</span> <span>${esc(bal.otraAnotacion)}</span></div>` : ''}
+            ${movsHTML}
+          </div>
+        </td>`;
       }
     });
+    html += `</tr>`;
+  });
+  html += `</tbody></table>`;
 
-    if (!hasActiveData) return;
+  // ─── SECCIÓN 2: DOBLE COLUMNA PARA FACTURAS E IMPUESTOS (SIDE-BY-SIDE) ───
+  html += `<div style="display: flex; gap: 10px; width: 100%; margin-top: 8px;">`;
 
-    const bgColor = printCompanyColors[ci % printCompanyColors.length];
-
-    html += `<div class="report-section page-break" style="background-color: ${bgColor}; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 20px;">`;
-    html += `<h2>Empresa: ${esc(company)}</h2>`;
-    html += `<table>
+  // Columna Izquierda: Facturas Recurrentes (Con todas las columnas solicitadas)
+  html += `<div style="flex: 1.1; min-width: 0;">
+    <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Facturas Recurrentes</h2>
+    <table class="print-matrix-table">
       <thead>
         <tr>
-          <th>Entidad Bancaria</th>
-          <th class="text-right" style="width: 100px;">S. Actual</th>
-          <th class="text-right" style="width: 100px;">S. Punteado</th>
-          <th class="text-right" style="width: 100px;">S. Conciliado</th>
-          <th>Otras Anotaciones</th>
-          <th>Observaciones</th>
+          <th style="width: 110px; text-align: center;">E F M A M J J A S O N D</th>
+          <th>Proveedor</th>
+          <th style="width: 45px;">Cuenta</th>
+          <th class="text-right" style="width: 50px;">Importe</th>
+          <th style="width: 50px;">Banco</th>
+          <th style="width: 50px;">Periodicidad</th>
         </tr>
       </thead>
       <tbody>`;
 
-    data.banks.forEach((bank, bi) => {
-      const key = bi + '-' + ci;
-      if (data.disabledCells[key] === true) return;
-
-      const bal = data.balances[key] || {};
-      const sc = calcConciliado(bi, ci);
-      const bankClean = bank.split('\n')[0];
-
-      html += `<tr>
-        <td class="bold">${esc(bankClean)}</td>
-        <td class="text-right">${formatCurrency(bal.saldoActual) || '0,00'}</td>
-        <td class="text-right">${formatCurrency(bal.saldoPunteado) || '0,00'}</td>
-        <td class="text-right bold" style="background-color: #f8fafc;">${formatCurrency(sc) || '0,00'}</td>
-        <td>${esc(bal.otraAnotacion || '')}</td>
-        <td>${esc(bal.observaciones || '')}</td>
-      </tr>`;
-
-      const movs = data.movements[key] || [];
-      const pendingMovs = movs.filter(m => !m.conciliado);
-      if (pendingMovs.length > 0) {
-        html += `<tr>
-          <td colspan="6" style="padding-left: 18px; background: rgba(255,255,255,0.6); border-top: none;">
-            <div class="sub-title">Movimientos pendientes de conciliar (${esc(bankClean)}):</div>
-            <ul class="mov-list">`;
-        pendingMovs.forEach(m => {
-          html += `<li><strong>${formatCurrency(m.importe)}</strong> - ${esc(m.observacion || 'Sin descripción')}</li>`;
-        });
-        html += `</ul>
-          </td>
-        </tr>`;
-      }
-    });
-
-    html += `</tbody></table></div>`;
-  });
-
-  return html;
-}
-
-function generateInvoicesPrintHTML() {
-  let html = `<h1>Informe de Control de Facturas Recurrentes</h1>`;
-  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')}</p>`;
-  html += `<table>
-    <thead>
-      <tr>
-        <th style="width: 220px; text-align: center;">E F M A M J J A S O N D</th>
-        <th>Descripción / Proveedor</th>
-        <th>Código Contable</th>
-        <th class="text-right">Importe</th>
-        <th>Banco Asociado</th>
-        <th>Frecuencia</th>
-        <th>Observaciones</th>
-      </tr>
-    </thead>
-    <tbody>`;
-
   data.invoices.forEach(inv => {
-    // Reconstrucción lineal exacta de la matriz de checked/punteado
     let dotsHTML = '<div class="print-months-matrix">';
     MONTH_LABELS.forEach((label, idx) => {
       const isActive = inv.months[idx] === true;
-      dotsHTML += `<span class="m-dot${isActive ? ' active' : ''}" title="${MONTH_NAMES[idx]}">${label}</span>`;
+      dotsHTML += `<span class="m-dot${isActive ? ' active' : ''}">${label}</span>`;
     });
     dotsHTML += '</div>';
 
     html += `<tr>
       <td>${dotsHTML}</td>
-      <td class="bold">${esc(inv.descripcion)}</td>
-      <td>${esc(inv.codigoContable)}</td>
+      <td class="bold" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.descripcion)}</td>
+      <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.codigoContable || '')}</td>
       <td class="text-right bold">${formatCurrency(inv.importe) || '0,00'}</td>
-      <td>${esc(inv.banco)}</td>
-      <td style="text-transform: capitalize;">${esc(inv.tipoFacturacion)}</td>
-      <td>${esc(inv.observaciones)}</td>
+      <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.banco || '')}</td>
+      <td style="text-transform: capitalize; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.tipoFacturacion || '')}</td>
     </tr>`;
   });
 
-  html += `</tbody></table>`;
-  return html;
-}
+  html += `</tbody></table></div>`;
 
-function generateTaxesPrintHTML() {
-  let html = `<h1>Informe de Liquidación de Impuestos</h1>`;
-  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')}</p>`;
-  html += `<table>
-    <thead>
-      <tr>
-        <th>Concepto</th>`;
+  // Columna Derecha: Impuestos por Empresa
+  html += `<div style="flex: 0.9; min-width: 0;">
+    <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Liquidación de Impuestos</h2>
+    <table class="print-matrix-table">
+      <thead>
+        <tr>
+          <th>Concepto</th>`;
   data.taxCompanies.forEach(co => {
     html += `<th>${esc(co)}</th>`;
   });
@@ -1081,28 +1270,19 @@ function generateTaxesPrintHTML() {
     html += `</tr>`;
   });
 
-  html += `</tbody></table>`;
-  return html;
-}
+  html += `</tbody></table></div></div>`;
 
-function generateNotesPrintHTML() {
-  let html = `<h1>Anotaciones y Notas Libres</h1>`;
-  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')}</p>`;
-  html += `<div style="white-space: pre-wrap; font-family: monospace; font-size: 11px; line-height: 1.5; border: 1px solid #cbd5e1; padding: 12px; background: #f8fafc; border-radius: 4px; color: #1e293b;">${esc(data.notes || 'No se han registrado notas.')}</div>`;
   return html;
 }
 
 window.printSectionReport = function(sectionType) {
   let contentHTML = '';
   
-  if (sectionType === 'balances') {
-    contentHTML = generateBalancesPrintHTML();
-  } else if (sectionType === 'invoices') {
-    contentHTML = generateInvoicesPrintHTML();
-  } else if (sectionType === 'taxes') {
-    contentHTML = generateTaxesPrintHTML();
-  } else if (sectionType === 'notes') {
+  if (sectionType === 'notes') {
     contentHTML = generateNotesPrintHTML();
+  } else {
+    // Al presionar imprimir en Balances, Facturas o Impuestos, generamos la hoja integrada unificada
+    contentHTML = generateUnifiedPrintHTML();
   }
 
   const iframe = document.createElement('iframe');
@@ -1121,7 +1301,7 @@ window.printSectionReport = function(sectionType) {
     <html lang="es">
     <head>
       <meta charset="UTF-8">
-      <title>Control Bancario - Reporte</title>
+      <title>Control Bancario - Reporte Unificado</title>
       <style>${reportStyles}</style>
     </head>
     <body>
@@ -1159,8 +1339,9 @@ function renderBalances() {
   const g = document.getElementById('grid-balances');
   const nc = data.companies.length;
   
-  // Construcción dinámica de columnas según estado de contracción
-  let colSpecs = ['240px'];
+  // Construcción dinámica de columnas según estado de contracción de empresas y de la primera columna de bancos
+  let bankColWidth = data.collapsedBankColumn ? '35px' : '240px';
+  let colSpecs = [bankColWidth];
   data.companies.forEach((_, ci) => {
     if (data.collapsedCompanies[ci] === true) {
       colSpecs.push('35px');
@@ -1180,24 +1361,32 @@ function renderBalances() {
     'rgba(131, 24, 67, 0.15)', 'rgba(20, 83, 45, 0.15)', 'rgba(112, 26, 117, 0.15)', 'rgba(59, 7, 100, 0.15)'
   ];
 
-  // Controladores de navegación esquina superior izquierda
-  html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2);">'
-    + '<div class="nav-controls">'
-    + '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C0;</button>'
-    + '<div style="display:flex; flex-direction:column; gap:4px;">'
-    +   '<button class="nav-btn" onclick="navScroll(\'up\')" title="Arriba">&#x25B2;</button>'
-    +   '<button class="nav-btn" onclick="navScroll(\'down\')" title="Abajo">&#x25BC;</button>'
-    + '</div>'
-    + '<button class="nav-btn" onclick="navScroll(\'right\')" title="Derecha">&#x25B6;</button>'
-    + '</div></div>';
+  // Controladores de navegación esquina superior izquierda (Con soporte de colapsado horizontal)
+  if (data.collapsedBankColumn) {
+    html += '<div class="grid-cell header-corner col-collapsed-cell" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2);">'
+      + '<button class="action-btn-fold btn-toggle-bank-col" title="Expandir columna de bancos">&#x25B6;</button>'
+      + '</div>';
+  } else {
+    html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2); display: flex; justify-content: space-between; align-items: center; padding: 4px 6px !important;">'
+      + '<div class="nav-controls">'
+      + '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C0;</button>'
+      + '<div style="display:flex; flex-direction:column; gap:4px;">'
+      +   '<button class="nav-btn" onclick="navScroll(\'up\')" title="Arriba">&#x25B2;</button>'
+      +   '<button class="nav-btn" onclick="navScroll(\'down\')" title="Abajo">&#x25BC;</button>'
+      + '</div>'
+      + '<button class="nav-btn" onclick="navScroll(\'right\')" title="Derecha">&#x25B6;</button>'
+      + '</div>'
+      + '<button class="action-btn-fold btn-toggle-bank-col" title="Contraer columna de bancos" style="margin-left: 4px;">&#x25C0;</button>'
+      + '</div>';
+  }
   
   // Encabezados de Empresas (Columnas)
   data.companies.forEach((c,ci) => {
     const isColCollapsed = data.collapsedCompanies[ci] === true;
     if (isColCollapsed) {
       html += '<div class="grid-cell header-company col-collapsed-cell" style="background-color: '+companyColors[ci % companyColors.length]+'; border-bottom: 2px solid rgba(255,255,255,0.2);">'
-        + '<button class="action-btn-fold btn-toggle-col" data-ci="'+ci+'" title="Expandir columna">&#x25B6;</button>'
-        + '<span style="font-size: 8px; writing-mode: vertical-rl; transform: rotate(180deg); color: rgba(255,255,255,0.7); margin-top: 6px;">'+esc(c)+'</span>'
+        + '<button class="action-btn-fold btn-toggle-col" data-ci="'+ci+'" title="Expandir columna" style="margin-bottom: 4px;">&#x25B6;</button>'
+        + '<span style="font-size: 11px; writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-weight: 700; letter-spacing: 0.5px;">'+esc(c)+'</span>'
         + '</div>';
     } else {
       html += '<div class="grid-cell header-company" style="background-color: '+companyColors[ci % companyColors.length]+'; border-bottom: 2px solid rgba(255,255,255,0.2);"><div class="header-editable-wrapper">'
@@ -1213,17 +1402,24 @@ function renderBalances() {
     const bColor = bankColors[bi % bankColors.length];
     const isRowCollapsed = data.collapsedBanks[bi] === true;
     
-    if (isRowCollapsed) {
-      html += '<div class="grid-cell header-bank header-bank-collapsed" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 1px solid '+bColor+';"><div class="header-editable-wrapper">'
-        + '<button class="action-btn-fold btn-toggle-row" data-bi="'+bi+'" title="Expandir fila">&#x25BC;</button>'
-        + '<span style="font-size: 10px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; margin-left: 4px;">'+esc(b.split('\n')[0])+'</span>'
-        + '</div></div>';
+    if (data.collapsedBankColumn) {
+      // Si la columna de bancos está contraída horizontalmente, mantenemos el color original y ampliamos la fuente vertical a 11px
+      html += '<div class="grid-cell header-bank col-collapsed-cell" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: '+(isRowCollapsed ? '1px solid '+bColor : '5px solid '+bColor)+';">'
+        + '<span style="font-size: 11px; writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-weight: 700; letter-spacing: 0.5px;">'+esc(b.split('\n')[0])+'</span>'
+        + '</div>';
     } else {
-      html += '<div class="grid-cell header-bank" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 5px solid '+bColor+';"><div class="header-editable-wrapper">'
-        + '<button class="action-btn-fold btn-toggle-row" data-bi="'+bi+'" title="Contraer fila">&#x25B2;</button>'
-        + '<textarea class="header-input bank-input" data-bi="'+bi+'" placeholder="Banco '+(bi+1)+'\n...\n..." rows="6">'+esc(b)+'</textarea>'
-        + '<button class="btn-delete-row" data-bi="'+bi+'" title="Eliminar banco">\u2715</button>'
-        + '</div></div>';
+      if (isRowCollapsed) {
+        html += '<div class="grid-cell header-bank header-bank-collapsed" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 1px solid '+bColor+';"><div class="header-editable-wrapper">'
+          + '<button class="action-btn-fold btn-toggle-row" data-bi="'+bi+'" title="Expandir fila">&#x25BC;</button>'
+          + '<span style="font-size: 10px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; margin-left: 4px;">'+esc(b.split('\n')[0])+'</span>'
+          + '</div></div>';
+      } else {
+        html += '<div class="grid-cell header-bank" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 5px solid '+bColor+';"><div class="header-editable-wrapper">'
+          + '<button class="action-btn-fold btn-toggle-row" data-bi="'+bi+'" title="Contraer fila">&#x25B2;</button>'
+          + '<textarea class="header-input bank-input" data-bi="'+bi+'" placeholder="Banco '+(bi+1)+'\n...\n..." rows="6">'+esc(b)+'</textarea>'
+          + '<button class="btn-delete-row" data-bi="'+bi+'" title="Eliminar banco">\u2715</button>'
+          + '</div></div>';
+      }
     }
     
     data.companies.forEach((_,ci) => {
@@ -1419,22 +1615,30 @@ function setupEvents() {
 
   // GRID DE BALANCES - Clics y Checkboxes
   document.getElementById('grid-balances').addEventListener('click', e => {
-    // Expandir/Contraer Columna de Empresa
+    // Expandir/Contraer Columna de Empresa (Persistente al instante)
     if (e.target.closest('.btn-toggle-col')) {
       const btn = e.target.closest('.btn-toggle-col');
       const ci = +btn.dataset.ci;
       data.collapsedCompanies[ci] = !data.collapsedCompanies[ci];
-      saveData();
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(err) {}
       renderBalances();
       return;
     }
 
-    // Expandir/Contraer Fila de Banco
+    // Expandir/Contraer Fila de Banco (Persistente al instante)
     if (e.target.closest('.btn-toggle-row')) {
       const btn = e.target.closest('.btn-toggle-row');
       const bi = +btn.dataset.bi;
       data.collapsedBanks[bi] = !data.collapsedBanks[bi];
-      saveData();
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(err) {}
+      renderBalances();
+      return;
+    }
+
+    // Expandir/Contraer Columna Completa de Bancos (Persistente al instante)
+    if (e.target.closest('.btn-toggle-bank-col')) {
+      data.collapsedBankColumn = !data.collapsedBankColumn;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(err) {}
       renderBalances();
       return;
     }
@@ -1465,28 +1669,26 @@ function setupEvents() {
       return;
     }
 
+    // Eliminación robusta de Banco con reindexación
     if (e.target.classList.contains('btn-delete-row')) {
       const bi = +e.target.dataset.bi;
       confirm_('Eliminar banco "'+data.banks[bi]+'" y todos sus datos?', () => {
-        const nb={}, nm={}, nd={};
-        Object.keys(data.balances).forEach(k=>{ if(!k.startsWith(bi+'-')) nb[k]=data.balances[k]; });
-        Object.keys(data.movements).forEach(k=>{ if(!k.startsWith(bi+'-')) nm[k]=data.movements[k]; });
-        Object.keys(data.disabledCells).forEach(k=>{ if(!k.startsWith(bi+'-')) nd[k]=data.disabledCells[k]; });
-        data.banks.splice(bi,1); data.balances=nb; data.movements=nm; data.disabledCells=nd;
+        reindexBalancesAndMovementsAfterRowDelete(bi);
+        data.banks.splice(bi,1);
         saveData(); renderBalances();
       });
     }
+
+    // Eliminación robusta de Empresa con reindexación
     if (e.target.classList.contains('btn-delete-col')) {
       const ci = +e.target.dataset.ci;
       confirm_('Eliminar empresa "'+data.companies[ci]+'" y todos sus datos?', () => {
-        const nb={}, nm={}, nd={};
-        Object.keys(data.balances).forEach(k=>{ if(!k.endsWith('-'+ci)) nb[k]=data.balances[k]; });
-        Object.keys(data.movements).forEach(k=>{ if(!k.endsWith('-'+ci)) nm[k]=data.movements[k]; });
-        Object.keys(data.disabledCells).forEach(k=>{ if(!k.endsWith('-'+ci)) nd[k]=data.disabledCells[k]; });
-        data.companies.splice(ci,1); data.balances=nb; data.movements=nm; data.disabledCells=nd;
+        reindexBalancesAndMovementsAfterColDelete(ci);
+        data.companies.splice(ci,1);
         saveData(); renderBalances();
       });
     }
+
     if (e.target.classList.contains('btn-add-mov')) {
       const bi=+e.target.dataset.bi, ci=+e.target.dataset.ci, key=bi+'-'+ci;
       if (!data.movements[key]) data.movements[key]=[];
@@ -1612,7 +1814,6 @@ function setupEvents() {
           const parsed = JSON.parse(evt.target.result);
           if (parsed && typeof parsed === 'object') {
             data = parsed;
-            // Asegurar integridad mínima de datos
             if (!data.banks) data.banks = [];
             if (!data.companies) data.companies = [];
             if (!data.balances) data.balances = {};
@@ -1620,6 +1821,7 @@ function setupEvents() {
             if (!data.disabledCells) data.disabledCells = {};
             if (!data.collapsedBanks) data.collapsedBanks = {};
             if (!data.collapsedCompanies) data.collapsedCompanies = {};
+            if (data.collapsedBankColumn === undefined) data.collapsedBankColumn = false;
             if (!data.invoices) data.invoices = [];
             if (!data.taxCompanies) data.taxCompanies = [];
             if (!data.taxValues) data.taxValues = {};
@@ -1691,6 +1893,11 @@ function setupEvents() {
     });
   }
 
+  // Evento para el guardado manual de datos
+  document.getElementById('btn-manual-save').addEventListener('click', () => {
+    manualSave();
+  });
+
   // MODAL DE CONFIRMACIÓN
   document.getElementById('confirm-cancel').addEventListener('click', ()=>{ document.getElementById('confirm-overlay').classList.add('hidden'); confirmCb=null; });
   document.getElementById('confirm-ok').addEventListener('click', ()=>{
@@ -1720,11 +1927,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('notes-area').value = data.notes||'';
   updateNotesCount();
   setupEvents();
-
-  // Ejecución de la copia de seguridad automática al iniciar sesión en el sitio
-  setTimeout(() => {
-    exportBackup(true);
-  }, 800);
 });
 </script>
 </body>
