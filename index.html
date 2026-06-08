@@ -940,8 +940,8 @@ const reportStyles = `
     background: #fff;
     margin: 0;
     padding: 0;
-    font-size: 6.8px; /* Tamaño optimizado y compacto para que todo entre en una sola página vertical */
-    line-height: 1.15;
+    font-size: 8px; /* Incrementado para facilitar la lectura */
+    line-height: 1.25;
   }
   h1 {
     font-size: 11px;
@@ -952,9 +952,9 @@ const reportStyles = `
     font-weight: 700;
   }
   .meta {
-    font-size: 7px;
+    font-size: 7.5px;
     color: #64748b;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
   table {
     width: 100%;
@@ -968,7 +968,7 @@ const reportStyles = `
     text-align: center;
     padding: 3px 4px;
     border: 1px solid #94a3b8;
-    font-size: 7.5px;
+    font-size: 8px;
   }
   td {
     padding: 3px 4px;
@@ -989,8 +989,8 @@ const reportStyles = `
     border-collapse: collapse;
   }
   .print-matrix-table th, .print-matrix-table td {
-    border: 1px solid #475569;
-    padding: 3px;
+    border: 1px solid #cbd5e1;
+    padding: 4px;
     vertical-align: top;
     overflow: hidden;
   }
@@ -999,52 +999,60 @@ const reportStyles = `
     color: #ffffff;
     font-weight: 700;
     text-align: center;
-    font-size: 7.5px;
+    font-size: 8.5px;
   }
   
-  /* Cabecera vertical transpuesta para empresas (Eje Y) */
-  .print-company-col {
+  .print-bank-col {
+    background-color: #0f766e;
+    color: #ffffff !important;
     font-weight: 700;
-    font-size: 7.5px;
+    font-size: 8.5px;
     padding: 4px;
     vertical-align: middle;
-    color: #0f172a;
   }
   
   .print-cell-box {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
   }
   .p-row {
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid #f1f5f9;
     padding-bottom: 1px;
+    font-size: 9.5px; /* Importes principales ampliados significativamente */
   }
   .p-row:last-child {
     border-bottom: none;
   }
   .p-lbl {
-    font-size: 5.5px;
+    font-size: 7px; /* Etiquetas de campos ampliadas */
     text-transform: uppercase;
     font-weight: 600;
-    color: #64748b;
+    color: #475569;
   }
   .p-lbl.act { color: #0891b2; }
   .p-lbl.pun { color: #7c3aed; }
   .p-lbl.conc { color: #16a34a; }
   .print-mov-item {
-    font-size: 5.5px;
+    font-size: 7.5px; /* Notas y anotaciones de movimientos ampliadas */
     background: rgba(0, 0, 0, 0.03);
     border: 1px dashed #cbd5e1;
     border-radius: 2px;
-    padding: 1px;
-    margin-top: 1px;
-    color: #475569;
+    padding: 2px;
+    margin-top: 2px;
+    color: #334155;
+    line-height: 1.2;
   }
   
-  /* CELDAS INACTIVAS: BLANCO ABSOLUTO Y SIN TEXTO */
+  /* Distinción estética para movimientos ya conciliados */
+  .print-mov-item.is-reconciled {
+    background: rgba(22, 163, 74, 0.04) !important;
+    border-color: #bbf7d0 !important;
+    color: #15803d !important;
+  }
+  
   .cell-print-disabled {
     background-color: #ffffff !important;
     background-image: none !important;
@@ -1052,11 +1060,10 @@ const reportStyles = `
     border: 1px solid #cbd5e1 !important;
   }
 
-  /* FORZAR LA IMPRESIÓN EN VERTICAL PORTRAIT */
   @media print {
     @page {
       size: portrait;
-      margin: 4mm 5mm; /* Margen ultracompacto para garantizar una sola página */
+      margin: 4mm 5mm;
     }
     body {
       margin: 0;
@@ -1064,7 +1071,6 @@ const reportStyles = `
     }
   }
   
-  /* MATRIZ DE MESES EN REPORTE DE FACTURAS */
   .print-months-matrix {
     display: flex;
     gap: 1.5px;
@@ -1090,7 +1096,7 @@ const reportStyles = `
     border-color: #06b6d4;
     color: #ffffff;
   }
-`;
+`;  
 
 function generateUnifiedPrintHTML() {
   const nb = data.banks.length;
@@ -1147,19 +1153,22 @@ function generateUnifiedPrintHTML() {
       } else {
         const bal = data.balances[key] || {};
         const sc = calcConciliado(bi, ci);
-        
-        // Movimientos pendientes compactly
+
+        // Procesar todos los movimientos (conciliados y pendientes)
         const movs = data.movements[key] || [];
-        const pendingMovs = movs.filter(m => !m.conciliado);
         let movsHTML = '';
-        if (pendingMovs.length > 0) {
-          movsHTML += `<div style="margin-top: 1px; border-top: 1px dashed #cbd5e1; padding-top: 1px;">`;
-          pendingMovs.forEach(m => {
-            movsHTML += `<div class="print-mov-item"><strong>${formatCurrency(m.importe)}</strong> ${esc(m.observacion || '')}</div>`;
+        if (movs.length > 0) {
+          movsHTML += `<div style="margin-top: 2px; border-top: 1px dashed #cbd5e1; padding-top: 2px;">`;
+          movs.forEach(m => {
+            const isRec = m.conciliado === true;
+            const statusLabel = isRec ? `<span style="color: #16a34a; font-weight:700;">[C]</span>` : `<span style="color: #b45309; font-weight:700;">[P]</span>`;
+            movsHTML += `<div class="print-mov-item${isRec ? ' is-reconciled' : ''}">
+              ${statusLabel} <strong>${formatCurrency(m.importe)}</strong> ${esc(m.observacion || '')}
+            </div>`;
           });
           movsHTML += `</div>`;
         }
-
+       
         html += `<td>
           <div class="print-cell-box">
             <div class="p-row">
