@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
@@ -711,6 +711,7 @@ let data = {
   disabledCells: {},
   collapsedBanks: {},
   collapsedCompanies: {},
+  collapsedBankColumn: false,
   invoices: [],
   taxCompanies: ['Empresa A','Empresa B'],
   taxValues: {},
@@ -719,13 +720,16 @@ let data = {
 
 // ─── PERSISTENCIA ────────────────────────────────────────
 function saveData() {
+  // Función vacía para evitar guardado automático en cada cambio de campo
 }
+
 function manualSave() {
   try { 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
     showSaved(); 
   } catch(e) {}
-}  
+}
+
 function loadData() {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
@@ -733,6 +737,7 @@ function loadData() {
     if (!data.disabledCells) data.disabledCells = {};
     if (!data.collapsedBanks) data.collapsedBanks = {};
     if (!data.collapsedCompanies) data.collapsedCompanies = {};
+    if (data.collapsedBankColumn === undefined) data.collapsedBankColumn = false;
   } catch(e) {}
 }
 
@@ -940,7 +945,7 @@ const reportStyles = `
     background: #fff;
     margin: 0;
     padding: 0;
-    font-size: 8px; /* Incrementado para facilitar la lectura */
+    font-size: 8px; /* Tamaño optimizado y compacto para que todo entre en una sola página vertical */
     line-height: 1.25;
   }
   h1 {
@@ -1002,13 +1007,13 @@ const reportStyles = `
     font-size: 8.5px;
   }
   
-  .print-bank-col {
-    background-color: #0f766e;
-    color: #ffffff !important;
+  /* Cabecera vertical transpuesta para empresas (Eje Y) */
+  .print-company-col {
     font-weight: 700;
     font-size: 8.5px;
     padding: 4px;
     vertical-align: middle;
+    color: #0f172a;
   }
   
   .print-cell-box {
@@ -1021,13 +1026,13 @@ const reportStyles = `
     justify-content: space-between;
     border-bottom: 1px solid #f1f5f9;
     padding-bottom: 1px;
-    font-size: 9.5px; /* Importes principales ampliados significativamente */
+    font-size: 9.5px;
   }
   .p-row:last-child {
     border-bottom: none;
   }
   .p-lbl {
-    font-size: 7px; /* Etiquetas de campos ampliadas */
+    font-size: 7px;
     text-transform: uppercase;
     font-weight: 600;
     color: #475569;
@@ -1036,7 +1041,7 @@ const reportStyles = `
   .p-lbl.pun { color: #7c3aed; }
   .p-lbl.conc { color: #16a34a; }
   .print-mov-item {
-    font-size: 7.5px; /* Notas y anotaciones de movimientos ampliadas */
+    font-size: 7.5px;
     background: rgba(0, 0, 0, 0.03);
     border: 1px dashed #cbd5e1;
     border-radius: 2px;
@@ -1046,13 +1051,13 @@ const reportStyles = `
     line-height: 1.2;
   }
   
-  /* Distinción estética para movimientos ya conciliados */
   .print-mov-item.is-reconciled {
     background: rgba(22, 163, 74, 0.04) !important;
     border-color: #bbf7d0 !important;
     color: #15803d !important;
   }
   
+  /* CELDAS INACTIVAS: BLANCO ABSOLUTO Y SIN TEXTO */
   .cell-print-disabled {
     background-color: #ffffff !important;
     background-image: none !important;
@@ -1060,10 +1065,11 @@ const reportStyles = `
     border: 1px solid #cbd5e1 !important;
   }
 
+  /* FORZAR LA IMPRESIÓN EN VERTICAL PORTRAIT */
   @media print {
     @page {
       size: portrait;
-      margin: 4mm 5mm;
+      margin: 4mm 5mm; /* Margen ultracompacto para garantizar una sola página */
     }
     body {
       margin: 0;
@@ -1071,6 +1077,7 @@ const reportStyles = `
     }
   }
   
+  /* MATRIZ DE MESES EN REPORTE DE FACTURAS */
   .print-months-matrix {
     display: flex;
     gap: 1.5px;
@@ -1096,13 +1103,12 @@ const reportStyles = `
     border-color: #06b6d4;
     color: #ffffff;
   }
-`;  
+`;
 
 function generateUnifiedPrintHTML() {
   const nb = data.banks.length;
   const nc = data.companies.length;
 
-  // Paleta de tonos pastel para intercalar en las filas de las empresas (Eje Y)
   const transposedRowColors = [
     '#f8fafc', // Slate
     '#f0fdf4', // Emerald
@@ -1120,13 +1126,11 @@ function generateUnifiedPrintHTML() {
   // ─── SECCIÓN 1: SALDOS Y MOVIMIENTOS (TRANSPUESTA) ───
   html += `<table class="print-matrix-table">`;
   
-  // Asignar proporción de anchos perfecta: Empresa = 16%, los bancos dividen el 84% restante
   html += `<colgroup>
     <col style="width: 16%;" />
     ${data.banks.map(() => `<col style="width: ${84 / nb}%;" />`).join('')}
   </colgroup>`;
 
-  // Encabezado horizontal (Bancos en el eje X)
   html += `<thead><tr>
     <th style="background-color: #0f172a; color: #fff; font-size: 7.5px;">Empresas / Bancos</th>`;
   data.banks.forEach((bank) => {
@@ -1135,26 +1139,21 @@ function generateUnifiedPrintHTML() {
   });
   html += `</tr></thead><tbody>`;
 
-  // Filas (Empresas en el eje Y con color de fila único)
   data.companies.forEach((company, ci) => {
     const bgColor = transposedRowColors[ci % transposedRowColors.length];
     html += `<tr style="background-color: ${bgColor};">`;
-    // Celda de cabecera de la Empresa
     html += `<td class="print-company-col" style="border-left: 3px solid #6366f1;">${esc(company)}</td>`;
 
-    // Celdas por Banco
     data.banks.forEach((_, bi) => {
       const key = bi + '-' + ci;
       const isDisabled = data.disabledCells[key] === true;
 
       if (isDisabled) {
-        // Celda inactiva: completamente limpia, fondo blanco, sin texto
         html += `<td class="cell-print-disabled"></td>`;
       } else {
         const bal = data.balances[key] || {};
         const sc = calcConciliado(bi, ci);
-
-        // Procesar todos los movimientos (conciliados y pendientes)
+        
         const movs = data.movements[key] || [];
         let movsHTML = '';
         if (movs.length > 0) {
@@ -1168,7 +1167,7 @@ function generateUnifiedPrintHTML() {
           });
           movsHTML += `</div>`;
         }
-       
+
         html += `<td>
           <div class="print-cell-box">
             <div class="p-row">
@@ -1196,7 +1195,6 @@ function generateUnifiedPrintHTML() {
   // ─── SECCIÓN 2: DOBLE COLUMNA PARA FACTURAS E IMPUESTOS (SIDE-BY-SIDE) ───
   html += `<div style="display: flex; gap: 10px; width: 100%; margin-top: 8px;">`;
 
-  // Columna Izquierda: Facturas Recurrentes (Con todas las columnas solicitadas)
   html += `<div style="flex: 1.1; min-width: 0;">
     <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Facturas Recurrentes</h2>
     <table class="print-matrix-table">
@@ -1232,7 +1230,6 @@ function generateUnifiedPrintHTML() {
 
   html += `</tbody></table></div>`;
 
-  // Columna Derecha: Impuestos por Empresa
   html += `<div style="flex: 0.9; min-width: 0;">
     <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Liquidación de Impuestos</h2>
     <table class="print-matrix-table">
@@ -1267,7 +1264,6 @@ window.printSectionReport = function(sectionType) {
   if (sectionType === 'notes') {
     contentHTML = generateNotesPrintHTML();
   } else {
-    // Al presionar imprimir en Balances, Facturas o Impuestos, generamos la hoja integrada unificada
     contentHTML = generateUnifiedPrintHTML();
   }
 
@@ -1325,8 +1321,9 @@ function renderBalances() {
   const g = document.getElementById('grid-balances');
   const nc = data.companies.length;
   
-  // Construcción dinámica de columnas según estado de contracción
-  let colSpecs = ['240px'];
+  // Construcción dinámica de columnas según estado de contracción de empresas y de la primera columna de bancos
+  let bankColWidth = data.collapsedBankColumn ? '35px' : '240px';
+  let colSpecs = [bankColWidth];
   data.companies.forEach((_, ci) => {
     if (data.collapsedCompanies[ci] === true) {
       colSpecs.push('35px');
@@ -1346,16 +1343,24 @@ function renderBalances() {
     'rgba(131, 24, 67, 0.15)', 'rgba(20, 83, 45, 0.15)', 'rgba(112, 26, 117, 0.15)', 'rgba(59, 7, 100, 0.15)'
   ];
 
-  // Controladores de navegación esquina superior izquierda
-  html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2);">'
-    + '<div class="nav-controls">'
-    + '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C0;</button>'
-    + '<div style="display:flex; flex-direction:column; gap:4px;">'
-    +   '<button class="nav-btn" onclick="navScroll(\'up\')" title="Arriba">&#x25B2;</button>'
-    +   '<button class="nav-btn" onclick="navScroll(\'down\')" title="Abajo">&#x25BC;</button>'
-    + '</div>'
-    + '<button class="nav-btn" onclick="navScroll(\'right\')" title="Derecha">&#x25B6;</button>'
-    + '</div></div>';
+  // Controladores de navegación esquina superior izquierda (Con soporte de colapsado horizontal)
+  if (data.collapsedBankColumn) {
+    html += '<div class="grid-cell header-corner col-collapsed-cell" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2);">'
+      + '<button class="action-btn-fold btn-toggle-bank-col" title="Expandir columna de bancos">&#x25B6;</button>'
+      + '</div>';
+  } else {
+    html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2); display: flex; justify-content: space-between; align-items: center; padding: 4px 6px !important;">'
+      + '<div class="nav-controls">'
+      + '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C0;</button>'
+      + '<div style="display:flex; flex-direction:column; gap:4px;">'
+      +   '<button class="nav-btn" onclick="navScroll(\'up\')" title="Arriba">&#x25B2;</button>'
+      +   '<button class="nav-btn" onclick="navScroll(\'down\')" title="Abajo">&#x25BC;</button>'
+      + '</div>'
+      + '<button class="nav-btn" onclick="navScroll(\'right\')" title="Derecha">&#x25B6;</button>'
+      + '</div>'
+      + '<button class="action-btn-fold btn-toggle-bank-col" title="Contraer columna de bancos" style="margin-left: 4px;">&#x25C0;</button>'
+      + '</div>';
+  }
   
   // Encabezados de Empresas (Columnas)
   data.companies.forEach((c,ci) => {
@@ -1379,17 +1384,23 @@ function renderBalances() {
     const bColor = bankColors[bi % bankColors.length];
     const isRowCollapsed = data.collapsedBanks[bi] === true;
     
-    if (isRowCollapsed) {
-      html += '<div class="grid-cell header-bank header-bank-collapsed" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 1px solid '+bColor+';"><div class="header-editable-wrapper">'
-        + '<button class="action-btn-fold btn-toggle-row" data-bi="'+bi+'" title="Expandir fila">&#x25BC;</button>'
-        + '<span style="font-size: 10px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; margin-left: 4px;">'+esc(b.split('\n')[0])+'</span>'
-        + '</div></div>';
+    if (data.collapsedBankColumn) {
+      html += '<div class="grid-cell header-bank col-collapsed-cell" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: '+(isRowCollapsed ? '1px solid '+bColor : '5px solid '+bColor)+';">'
+        + '<span style="font-size: 8px; writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-weight: 700; margin-top: 6px;">'+esc(b.split('\n')[0])+'</span>'
+        + '</div>';
     } else {
-      html += '<div class="grid-cell header-bank" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 5px solid '+bColor+';"><div class="header-editable-wrapper">'
-        + '<button class="action-btn-fold btn-toggle-row" data-bi="'+bi+'" title="Contraer fila">&#x25B2;</button>'
-        + '<textarea class="header-input bank-input" data-bi="'+bi+'" placeholder="Banco '+(bi+1)+'\n...\n..." rows="6">'+esc(b)+'</textarea>'
-        + '<button class="btn-delete-row" data-bi="'+bi+'" title="Eliminar banco">\u2715</button>'
-        + '</div></div>';
+      if (isRowCollapsed) {
+        html += '<div class="grid-cell header-bank header-bank-collapsed" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 1px solid '+bColor+';"><div class="header-editable-wrapper">'
+          + '<button class="action-btn-fold btn-toggle-row" data-bi="'+bi+'" title="Expandir fila">&#x25BC;</button>'
+          + '<span style="font-size: 10px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; margin-left: 4px;">'+esc(b.split('\n')[0])+'</span>'
+          + '</div></div>';
+      } else {
+        html += '<div class="grid-cell header-bank" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 5px solid '+bColor+';"><div class="header-editable-wrapper">'
+          + '<button class="action-btn-fold btn-toggle-row" data-bi="'+bi+'" title="Contraer fila">&#x25B2;</button>'
+          + '<textarea class="header-input bank-input" data-bi="'+bi+'" placeholder="Banco '+(bi+1)+'\n...\n..." rows="6">'+esc(b)+'</textarea>'
+          + '<button class="btn-delete-row" data-bi="'+bi+'" title="Eliminar banco">\u2715</button>'
+          + '</div></div>';
+      }
     }
     
     data.companies.forEach((_,ci) => {
@@ -1585,22 +1596,30 @@ function setupEvents() {
 
   // GRID DE BALANCES - Clics y Checkboxes
   document.getElementById('grid-balances').addEventListener('click', e => {
-    // Expandir/Contraer Columna de Empresa
+    // Expandir/Contraer Columna de Empresa (Persistente al instante)
     if (e.target.closest('.btn-toggle-col')) {
       const btn = e.target.closest('.btn-toggle-col');
       const ci = +btn.dataset.ci;
       data.collapsedCompanies[ci] = !data.collapsedCompanies[ci];
-      saveData();
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(err) {}
       renderBalances();
       return;
     }
 
-    // Expandir/Contraer Fila de Banco
+    // Expandir/Contraer Fila de Banco (Persistente al instante)
     if (e.target.closest('.btn-toggle-row')) {
       const btn = e.target.closest('.btn-toggle-row');
       const bi = +btn.dataset.bi;
       data.collapsedBanks[bi] = !data.collapsedBanks[bi];
-      saveData();
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(err) {}
+      renderBalances();
+      return;
+    }
+
+    // Expandir/Contraer Columna Completa de Bancos (Persistente al instante)
+    if (e.target.closest('.btn-toggle-bank-col')) {
+      data.collapsedBankColumn = !data.collapsedBankColumn;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(err) {}
       renderBalances();
       return;
     }
@@ -1776,7 +1795,6 @@ function setupEvents() {
           const parsed = JSON.parse(evt.target.result);
           if (parsed && typeof parsed === 'object') {
             data = parsed;
-            // Asegurar integridad mínima de datos
             if (!data.banks) data.banks = [];
             if (!data.companies) data.companies = [];
             if (!data.balances) data.balances = {};
@@ -1784,6 +1802,7 @@ function setupEvents() {
             if (!data.disabledCells) data.disabledCells = {};
             if (!data.collapsedBanks) data.collapsedBanks = {};
             if (!data.collapsedCompanies) data.collapsedCompanies = {};
+            if (data.collapsedBankColumn === undefined) data.collapsedBankColumn = false;
             if (!data.invoices) data.invoices = [];
             if (!data.taxCompanies) data.taxCompanies = [];
             if (!data.taxValues) data.taxValues = {};
@@ -1806,12 +1825,6 @@ function setupEvents() {
       };
       reader.readAsText(file);
     });
-    
-// Evento para el guardado manual de datos
-  document.getElementById('btn-manual-save').addEventListener('click', () => {
-    manualSave();
-  });
-    
   });
 
   // CONTROL DE LA VENTANA FLOTANTE DE CÁLCULO
@@ -1861,6 +1874,11 @@ function setupEvents() {
     });
   }
 
+  // Evento para el guardado manual de datos
+  document.getElementById('btn-manual-save').addEventListener('click', () => {
+    manualSave();
+  });
+
   // MODAL DE CONFIRMACIÓN
   document.getElementById('confirm-cancel').addEventListener('click', ()=>{ document.getElementById('confirm-overlay').classList.add('hidden'); confirmCb=null; });
   document.getElementById('confirm-ok').addEventListener('click', ()=>{
@@ -1883,7 +1901,6 @@ function updateNotesCount() {
   document.getElementById('notes-linecount').textContent=(t?t.split('\n').length:0)+' líneas';
 }
 
-
 // ─── INICIALIZACIÓN ───────────────────────────────────────
 document.addEventListener('DOMContentLoaded', ()=>{
   loadData();
@@ -1891,8 +1908,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('notes-area').value = data.notes||'';
   updateNotesCount();
   setupEvents();
-});  
-
+});
 </script>
 </body>
 </html>
