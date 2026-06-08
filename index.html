@@ -730,6 +730,107 @@ function loadData() {
   } catch(e) {}
 }
 
+// ─── REESTRUCTURACIÓN COMPACTA TRAS ELIMINAR FILA O COLUMNA ───────────
+function reindexBalancesAndMovementsAfterRowDelete(targetBi) {
+  const newBalances = {};
+  const newMovements = {};
+  const newDisabled = {};
+  const newCollapsedBanks = {};
+
+  // Reindexar saldos
+  Object.keys(data.balances).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (bi === targetBi) return; // Descartar fila eliminada
+    const newBi = bi > targetBi ? bi - 1 : bi;
+    newBalances[newBi + '-' + ci] = data.balances[key];
+  });
+
+  // Reindexar movimientos
+  Object.keys(data.movements).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (bi === targetBi) return;
+    const newBi = bi > targetBi ? bi - 1 : bi;
+    newMovements[newBi + '-' + ci] = data.movements[key];
+  });
+
+  // Reindexar celdas inactivas
+  Object.keys(data.disabledCells).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (bi === targetBi) return;
+    const newBi = bi > targetBi ? bi - 1 : bi;
+    newDisabled[newBi + '-' + ci] = data.disabledCells[key];
+  });
+
+  // Reindexar bancos colapsados
+  Object.keys(data.collapsedBanks).forEach(key => {
+    const bi = parseInt(key, 10);
+    if (bi === targetBi) return;
+    const newBi = bi > targetBi ? bi - 1 : bi;
+    newCollapsedBanks[newBi] = data.collapsedBanks[key];
+  });
+
+  data.balances = newBalances;
+  data.movements = newMovements;
+  data.disabledCells = newDisabled;
+  data.collapsedBanks = newCollapsedBanks;
+}
+
+function reindexBalancesAndMovementsAfterColDelete(targetCi) {
+  const newBalances = {};
+  const newMovements = {};
+  const newDisabled = {};
+  const newCollapsedCompanies = {};
+
+  // Reindexar saldos
+  Object.keys(data.balances).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (ci === targetCi) return; // Descartar columna eliminada
+    const newCi = ci > targetCi ? ci - 1 : ci;
+    newBalances[bi + '-' + newCi] = data.balances[key];
+  });
+
+  // Reindexar movimientos
+  Object.keys(data.movements).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (ci === targetCi) return;
+    const newCi = ci > targetCi ? ci - 1 : ci;
+    newMovements[bi + '-' + newCi] = data.movements[key];
+  });
+
+  // Reindexar celdas inactivas
+  Object.keys(data.disabledCells).forEach(key => {
+    const parts = key.split('-');
+    const bi = parseInt(parts[0], 10);
+    const ci = parseInt(parts[1], 10);
+    if (ci === targetCi) return;
+    const newCi = ci > targetCi ? ci - 1 : ci;
+    newDisabled[bi + '-' + newCi] = data.disabledCells[key];
+  });
+
+  // Reindexar empresas colapsadas
+  Object.keys(data.collapsedCompanies).forEach(key => {
+    const ci = parseInt(key, 10);
+    if (ci === targetCi) return;
+    const newCi = ci > targetCi ? ci - 1 : ci;
+    newCollapsedCompanies[newCi] = data.collapsedCompanies[key];
+  });
+
+  data.balances = newBalances;
+  data.movements = newMovements;
+  data.disabledCells = newDisabled;
+  data.collapsedCompanies = newCollapsedCompanies;
+}
+
 // ─── EXPORTACIÓN / COPIA DE SEGURIDAD ───────────────────
 window.exportBackup = function(isAuto = false) {
   try {
@@ -936,14 +1037,13 @@ const reportStyles = `
     margin-top: 1px;
     color: #475569;
   }
+  
+  /* CELDAS INACTIVAS: BLANCO ABSOLUTO Y SIN TEXTO */
   .cell-print-disabled {
-    background-color: #f1f5f9 !important;
-    background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(148, 163, 184, 0.1) 5px, rgba(148, 163, 184, 0.1) 10px) !important;
-    color: #94a3b8 !important;
-    text-align: center !important;
-    vertical-align: middle !important;
-    font-style: italic;
-    font-size: 6px;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: transparent !important;
+    border: 1px solid #cbd5e1 !important;
   }
 
   /* FORZAR LA IMPRESIÓN EN VERTICAL PORTRAIT */
@@ -1036,7 +1136,8 @@ function generateUnifiedPrintHTML() {
       const isDisabled = data.disabledCells[key] === true;
 
       if (isDisabled) {
-        html += `<td class="cell-print-disabled">Inactiva</td>`;
+        // Celda inactiva: completamente limpia, fondo blanco, sin texto
+        html += `<td class="cell-print-disabled"></td>`;
       } else {
         const bal = data.balances[key] || {};
         const sc = calcConciliado(bi, ci);
@@ -1080,16 +1181,18 @@ function generateUnifiedPrintHTML() {
   // ─── SECCIÓN 2: DOBLE COLUMNA PARA FACTURAS E IMPUESTOS (SIDE-BY-SIDE) ───
   html += `<div style="display: flex; gap: 10px; width: 100%; margin-top: 8px;">`;
 
-  // Columna Izquierda: Facturas Recurrentes
-  html += `<div style="flex: 1; min-width: 0;">
+  // Columna Izquierda: Facturas Recurrentes (Con todas las columnas solicitadas)
+  html += `<div style="flex: 1.1; min-width: 0;">
     <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Facturas Recurrentes</h2>
     <table class="print-matrix-table">
       <thead>
         <tr>
-          <th style="width: 140px; text-align: center;">E F M A M J J A S O N D</th>
+          <th style="width: 110px; text-align: center;">E F M A M J J A S O N D</th>
           <th>Proveedor</th>
+          <th style="width: 45px;">Cuenta</th>
           <th class="text-right" style="width: 50px;">Importe</th>
           <th style="width: 50px;">Banco</th>
+          <th style="width: 50px;">Periodicidad</th>
         </tr>
       </thead>
       <tbody>`;
@@ -1105,15 +1208,17 @@ function generateUnifiedPrintHTML() {
     html += `<tr>
       <td>${dotsHTML}</td>
       <td class="bold" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.descripcion)}</td>
+      <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.codigoContable || '')}</td>
       <td class="text-right bold">${formatCurrency(inv.importe) || '0,00'}</td>
-      <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.banco)}</td>
+      <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.banco || '')}</td>
+      <td style="text-transform: capitalize; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.tipoFacturacion || '')}</td>
     </tr>`;
   });
 
   html += `</tbody></table></div>`;
 
   // Columna Derecha: Impuestos por Empresa
-  html += `<div style="flex: 1; min-width: 0;">
+  html += `<div style="flex: 0.9; min-width: 0;">
     <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Liquidación de Impuestos</h2>
     <table class="print-matrix-table">
       <thead>
@@ -1511,28 +1616,26 @@ function setupEvents() {
       return;
     }
 
+    // Eliminación robusta de Banco con reindexación
     if (e.target.classList.contains('btn-delete-row')) {
       const bi = +e.target.dataset.bi;
       confirm_('Eliminar banco "'+data.banks[bi]+'" y todos sus datos?', () => {
-        const nb={}, nm={}, nd={};
-        Object.keys(data.balances).forEach(k=>{ if(!k.startsWith(bi+'-')) nb[k]=data.balances[k]; });
-        Object.keys(data.movements).forEach(k=>{ if(!k.startsWith(bi+'-')) nm[k]=data.movements[k]; });
-        Object.keys(data.disabledCells).forEach(k=>{ if(!k.startsWith(bi+'-')) nd[k]=data.disabledCells[k]; });
-        data.banks.splice(bi,1); data.balances=nb; data.movements=nm; data.disabledCells=nd;
+        reindexBalancesAndMovementsAfterRowDelete(bi);
+        data.banks.splice(bi,1);
         saveData(); renderBalances();
       });
     }
+
+    // Eliminación robusta de Empresa con reindexación
     if (e.target.classList.contains('btn-delete-col')) {
       const ci = +e.target.dataset.ci;
       confirm_('Eliminar empresa "'+data.companies[ci]+'" y todos sus datos?', () => {
-        const nb={}, nm={}, nd={};
-        Object.keys(data.balances).forEach(k=>{ if(!k.endsWith('-'+ci)) nb[k]=data.balances[k]; });
-        Object.keys(data.movements).forEach(k=>{ if(!k.endsWith('-'+ci)) nm[k]=data.movements[k]; });
-        Object.keys(data.disabledCells).forEach(k=>{ if(!k.endsWith('-'+ci)) nd[k]=data.disabledCells[k]; });
-        data.companies.splice(ci,1); data.balances=nb; data.movements=nm; data.disabledCells=nd;
+        reindexBalancesAndMovementsAfterColDelete(ci);
+        data.companies.splice(ci,1);
         saveData(); renderBalances();
       });
     }
+
     if (e.target.classList.contains('btn-add-mov')) {
       const bi=+e.target.dataset.bi, ci=+e.target.dataset.ci, key=bi+'-'+ci;
       if (!data.movements[key]) data.movements[key]=[];
