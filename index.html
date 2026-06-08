@@ -348,7 +348,7 @@
       align-items: center;
       gap: 4px;
     }
-    .floating-calc-input {
+  .floating-calc-input {
       width: 100%;
       background: var(--bg-input);
       border: 1px solid var(--border);
@@ -356,7 +356,7 @@
       color: #fff;
       font-family: 'Inter', monospace;
       font-size: 11px;
-      padding: 4px 6px;
+      padding: 4px 22px 4px 6px; /* Espacio a la derecha reservado para el botón */
       outline: none;
       transition: border-color var(--transition);
     }
@@ -1349,11 +1349,21 @@ function setupEvents() {
   const calcTab = document.getElementById('floating-calc-tab');
   const calcInput = document.getElementById('floating-calc-input');
   const calcResult = document.getElementById('floating-calc-result-val');
+  const calcClearBtn = document.getElementById('btn-clear-calc');
 
-  if (calcTab && calcWidget) {
+if (calcTab && calcWidget) {
     calcTab.addEventListener('click', () => {
       calcWidget.classList.toggle('collapsed');
       calcTab.innerHTML = calcWidget.classList.contains('collapsed') ? '&#x25B6;' : '&#x25C0;';
+    });
+  }
+
+  // Evento para limpiar la calculadora al presionar el aspa
+  if (calcClearBtn && calcInput && calcResult) {
+    calcClearBtn.addEventListener('click', () => {
+      calcInput.value = '';
+      calcResult.textContent = '0';
+      calcInput.focus();
     });
   }
 
