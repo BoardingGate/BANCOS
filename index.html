@@ -1547,4 +1547,147 @@ function setupEvents() {
 
   // NOTAS
   const notesEl = document.getElementById('notes-area');
-  notesEl.addEvent
+  notesEl.addEventListener('input', () => {
+    data.notes=notesEl.value; saveData(); updateNotesCount();
+  });
+  document.getElementById('btn-clear-notes').addEventListener('click', () => {
+    confirm_('¿Limpiar todas las notas?', ()=>{ data.notes=''; notesEl.value=''; saveData(); updateNotesCount(); });
+  });
+
+  // CONTROL DE COPIA DE SEGURIDAD (IMPORTACIÓN)
+  document.getElementById('input-restore-file').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('selected-backup-name').textContent = file.name;
+    document.getElementById('btn-import-backup').style.display = 'inline-flex';
+  });
+
+  document.getElementById('btn-import-backup').addEventListener('click', () => {
+    const fileInput = document.getElementById('input-restore-file');
+    const file = fileInput.files[0];
+    if (!file) return;
+    
+    confirm_('¿Restaurar los datos de "' + file.name + '"? Se sobrescribirán todos los datos de la aplicación.', () => {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed && typeof parsed === 'object') {
+            data = parsed;
+            // Asegurar integridad mínima de datos
+            if (!data.banks) data.banks = [];
+            if (!data.companies) data.companies = [];
+            if (!data.balances) data.balances = {};
+            if (!data.movements) data.movements = {};
+            if (!data.disabledCells) data.disabledCells = {};
+            if (!data.collapsedBanks) data.collapsedBanks = {};
+            if (!data.collapsedCompanies) data.collapsedCompanies = {};
+            if (!data.invoices) data.invoices = [];
+            if (!data.taxCompanies) data.taxCompanies = [];
+            if (!data.taxValues) data.taxValues = {};
+            if (data.notes === undefined) data.notes = '';
+            
+            saveData();
+            renderAll();
+            document.getElementById('notes-area').value = data.notes || '';
+            updateNotesCount();
+            
+            document.getElementById('btn-import-backup').style.display = 'none';
+            document.getElementById('selected-backup-name').textContent = 'Datos restaurados con éxito';
+            fileInput.value = '';
+          } else {
+            alert('El archivo no posee el formato compatible de Control Bancario.');
+          }
+        } catch (err) {
+          alert('Ocurrió un error al procesar el archivo de copia de seguridad.');
+        }
+      };
+      reader.readAsText(file);
+    });
+  });
+
+  // CONTROL DE LA VENTANA FLOTANTE DE CÁLCULO
+  const calcWidget = document.getElementById('floating-calc-widget');
+  const calcTab = document.getElementById('floating-calc-tab');
+  const calcInput = document.getElementById('floating-calc-input');
+  const calcResult = document.getElementById('floating-calc-result-val');
+  const calcClearBtn = document.getElementById('btn-clear-calc');
+
+  if (calcTab && calcWidget) {
+    calcTab.addEventListener('click', () => {
+      calcWidget.classList.toggle('collapsed');
+      calcTab.innerHTML = calcWidget.classList.contains('collapsed') ? '&#x25B6;' : '&#x25C0;';
+    });
+  }
+
+  if (calcClearBtn && calcInput && calcResult) {
+    calcClearBtn.addEventListener('click', () => {
+      calcInput.value = '';
+      calcResult.textContent = '0';
+      calcInput.focus();
+    });
+  }
+
+  if (calcInput && calcResult) {
+    calcInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const expr = calcInput.value;
+        const sanitized = expr.replace(/[^0-9+\-*/().%\s]/g, '');
+        if (!sanitized.trim()) {
+          calcResult.textContent = '0';
+          return;
+        }
+        try {
+          const evalFn = new Function(`return (${sanitized})`);
+          const res = evalFn();
+          if (res === undefined || isNaN(res) || !isFinite(res)) {
+            calcResult.textContent = 'Error';
+          } else {
+            calcResult.textContent = Number(res.toFixed(4)).toLocaleString('es-ES');
+          }
+        } catch (err) {
+          calcResult.textContent = 'Error';
+        }
+      }
+    });
+  }
+
+  // MODAL DE CONFIRMACIÓN
+  document.getElementById('confirm-cancel').addEventListener('click', ()=>{ document.getElementById('confirm-overlay').classList.add('hidden'); confirmCb=null; });
+  document.getElementById('confirm-ok').addEventListener('click', ()=>{
+    document.getElementById('confirm-overlay').classList.add('hidden');
+    if(confirmCb){ confirmCb(); confirmCb=null; }
+  });
+  document.getElementById('confirm-overlay').addEventListener('click', e=>{
+    if(e.target===document.getElementById('confirm-overlay')){ document.getElementById('confirm-overlay').classList.add('hidden'); confirmCb=null; }
+  });
+
+  // RESETEAR DATOS GENERALES
+  document.getElementById('btn-clear').addEventListener('click', ()=>{
+    confirm_('¿Eliminar TODOS los datos guardados en la aplicación? Esta acción no se puede deshacer.', ()=>{ localStorage.removeItem(STORAGE_KEY); location.reload(); });
+  });
+}
+
+function updateNotesCount() {
+  const t=document.getElementById('notes-area').value;
+  document.getElementById('notes-charcount').textContent=t.length+' caracteres';
+  document.getElementById('notes-linecount').textContent=(t?t.split('\n').length:0)+' líneas';
+}
+
+// ─── INICIALIZACIÓN ───────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadData();
+  renderAll();
+  document.getElementById('notes-area').value = data.notes||'';
+  updateNotesCount();
+  setupEvents();
+
+  // Ejecución de la copia de seguridad automática al iniciar sesión en el sitio
+  setTimeout(() => {
+    exportBackup(true);
+  }, 800);
+});
+</script>
+</body>
+</html>
