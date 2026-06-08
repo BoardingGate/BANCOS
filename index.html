@@ -1883,6 +1883,7 @@ function updateNotesCount() {
   document.getElementById('notes-linecount').textContent=(t?t.split('\n').length:0)+' líneas';
 }
 
+
 // ─── INICIALIZACIÓN ───────────────────────────────────────
 document.addEventListener('DOMContentLoaded', ()=>{
   loadData();
@@ -1890,12 +1891,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('notes-area').value = data.notes||'';
   updateNotesCount();
   setupEvents();
+});  
 
-  // Ejecución de la copia de seguridad automática al iniciar sesión en el sitio
-  setTimeout(() => {
-    exportBackup(true);
-  }, 800);
-});
 </script>
 </body>
 </html>
