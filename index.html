@@ -521,6 +521,37 @@
       border: 1px solid #fecaca !important;
       color: #991b1b !important;
     }
+    /* Estilos específicos para el botón de borrado de la calculadora */
+    #btn-clear-calc {
+      position: absolute !important;
+      right: 6px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      z-index: 9999 !important; /* Forzar que esté siempre por encima del input */
+      background: rgba(0, 0, 0, 0.6) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      color: rgba(255, 255, 255, 0.7) !important;
+      cursor: pointer !important;
+      font-size: 9px !important;
+      width: 15px !important;
+      height: 15px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 3px !important;
+      padding: 0 !important;
+      line-height: 1 !important;
+      transition: all 0.15s ease !important;
+    }
+    #btn-clear-calc:hover {
+      background: var(--danger) !important;
+      border-color: #f87171 !important;
+      color: #fff !important;
+    }
+    /* Asegurar espacio dentro del campo de texto de la calculadora */
+    .floating-calc-input {
+      padding-right: 24px !important;
+    }
   </style>
 </head>
 <body>
@@ -531,13 +562,17 @@
   <div class="floating-calc-header">
     <span>&#x1F5A9; Calculadora</span>
   </div>
-  <input type="text" id="floating-calc-input" class="floating-calc-input" placeholder="Operación (ej. 30-2)..." spellcheck="false" />
+  <!-- Contenedor relativo para posicionar el aspa de forma independiente -->
+  <div style="position: relative; width: 100%; margin-bottom: 6px;">
+    <input type="text" id="floating-calc-input" class="floating-calc-input" placeholder="Operación (ej. 30-2)..." spellcheck="false" />
+    <button type="button" id="btn-clear-calc" title="Borrar operación">&#x2715;</button>
+  </div>
   <div class="floating-calc-result">
     <span style="color: var(--text-muted); font-size: 9px;">Res:</span>
     <span id="floating-calc-result-val">0</span>
   </div>
 </div>
-
+  
 <header class="app-header">
   <div class="header-left">
     <div class="logo-icon">&#x1F3E6;</div>
