@@ -573,6 +573,7 @@
       <button class="btn btn-primary btn-sm" onclick="exportBackup(false)">&#x1F4E5; Descargar Copia</button>
     </div>
 
+    <button class="btn btn-primary btn-sm" id="btn-manual-save">&#x1F4BE; Guardar Datos</button>
     <span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
     <button class="btn btn-ghost btn-sm" id="btn-clear">&#x1F5D1; Limpiar todo</button>
   </div>
@@ -718,8 +719,13 @@ let data = {
 
 // ─── PERSISTENCIA ────────────────────────────────────────
 function saveData() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); showSaved(); } catch(e) {}
 }
+function manualSave() {
+  try { 
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
+    showSaved(); 
+  } catch(e) {}
+}  
 function loadData() {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
@@ -1791,6 +1797,12 @@ function setupEvents() {
       };
       reader.readAsText(file);
     });
+    
+// Evento para el guardado manual de datos
+  document.getElementById('btn-manual-save').addEventListener('click', () => {
+    manualSave();
+  });
+    
   });
 
   // CONTROL DE LA VENTANA FLOTANTE DE CÁLCULO
