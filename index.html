@@ -7,8 +7,6 @@
   <title>Control Bancario</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <!-- Librería para generar el PDF directamente -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
   <style>
     :root {
@@ -348,7 +346,7 @@
       align-items: center;
       gap: 4px;
     }
-  .floating-calc-input {
+    .floating-calc-input {
       width: 100%;
       background: var(--bg-input);
       border: 1px solid var(--border);
@@ -356,7 +354,7 @@
       color: #fff;
       font-family: 'Inter', monospace;
       font-size: 11px;
-      padding: 4px 22px 4px 6px; /* Espacio a la derecha reservado para el botón */
+      padding: 4px 22px 4px 6px;
       outline: none;
       transition: border-color var(--transition);
     }
@@ -380,154 +378,13 @@
       word-break: break-all;
     }
 
-    ::-webkit-scrollbar{width:5px;height:5px}
-    ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
-    ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
-
-    /* ====== REGLAS DE OPTIMIZACIÓN PDF ====== */
-    .pdf-mode {
-      background: #fff !important; 
-      color: #000 !important;
-    }
-    .pdf-mode body, .pdf-mode html {
-      background: #fff !important;
-      color: #000 !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      width: auto !important;
-      height: auto !important;
-      overflow: visible !important;
-      position: relative !important;
-    }
-    .pdf-mode::before { display: none !important; }
-
-    /* Ocultar interfaces y elementos interactivos en PDF */
-    .pdf-mode .app-header, 
-    .pdf-mode .tab-nav-inline, 
-    .pdf-mode .btn-delete-row, 
-    .pdf-mode .btn-delete-col, 
-    .pdf-mode .btn-add-mov, 
-    .pdf-mode .btn-del-mov, 
-    .pdf-mode .btn-del-invoice, 
-    .pdf-mode .btn-del-tax-company, 
-    .pdf-mode .cell-toggle, 
-    .pdf-mode .nav-controls, 
-    .pdf-mode .input-group-actions,
-    .pdf-mode .dynamic-actions,
-    .pdf-mode .floating-calc {
-      display: none !important;
-    }
-
-    /* Forzar contenedor principal y secciones sin paddings que desvíen coordenadas */
-    .pdf-mode .app-main {
-      padding: 0 !important;
-      margin: 0 !important;
-      position: static !important;
-      width: 100% !important;
-    }
-
-    .pdf-mode .section {
-      padding: 0 !important;
-      margin: 0 !important;
-      display: block !important;
-      width: auto !important;
-      max-width: none !important;
-      overflow: visible !important;
-    }
-
-    .pdf-mode .section.active {
-      display: block !important;
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      width: max-content !important;
-      box-sizing: border-box !important;
-    }
-
-    /* Quitar límites de scroll en PDF */
-    .pdf-mode .table-scroll-wrapper {
-      overflow: visible !important;
-      max-height: none !important;
-      border: none !important;
-      background: transparent !important;
-      box-shadow: none !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-
-    /* Bordes e impresión limpia en escala de grises de alta legibilidad */
-    .pdf-mode .balance-grid {
-      display: grid !important;
-      border: 1px solid #ddd !important;
-    }
-    .pdf-mode .grid-cell {
-      border: 1px solid #ddd !important;
-      background: #fff !important;
-      color: #000 !important;
-    }
-
-    /* Desactivar posiciones fijas de cabeceras para prevenir superposiciones */
-    .pdf-mode .header-corner, 
-    .pdf-mode .header-company, 
-    .pdf-mode .header-bank {
-      position: static !important;
-      transform: none !important;
-      background-color: #f1f5f9 !important;
-      color: #000 !important;
-      border-bottom: 1px solid #aaa !important;
-    }
-    
-    .pdf-mode .header-input, 
-    .pdf-mode .bank-input {
-      color: #000 !important;
-      text-shadow: none !important;
-      background: transparent !important;
-      border: none !important;
-    }
-
-    .pdf-mode .balance-cell {
-      background: #fff !important;
-      border: 1px solid #ddd !important;
-    }
-    .pdf-mode .cell-disabled {
-      background: #f8fafc !important;
-      border: 1px dashed #cbd5e1 !important;
-    }
-
-    /* Redefinición de campos de entrada para impresión de papel */
-    .pdf-mode .field-input, 
-    .pdf-mode .mov-importe, 
-    .pdf-mode .mov-obs, 
-    .pdf-mode .inv-field, 
-    .pdf-mode .tax-value-input {
-      background: transparent !important;
-      border: none !important;
-      border-bottom: 1px solid #ccc !important;
-      color: #000 !important;
-      box-shadow: none !important;
-      padding: 2px !important;
-    }
-
-    .pdf-mode .field-calc {
-      background: #f0fdf4 !important;
-      border: 1px solid #bbf7d0 !important;
-      color: #166534 !important;
-    }
-    .pdf-mode .calc-negative {
-      background: #fef2f2 !important;
-      border: 1px solid #fecaca !important;
-      color: #991b1b !important;
-    }
     /* Estilos específicos para el botón de borrado de la calculadora */
     #btn-clear-calc {
       position: absolute !important;
       right: 6px !important;
       top: 50% !important;
       transform: translateY(-50%) !important;
-      z-index: 9999 !important; /* Forzar que esté siempre por encima del input */
+      z-index: 9999 !important;
       background: rgba(0, 0, 0, 0.6) !important;
       border: 1px solid rgba(255, 255, 255, 0.2) !important;
       color: rgba(255, 255, 255, 0.7) !important;
@@ -548,9 +405,39 @@
       border-color: #f87171 !important;
       color: #fff !important;
     }
-    /* Asegurar espacio dentro del campo de texto de la calculadora */
-    .floating-calc-input {
-      padding-right: 24px !important;
+
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+
+    /* ====== REGLAS DE OPTIMIZACIÓN PDF / IMPRESIÓN ====== */
+    .pdf-mode {
+      background: #fff !important; 
+      color: #000 !important;
+    }
+    .pdf-mode body, .pdf-mode html {
+      background: #fff !important;
+      color: #000 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .pdf-mode::before { display: none !important; }
+
+    .pdf-mode .app-header, 
+    .pdf-mode .tab-nav-inline, 
+    .pdf-mode .btn-delete-row, 
+    .pdf-mode .btn-delete-col, 
+    .pdf-mode .btn-add-mov, 
+    .pdf-mode .btn-del-mov, 
+    .pdf-mode .btn-del-invoice, 
+    .pdf-mode .btn-del-tax-company, 
+    .pdf-mode .cell-toggle, 
+    .pdf-mode .nav-controls, 
+    .pdf-mode .input-group-actions,
+    .pdf-mode .dynamic-actions,
+    .pdf-mode .floating-calc {
+      display: none !important;
     }
   </style>
 </head>
@@ -562,7 +449,6 @@
   <div class="floating-calc-header">
     <span>&#x1F5A9; Calculadora</span>
   </div>
-  <!-- Contenedor relativo para posicionar el aspa de forma independiente -->
   <div style="position: relative; width: 100%; margin-bottom: 6px;">
     <input type="text" id="floating-calc-input" class="floating-calc-input" placeholder="Operación (ej. 30-2)..." spellcheck="false" />
     <button type="button" id="btn-clear-calc" title="Borrar operación">&#x2715;</button>
@@ -572,7 +458,7 @@
     <span id="floating-calc-result-val">0</span>
   </div>
 </div>
-  
+
 <header class="app-header">
   <div class="header-left">
     <div class="logo-icon">&#x1F3E6;</div>
@@ -588,23 +474,23 @@
   <div class="header-right">
     <!-- Acciones contextuales dinámicas -->
     <div class="dynamic-actions" id="actions-balances">
-      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-balances', 'Saldos_Movimientos')">&#x1F4BE; Exportar PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('balances')">&#x1F4BE; Imprimir / PDF</button>
       <button class="btn btn-secondary btn-sm" id="btn-add-bank">+ Banco</button>
       <button class="btn btn-primary btn-sm" id="btn-add-company">+ Empresa</button>
     </div>
     
     <div class="dynamic-actions hidden" id="actions-invoices">
-      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-invoices', 'Facturas')">&#x1F4BE; Exportar PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('invoices')">&#x1F4BE; Imprimir / PDF</button>
       <button class="btn btn-primary btn-sm" id="btn-add-invoice">+ Añadir Fila</button>
     </div>
     
     <div class="dynamic-actions hidden" id="actions-taxes">
-      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-taxes', 'Impuestos')">&#x1F4BE; Exportar PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('taxes')">&#x1F4BE; Imprimir / PDF</button>
       <button class="btn btn-primary btn-sm" id="btn-add-tax-company">+ Añadir Empresa</button>
     </div>
     
     <div class="dynamic-actions hidden" id="actions-notes">
-      <button class="btn btn-ghost btn-sm" onclick="downloadPDF('section-notes', 'Notas')">&#x1F4BE; Exportar PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('notes')">&#x1F4BE; Imprimir / PDF</button>
       <button class="btn btn-ghost btn-sm" id="btn-clear-notes">&#x1F5D1; Limpiar Notas</button>
     </div>
 
@@ -860,79 +746,282 @@ function updateConciliado(bi, ci) {
   el.className = 'field-calc ' + (v<0?'calc-negative':v===0?'calc-zero':'');
 }
 
-// ─── GENERACIÓN DE PDF ───────────────────────────────────
-window.downloadPDF = function(sectionId, filenamePrefix) {
-  const section = document.getElementById(sectionId);
-  const originalStyle = section.getAttribute('style') || '';
-  
-  window.scrollTo(0, 0);
-  const wrapper = section.querySelector('.table-scroll-wrapper');
-  let originalScrollStyle = '';
-  if (wrapper) {
-    originalScrollStyle = wrapper.getAttribute('style') || '';
-    wrapper.scrollTo(0, 0);
+// ─── REPORTES DE IMPRESIÓN (NATIVOS / PDF) ─────────────────
+const reportStyles = `
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: #111;
+    background: #fff;
+    margin: 24px;
+    font-size: 11px;
+    line-height: 1.4;
   }
-  
-  section.querySelectorAll('input, textarea, select').forEach(el => {
-    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      el.setAttribute('value', el.value);
-      if (el.tagName === 'TEXTAREA') el.innerHTML = el.value;
-      if (el.type === 'checkbox') {
-        if (el.checked) el.setAttribute('checked', 'checked');
-        else el.removeAttribute('checked');
+  h1 {
+    font-size: 16px;
+    margin-bottom: 2px;
+    color: #0f172a;
+    border-bottom: 2px solid #6366f1;
+    padding-bottom: 6px;
+  }
+  h2 {
+    font-size: 12px;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    color: #4f46e5;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .meta {
+    font-size: 9px;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 700;
+    text-align: left;
+    padding: 6px 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+  td {
+    padding: 6px 8px;
+    border: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+  .bold {
+    font-weight: 700;
+  }
+  .text-right {
+    text-align: right;
+  }
+  .page-break {
+    page-break-after: auto;
+  }
+  @media print {
+    .page-break {
+      page-break-inside: avoid;
+    }
+  }
+  .sub-title {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #475569;
+    margin-top: 2px;
+    margin-bottom: 4px;
+  }
+  .mov-list {
+    margin: 0;
+    padding-left: 14px;
+    font-size: 10px;
+  }
+  .mov-list li {
+    margin-bottom: 1px;
+  }
+  .months-badge {
+    font-size: 9px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    padding: 2px 4px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+`;
+
+function generateBalancesPrintHTML() {
+  let html = `<h1>Informe de Saldos y Movimientos Bancarios</h1>`;
+  html += `<p class="meta">Generado automáticamente el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')}</p>`;
+
+  data.companies.forEach((company, ci) => {
+    let hasActiveData = false;
+    data.banks.forEach((_, bi) => {
+      if (data.disabledCells[bi + '-' + ci] !== true) {
+        hasActiveData = true;
       }
-    }
-    if (el.tagName === 'SELECT') {
-      Array.from(el.options).forEach(opt => {
-        if (opt.selected) opt.setAttribute('selected', 'selected');
-        else opt.removeAttribute('selected');
-      });
-    }
+    });
+
+    if (!hasActiveData) return;
+
+    html += `<div class="report-section page-break">`;
+    html += `<h2>Empresa: ${esc(company)}</h2>`;
+    html += `<table>
+      <thead>
+        <tr>
+          <th>Entidad Bancaria</th>
+          <th class="text-right" style="width: 100px;">S. Actual</th>
+          <th class="text-right" style="width: 100px;">S. Punteado</th>
+          <th class="text-right" style="width: 100px;">S. Conciliado</th>
+          <th>Otras Anotaciones</th>
+          <th>Observaciones</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    data.banks.forEach((bank, bi) => {
+      const key = bi + '-' + ci;
+      if (data.disabledCells[key] === true) return;
+
+      const bal = data.balances[key] || {};
+      const sc = calcConciliado(bi, ci);
+      const bankClean = bank.split('\n')[0];
+
+      html += `<tr>
+        <td class="bold">${esc(bankClean)}</td>
+        <td class="text-right">${formatCurrency(bal.saldoActual) || '0,00'}</td>
+        <td class="text-right">${formatCurrency(bal.saldoPunteado) || '0,00'}</td>
+        <td class="text-right bold" style="background-color: #f8fafc;">${formatCurrency(sc) || '0,00'}</td>
+        <td>${esc(bal.otraAnotacion || '')}</td>
+        <td>${esc(bal.observaciones || '')}</td>
+      </tr>`;
+
+      const movs = data.movements[key] || [];
+      const pendingMovs = movs.filter(m => !m.conciliado);
+      if (pendingMovs.length > 0) {
+        html += `<tr>
+          <td colspan="6" style="padding-left: 18px; background: #fafafa; border-top: none;">
+            <div class="sub-title">Movimientos pendientes de conciliar (${esc(bankClean)}):</div>
+            <ul class="mov-list">`;
+        pendingMovs.forEach(m => {
+          html += `<li><strong>${formatCurrency(m.importe)}</strong> - ${esc(m.observacion || 'Sin descripción')}</li>`;
+        });
+        html += `</ul>
+          </td>
+        </tr>`;
+      }
+    });
+
+    html += `</tbody></table></div>`;
   });
 
-  document.body.classList.add('pdf-mode');
+  return html;
+}
 
-  // Ajustar anchos reales de forma matemática
-  const realWidth = wrapper ? wrapper.scrollWidth : section.scrollWidth;
-  section.style.width = realWidth + 'px';
-  section.style.maxWidth = 'none';
-  section.style.margin = '0';
-  section.style.padding = '0';
-  if (wrapper) {
-    wrapper.style.width = realWidth + 'px';
-    wrapper.style.maxWidth = 'none';
-    wrapper.style.overflow = 'visible';
+function generateInvoicesPrintHTML() {
+  let html = `<h1>Informe de Control de Facturas Recurrentes</h1>`;
+  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')}</p>`;
+  html += `<table>
+    <thead>
+      <tr>
+        <th>Meses Activos</th>
+        <th>Descripción / Proveedor</th>
+        <th>Código Contable</th>
+        <th class="text-right">Importe</th>
+        <th>Banco Asociado</th>
+        <th>Frecuencia</th>
+        <th>Observaciones</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  data.invoices.forEach(inv => {
+    const activeMonths = inv.months.map((m, idx) => m ? MONTH_LABELS[idx] : '').filter(Boolean).join(', ');
+    html += `<tr>
+      <td><span class="months-badge">${esc(activeMonths || 'Sin meses')}</span></td>
+      <td class="bold">${esc(inv.descripcion)}</td>
+      <td>${esc(inv.codigoContable)}</td>
+      <td class="text-right bold">${formatCurrency(inv.importe) || '0,00'}</td>
+      <td>${esc(inv.banco)}</td>
+      <td style="text-transform: capitalize;">${esc(inv.tipoFacturacion)}</td>
+      <td>${esc(inv.observaciones)}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  return html;
+}
+
+function generateTaxesPrintHTML() {
+  let html = `<h1>Informe de Liquidación de Impuestos</h1>`;
+  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')}</p>`;
+  html += `<table>
+    <thead>
+      <tr>
+        <th>Concepto</th>`;
+  data.taxCompanies.forEach(co => {
+    html += `<th>${esc(co)}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+
+  TAX_ROWS.forEach((row, ri) => {
+    const isObs = TAX_KEYS[ri] === 'obs';
+    html += `<tr>
+      <td class="bold">${row}</td>`;
+    data.taxCompanies.forEach((_, ci) => {
+      const k = TAX_KEYS[ri] + '-' + ci;
+      const v = data.taxValues[k] || '';
+      html += `<td>${isObs ? esc(v) : (formatCurrency(v) || '0,00')}</td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  return html;
+}
+
+function generateNotesPrintHTML() {
+  let html = `<h1>Anotaciones y Notas Libres</h1>`;
+  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')}</p>`;
+  html += `<div style="white-space: pre-wrap; font-family: monospace; font-size: 11px; line-height: 1.5; border: 1px solid #cbd5e1; padding: 12px; background: #f8fafc; border-radius: 4px; color: #1e293b;">${esc(data.notes || 'No se han registrado notas.')}</div>`;
+  return html;
+}
+
+window.printSectionReport = function(sectionType) {
+  let contentHTML = '';
+  
+  if (sectionType === 'balances') {
+    contentHTML = generateBalancesPrintHTML();
+  } else if (sectionType === 'invoices') {
+    contentHTML = generateInvoicesPrintHTML();
+  } else if (sectionType === 'taxes') {
+    contentHTML = generateTaxesPrintHTML();
+  } else if (sectionType === 'notes') {
+    contentHTML = generateNotesPrintHTML();
   }
 
-  setTimeout(() => {
-    const opt = {
-      margin:       [8, 8, 8, 8], // Margenes físicos óptimos en mm
-      filename:     `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { 
-        scale: 2, 
-        useCORS: true,
-        scrollX: 0,
-        scrollY: 0,
-        width: realWidth,
-        windowWidth: realWidth // Forzar lienzo virtual idéntico al ancho de datos para evitar desvíos
-      }, 
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
-    };
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
 
-    html2pdf().set(opt).from(section).save().then(() => {
-      document.body.classList.remove('pdf-mode');
-      section.setAttribute('style', originalStyle);
-      if (wrapper) {
-        wrapper.setAttribute('style', originalScrollStyle);
-      }
-    }).catch(err => {
-      console.error(err);
-      document.body.classList.remove('pdf-mode');
-      section.setAttribute('style', originalStyle);
-      if (wrapper) wrapper.setAttribute('style', originalScrollStyle);
-    });
-  }, 400);
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <title>Control Bancario - Reporte</title>
+      <style>${reportStyles}</style>
+    </head>
+    <body>
+      ${contentHTML}
+      <script>
+        window.onload = function() {
+          window.focus();
+          window.print();
+          setTimeout(function() {
+            window.parent.document.body.removeChild(window.frameElement);
+          }, 400);
+        };
+      <\/script>
+    </body>
+    </html>
+  `);
+  doc.close();
 };
 
 // ─── NAVEGACIÓN RÁPIDA (SCROLL) ───────────────────────────
@@ -1386,14 +1475,13 @@ function setupEvents() {
   const calcResult = document.getElementById('floating-calc-result-val');
   const calcClearBtn = document.getElementById('btn-clear-calc');
 
-if (calcTab && calcWidget) {
+  if (calcTab && calcWidget) {
     calcTab.addEventListener('click', () => {
       calcWidget.classList.toggle('collapsed');
       calcTab.innerHTML = calcWidget.classList.contains('collapsed') ? '&#x25B6;' : '&#x25C0;';
     });
   }
 
-  // Evento para limpiar la calculadora al presionar el aspa
   if (calcClearBtn && calcInput && calcResult) {
     calcClearBtn.addEventListener('click', () => {
       calcInput.value = '';
@@ -1407,7 +1495,6 @@ if (calcTab && calcWidget) {
       if (e.key === 'Enter') {
         e.preventDefault();
         const expr = calcInput.value;
-        // Limpieza de caracteres: solo permitir números, operadores, paréntesis, puntos y espacios
         const sanitized = expr.replace(/[^0-9+\-*/().%\s]/g, '');
         if (!sanitized.trim()) {
           calcResult.textContent = '0';
