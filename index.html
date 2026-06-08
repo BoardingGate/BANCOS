@@ -549,23 +549,23 @@
   <div class="header-right">
     <!-- Acciones contextuales dinámicas -->
     <div class="dynamic-actions" id="actions-balances">
-      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('balances')">&#x1F4BE; Imprimir / PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('balances')">&#x1F4BE; Imprimir Hoja Única</button>
       <button class="btn btn-secondary btn-sm" id="btn-add-bank">+ Banco</button>
       <button class="btn btn-primary btn-sm" id="btn-add-company">+ Empresa</button>
     </div>
     
     <div class="dynamic-actions hidden" id="actions-invoices">
-      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('invoices')">&#x1F4BE; Imprimir / PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('balances')">&#x1F4BE; Imprimir Hoja Única</button>
       <button class="btn btn-primary btn-sm" id="btn-add-invoice">+ Añadir Fila</button>
     </div>
     
     <div class="dynamic-actions hidden" id="actions-taxes">
-      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('taxes')">&#x1F4BE; Imprimir / PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('balances')">&#x1F4BE; Imprimir Hoja Única</button>
       <button class="btn btn-primary btn-sm" id="btn-add-tax-company">+ Añadir Empresa</button>
     </div>
     
     <div class="dynamic-actions hidden" id="actions-notes">
-      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('notes')">&#x1F4BE; Imprimir / PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="printSectionReport('notes')">&#x1F4BE; Imprimir Notas</button>
       <button class="btn btn-ghost btn-sm" id="btn-clear-notes">&#x1F5D1; Limpiar Notas</button>
     </div>
 
@@ -831,39 +831,40 @@ const reportStyles = `
     font-family: 'Inter', -apple-system, sans-serif;
     color: #111;
     background: #fff;
-    margin: 12px;
-    font-size: 10px;
-    line-height: 1.3;
+    margin: 0;
+    padding: 0;
+    font-size: 6.8px; /* Tamaño optimizado y compacto para que todo entre en una sola página vertical */
+    line-height: 1.15;
   }
   h1 {
-    font-size: 13px;
-    margin-bottom: 2px;
+    font-size: 11px;
+    margin-bottom: 3px;
     color: #0f172a;
     border-bottom: 2px solid #6366f1;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
     font-weight: 700;
   }
   .meta {
-    font-size: 8px;
+    font-size: 7px;
     color: #64748b;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
   th {
-    background: #f8fafc;
-    color: #1e293b;
+    background: #1e293b;
+    color: #ffffff;
     font-weight: 700;
-    text-align: left;
-    padding: 4px 6px;
+    text-align: center;
+    padding: 3px 4px;
     border: 1px solid #94a3b8;
-    font-size: 9px;
+    font-size: 7.5px;
   }
   td {
-    padding: 4px 6px;
+    padding: 3px 4px;
     border: 1px solid #cbd5e1;
     vertical-align: top;
   }
@@ -879,11 +880,9 @@ const reportStyles = `
     width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
-    font-size: 7.5px;
-    line-height: 1.2;
   }
   .print-matrix-table th, .print-matrix-table td {
-    border: 1px solid #94a3b8;
+    border: 1px solid #475569;
     padding: 3px;
     vertical-align: top;
     overflow: hidden;
@@ -893,16 +892,18 @@ const reportStyles = `
     color: #ffffff;
     font-weight: 700;
     text-align: center;
-    font-size: 8px;
+    font-size: 7.5px;
   }
-  .print-bank-col {
-    background-color: #0f766e;
-    color: #ffffff !important;
+  
+  /* Cabecera vertical transpuesta para empresas (Eje Y) */
+  .print-company-col {
     font-weight: 700;
-    font-size: 8px;
+    font-size: 7.5px;
     padding: 4px;
     vertical-align: middle;
+    color: #0f172a;
   }
+  
   .print-cell-box {
     display: flex;
     flex-direction: column;
@@ -918,7 +919,7 @@ const reportStyles = `
     border-bottom: none;
   }
   .p-lbl {
-    font-size: 6px;
+    font-size: 5.5px;
     text-transform: uppercase;
     font-weight: 600;
     color: #64748b;
@@ -927,11 +928,11 @@ const reportStyles = `
   .p-lbl.pun { color: #7c3aed; }
   .p-lbl.conc { color: #16a34a; }
   .print-mov-item {
-    font-size: 6px;
+    font-size: 5.5px;
     background: rgba(0, 0, 0, 0.03);
     border: 1px dashed #cbd5e1;
     border-radius: 2px;
-    padding: 1px 2px;
+    padding: 1px;
     margin-top: 1px;
     color: #475569;
   }
@@ -942,28 +943,25 @@ const reportStyles = `
     text-align: center !important;
     vertical-align: middle !important;
     font-style: italic;
-    font-size: 6.5px;
+    font-size: 6px;
   }
 
-  /* CONFIGURACIÓN DIRECTA DE ORIENTACIÓN HORIZONTAL PARA EL NAVEGADOR */
+  /* FORZAR LA IMPRESIÓN EN VERTICAL PORTRAIT */
   @media print {
     @page {
-      size: landscape;
-      margin: 8mm;
+      size: portrait;
+      margin: 4mm 5mm; /* Margen ultracompacto para garantizar una sola página */
     }
     body {
       margin: 0;
       padding: 0;
-    }
-    .page-break {
-      page-break-inside: avoid;
     }
   }
   
   /* MATRIZ DE MESES EN REPORTE DE FACTURAS */
   .print-months-matrix {
     display: flex;
-    gap: 3px;
+    gap: 1.5px;
     justify-content: center;
     align-items: center;
   }
@@ -971,13 +969,13 @@ const reportStyles = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 13px;
-    height: 13px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
-    font-size: 8px;
+    font-size: 5.5px;
     font-weight: 700;
     color: #94a3b8;
-    border: 1px solid #cbd5e1;
+    border: 0.5px solid #cbd5e1;
     background: #ffffff;
     line-height: 1;
   }
@@ -988,35 +986,52 @@ const reportStyles = `
   }
 `;
 
-function generateBalancesPrintHTML() {
+function generateUnifiedPrintHTML() {
+  const nb = data.banks.length;
   const nc = data.companies.length;
-  let html = `<h1>Reporte Matriz de Saldos y Movimientos</h1>`;
-  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')} - Cuadrícula de Escala Ajustada para Hoja Única</p>`;
 
+  // Paleta de tonos pastel para intercalar en las filas de las empresas (Eje Y)
+  const transposedRowColors = [
+    '#f8fafc', // Slate
+    '#f0fdf4', // Emerald
+    '#f0f9ff', // Sky
+    '#fffbeb', // Amber
+    '#fdf2f8', // Rose
+    '#faf5ff', // Purple
+    '#f0fdfa', // Teal
+    '#fef2f2'  // Red
+  ];
+
+  let html = `<h1>Reporte General Consolidado - Control Bancario</h1>`;
+  html += `<p class="meta">Generado automáticamente el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')} - Cuadrícula Transpuesta (Eje Vertical) optimizada para Hoja Única</p>`;
+
+  // ─── SECCIÓN 1: SALDOS Y MOVIMIENTOS (TRANSPUESTA) ───
   html += `<table class="print-matrix-table">`;
   
-  // Establecer proporción de anchos exacta de forma matemática
+  // Asignar proporción de anchos perfecta: Empresa = 16%, los bancos dividen el 84% restante
   html += `<colgroup>
-    <col style="width: 14%;" />
-    ${data.companies.map(() => `<col style="width: ${86 / nc}%;" />`).join('')}
+    <col style="width: 16%;" />
+    ${data.banks.map(() => `<col style="width: ${84 / nb}%;" />`).join('')}
   </colgroup>`;
 
-  // Encabezados de Empresa
+  // Encabezado horizontal (Bancos en el eje X)
   html += `<thead><tr>
-    <th style="background-color: #0f172a; color: #fff;">Entidades / Empresas</th>`;
-  data.companies.forEach((company) => {
-    html += `<th style="background-color: #1e3a8a; color: #fff; font-size: 8px; font-weight: 700; padding: 4px;">${esc(company)}</th>`;
+    <th style="background-color: #0f172a; color: #fff; font-size: 7.5px;">Empresas / Bancos</th>`;
+  data.banks.forEach((bank) => {
+    const bankNameClean = bank.split('\n')[0];
+    html += `<th style="background-color: #0f766e; color: #fff; font-size: 7.5px; font-weight: 700; padding: 3px;">${esc(bankNameClean)}</th>`;
   });
   html += `</tr></thead><tbody>`;
 
-  // Filas por Entidad Bancaria
-  data.banks.forEach((bank, bi) => {
-    const bankNameClean = bank.split('\n')[0];
-    html += `<tr>`;
-    html += `<td class="print-bank-col">${esc(bankNameClean)}</td>`;
+  // Filas (Empresas en el eje Y con color de fila único)
+  data.companies.forEach((company, ci) => {
+    const bgColor = transposedRowColors[ci % transposedRowColors.length];
+    html += `<tr style="background-color: ${bgColor};">`;
+    // Celda de cabecera de la Empresa
+    html += `<td class="print-company-col" style="border-left: 3px solid #6366f1;">${esc(company)}</td>`;
 
-    // Celdas por Empresa
-    data.companies.forEach((_, ci) => {
+    // Celdas por Banco
+    data.banks.forEach((_, bi) => {
       const key = bi + '-' + ci;
       const isDisabled = data.disabledCells[key] === true;
 
@@ -1031,7 +1046,7 @@ function generateBalancesPrintHTML() {
         const pendingMovs = movs.filter(m => !m.conciliado);
         let movsHTML = '';
         if (pendingMovs.length > 0) {
-          movsHTML += `<div style="margin-top: 2px; border-top: 1px dashed #cbd5e1; padding-top: 2px;">`;
+          movsHTML += `<div style="margin-top: 1px; border-top: 1px dashed #cbd5e1; padding-top: 1px;">`;
           pendingMovs.forEach(m => {
             movsHTML += `<div class="print-mov-item"><strong>${formatCurrency(m.importe)}</strong> ${esc(m.observacion || '')}</div>`;
           });
@@ -1048,12 +1063,11 @@ function generateBalancesPrintHTML() {
               <span class="p-lbl pun">Pun:</span>
               <span>${formatCurrency(bal.saldoPunteado) || '0,00'}</span>
             </div>
-            <div class="p-row" style="background-color: #f0fdf4;">
+            <div class="p-row" style="background-color: rgba(255,255,255,0.75);">
               <span class="p-lbl conc">Conc:</span>
               <span class="bold" style="color: #16a34a;">${formatCurrency(sc) || '0,00'}</span>
             </div>
             ${bal.otraAnotacion ? `<div class="p-row" style="color: #475569;"><span class="p-lbl" style="color: #b45309;">Otr:</span> <span>${esc(bal.otraAnotacion)}</span></div>` : ''}
-            ${bal.observaciones ? `<div style="font-size: 6px; color: #64748b; margin-top: 1px; line-height: 1.1;"><strong>Obs:</strong> ${esc(bal.observaciones)}</div>` : ''}
             ${movsHTML}
           </div>
         </td>`;
@@ -1061,58 +1075,50 @@ function generateBalancesPrintHTML() {
     });
     html += `</tr>`;
   });
-
   html += `</tbody></table>`;
-  return html;
-}
 
-function generateInvoicesPrintHTML() {
-  let html = `<h1>Informe de Control de Facturas Recurrentes</h1>`;
-  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')}</p>`;
-  html += `<table>
-    <thead>
-      <tr>
-        <th style="width: 220px; text-align: center;">E F M A M J J A S O N D</th>
-        <th>Descripción / Proveedor</th>
-        <th>Código Contable</th>
-        <th class="text-right">Importe</th>
-        <th>Banco Asociado</th>
-        <th>Frecuencia</th>
-        <th>Observaciones</th>
-      </tr>
-    </thead>
-    <tbody>`;
+  // ─── SECCIÓN 2: DOBLE COLUMNA PARA FACTURAS E IMPUESTOS (SIDE-BY-SIDE) ───
+  html += `<div style="display: flex; gap: 10px; width: 100%; margin-top: 8px;">`;
+
+  // Columna Izquierda: Facturas Recurrentes
+  html += `<div style="flex: 1; min-width: 0;">
+    <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Facturas Recurrentes</h2>
+    <table class="print-matrix-table">
+      <thead>
+        <tr>
+          <th style="width: 140px; text-align: center;">E F M A M J J A S O N D</th>
+          <th>Proveedor</th>
+          <th class="text-right" style="width: 50px;">Importe</th>
+          <th style="width: 50px;">Banco</th>
+        </tr>
+      </thead>
+      <tbody>`;
 
   data.invoices.forEach(inv => {
     let dotsHTML = '<div class="print-months-matrix">';
     MONTH_LABELS.forEach((label, idx) => {
       const isActive = inv.months[idx] === true;
-      dotsHTML += `<span class="m-dot${isActive ? ' active' : ''}" title="${MONTH_NAMES[idx]}">${label}</span>`;
+      dotsHTML += `<span class="m-dot${isActive ? ' active' : ''}">${label}</span>`;
     });
     dotsHTML += '</div>';
 
     html += `<tr>
       <td>${dotsHTML}</td>
-      <td class="bold">${esc(inv.descripcion)}</td>
-      <td>${esc(inv.codigoContable)}</td>
+      <td class="bold" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.descripcion)}</td>
       <td class="text-right bold">${formatCurrency(inv.importe) || '0,00'}</td>
-      <td>${esc(inv.banco)}</td>
-      <td style="text-transform: capitalize;">${esc(inv.tipoFacturacion)}</td>
-      <td>${esc(inv.observaciones)}</td>
+      <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(inv.banco)}</td>
     </tr>`;
   });
 
-  html += `</tbody></table>`;
-  return html;
-}
+  html += `</tbody></table></div>`;
 
-function generateTaxesPrintHTML() {
-  let html = `<h1>Informe de Liquidación de Impuestos</h1>`;
-  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')}</p>`;
-  html += `<table>
-    <thead>
-      <tr>
-        <th>Concepto</th>`;
+  // Columna Derecha: Impuestos por Empresa
+  html += `<div style="flex: 1; min-width: 0;">
+    <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Liquidación de Impuestos</h2>
+    <table class="print-matrix-table">
+      <thead>
+        <tr>
+          <th>Concepto</th>`;
   data.taxCompanies.forEach(co => {
     html += `<th>${esc(co)}</th>`;
   });
@@ -1130,28 +1136,19 @@ function generateTaxesPrintHTML() {
     html += `</tr>`;
   });
 
-  html += `</tbody></table>`;
-  return html;
-}
+  html += `</tbody></table></div></div>`;
 
-function generateNotesPrintHTML() {
-  let html = `<h1>Anotaciones y Notas Libres</h1>`;
-  html += `<p class="meta">Generado el ${new Date().toLocaleDateString('es-ES')}</p>`;
-  html += `<div style="white-space: pre-wrap; font-family: monospace; font-size: 11px; line-height: 1.5; border: 1px solid #cbd5e1; padding: 12px; background: #f8fafc; border-radius: 4px; color: #1e293b;">${esc(data.notes || 'No se han registrado notas.')}</div>`;
   return html;
 }
 
 window.printSectionReport = function(sectionType) {
   let contentHTML = '';
   
-  if (sectionType === 'balances') {
-    contentHTML = generateBalancesPrintHTML();
-  } else if (sectionType === 'invoices') {
-    contentHTML = generateInvoicesPrintHTML();
-  } else if (sectionType === 'taxes') {
-    contentHTML = generateTaxesPrintHTML();
-  } else if (sectionType === 'notes') {
+  if (sectionType === 'notes') {
     contentHTML = generateNotesPrintHTML();
+  } else {
+    // Al presionar imprimir en Balances, Facturas o Impuestos, generamos la hoja integrada unificada
+    contentHTML = generateUnifiedPrintHTML();
   }
 
   const iframe = document.createElement('iframe');
@@ -1170,7 +1167,7 @@ window.printSectionReport = function(sectionType) {
     <html lang="es">
     <head>
       <meta charset="UTF-8">
-      <title>Control Bancario - Reporte</title>
+      <title>Control Bancario - Reporte Unificado</title>
       <style>${reportStyles}</style>
     </head>
     <body>
