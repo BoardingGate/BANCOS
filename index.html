@@ -106,18 +106,18 @@
     /* CABECERAS Y COLUMNAS */
     .header-company{
       position:sticky; top:0; z-index:20;
-      display:flex;align-items:center;justify-content:center;min-height:40px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:48px;
     }
     .header-bank{
       position:sticky; left:0; z-index:20;
-      display:flex;align-items:flex-start;
+      display:flex; flex-direction:column; justify-content:space-between;
     }
     .header-editable-wrapper{display:flex;align-items:center;gap:4px;width:100%}
     .header-input{background:transparent;border:none;border-bottom:1px solid transparent;color:#fff;font-family:inherit;font-size:12px;font-weight:600;padding:2px 4px;width:100%;transition:border-color var(--transition);text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.8)}
     .header-input:focus{outline:none;border-bottom-color:var(--accent);text-align:left}
 
     .bank-input{
-      resize: vertical; min-height: 90px; text-align: left; white-space: pre-wrap;
+      resize: vertical; min-height: 70px; text-align: left; white-space: pre-wrap;
       font-size: 11px; font-weight: 400; line-height: 1.3; padding: 4px;
       background: rgba(0,0,0,0.15); border-radius: 4px;
     }
@@ -455,9 +455,9 @@
 
     /* ESTILOS DE CELDAS COLAPSADAS (FILA BANCO) */
     .row-collapsed-cell {
-      min-height: 35px !important;
-      max-height: 35px !important;
-      height: 35px !important;
+      min-height: 48px !important;
+      max-height: 48px !important;
+      height: 48px !important;
       padding: 2px !important;
       overflow: hidden !important;
       display: flex !important;
@@ -478,9 +478,9 @@
     }
 
     .header-bank-collapsed {
-      min-height: 35px !important;
-      max-height: 35px !important;
-      height: 35px !important;
+      min-height: 48px !important;
+      max-height: 48px !important;
+      height: 48px !important;
       align-items: center !important;
       padding: 4px 8px !important;
       overflow: hidden !important;
@@ -724,15 +724,20 @@ let data = {
   notes: ''
 };
 
-// ─── PERSISTENCIA ────────────────────────────────────────
+// ─── PERSISTENCIA EN TIEMPO REAL ──────────────────────────
 function saveData() {
-  // Función vacía para evitar guardado automático en cada cambio de campo
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    showSaved(true);
+  } catch(e) {
+    console.error("No se pudieron guardar los datos en tiempo real:", e);
+  }
 }
 
 function manualSave() {
   try { 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
-    showSaved(); 
+    showSaved(false); 
   } catch(e) {}
 }
 
@@ -862,7 +867,7 @@ window.exportBackup = function(isAuto = false) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     if (!isAuto) {
-      showSaved();
+      showSaved(false);
     }
   } catch(e) {
     console.error("No se pudo descargar la copia de seguridad:", e);
@@ -915,12 +920,12 @@ function esc(s) {
 
 // ─── INDICADOR DE GUARDADO ─────────────────────────────
 let saveTimer;
-function showSaved() {
+function showSaved(isAuto = false) {
   const el = document.getElementById('save-indicator');
-  el.textContent = '\u2713 Guardado';
+  el.textContent = isAuto ? '\u2713 Autoguardado' : '\u2713 Guardado';
   el.classList.add('saved');
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(()=>{ el.classList.remove('saved'); el.textContent='\u2713 Datos guardados'; }, 2000);
+  saveTimer = setTimeout(()=>{ el.classList.remove('saved'); el.textContent='\u2713 Datos guardados'; }, 1500);
 }
 
 // ─── DIÁLOGO DE CONFIRMACIÓN ──────────────────────────────
@@ -943,6 +948,73 @@ function updateConciliado(bi, ci) {
   el.className = 'field-calc ' + (v<0?'calc-negative':v===0?'calc-zero':'');
 }
 
+// ─── ACUMULADO GLOBAL DINÁMICO (FILAS Y COLUMNAS) ───────────────────
+function updateAllTotals() {
+  // 1. Acumulados para Columnas (Empresas)
+  data.companies.forEach((_, ci) => {
+    let totalAct = 0;
+    let totalCon = 0;
+    
+    data.banks.forEach((_, bi) => {
+      const key = bi + '-' + ci;
+      if (data.disabledCells[key] === true) return;
+      const bal = data.balances[key] || {};
+      totalAct += parseFloat(bal.saldoActual) || 0;
+      totalCon += calcConciliado(bi, ci);
+    });
+
+    const fAct = formatCurrency(totalAct) || '0,00';
+    const fCon = formatCurrency(totalCon) || '0,00';
+
+    // Columna Expandida
+    const elAct = document.getElementById('col-total-act-' + ci);
+    if (elAct) elAct.textContent = fAct;
+    const elCon = document.getElementById('col-total-con-' + ci);
+    if (elCon) elCon.textContent = fCon;
+
+    // Columna Colapsada (Horizontal)
+    const elActCol = document.getElementById('col-total-act-collapsed-' + ci);
+    if (elActCol) elActCol.textContent = fAct;
+    const elConCol = document.getElementById('col-total-con-collapsed-' + ci);
+    if (elConCol) elConCol.textContent = fCon;
+  });
+
+  // 2. Acumulados para Filas (Bancos)
+  data.banks.forEach((_, bi) => {
+    let totalAct = 0;
+    let totalCon = 0;
+
+    data.companies.forEach((_, ci) => {
+      const key = bi + '-' + ci;
+      if (data.disabledCells[key] === true) return;
+      const bal = data.balances[key] || {};
+      totalAct += parseFloat(bal.saldoActual) || 0;
+      totalCon += calcConciliado(bi, ci);
+    });
+
+    const fAct = formatCurrency(totalAct) || '0,00';
+    const fCon = formatCurrency(totalCon) || '0,00';
+
+    // Fila Expandida / Banco Expandido
+    const elRowAct = document.getElementById('row-total-act-' + bi);
+    if (elRowAct) elRowAct.textContent = fAct;
+    const elRowCon = document.getElementById('row-total-con-' + bi);
+    if (elRowCon) elRowCon.textContent = fCon;
+
+    // Fila Colapsada / Banco Colapsado
+    const elRowActCol = document.getElementById('row-total-act-collapsed-' + bi);
+    if (elRowActCol) elRowActCol.textContent = fAct;
+    const elRowConCol = document.getElementById('row-total-con-collapsed-' + bi);
+    if (elRowConCol) elRowConCol.textContent = fCon;
+
+    // Columna de Bancos Colapsada (Horizontal)
+    const elRowActBCCol = document.getElementById('row-total-act-bankcol-collapsed-' + bi);
+    if (elRowActBCCol) elRowActBCCol.textContent = fAct;
+    const elRowConBCCol = document.getElementById('row-total-con-bankcol-collapsed-' + bi);
+    if (elRowConBCCol) elRowConBCCol.textContent = fCon;
+  });
+}
+
 // ─── REPORTES DE IMPRESIÓN (NATIVOS / PDF) ─────────────────
 const reportStyles = `
   body {
@@ -951,7 +1023,7 @@ const reportStyles = `
     background: #fff;
     margin: 0;
     padding: 0;
-    font-size: 8px; /* Tamaño optimizado y compacto para que todo entre en una sola página vertical */
+    font-size: 8px;
     line-height: 1.25;
   }
   h1 {
@@ -1032,13 +1104,13 @@ const reportStyles = `
     justify-content: space-between;
     border-bottom: 1px solid #f1f5f9;
     padding-bottom: 1px;
-    font-size: 9.5px; /* Importes principales ampliados significativamente */
+    font-size: 9.5px;
   }
   .p-row:last-child {
     border-bottom: none;
   }
   .p-lbl {
-    font-size: 7px; /* Etiquetas de campos ampliadas */
+    font-size: 7px;
     text-transform: uppercase;
     font-weight: 600;
     color: #475569;
@@ -1047,7 +1119,7 @@ const reportStyles = `
   .p-lbl.pun { color: #7c3aed; }
   .p-lbl.conc { color: #16a34a; }
   .print-mov-item {
-    font-size: 7.5px; /* Notas y anotaciones de movimientos ampliadas */
+    font-size: 7.5px;
     background: rgba(0, 0, 0, 0.03);
     border: 1px dashed #cbd5e1;
     border-radius: 2px;
@@ -1076,7 +1148,7 @@ const reportStyles = `
   @media print {
     @page {
       size: portrait;
-      margin: 4mm 5mm; /* Margen ultracompacto para garantizar una sola página */
+      margin: 4mm 5mm;
     }
     body {
       margin: 0;
@@ -1116,7 +1188,6 @@ function generateUnifiedPrintHTML() {
   const nb = data.banks.length;
   const nc = data.companies.length;
 
-  // Paleta de tonos pastel para intercalar en las filas de las empresas (Eje Y)
   const transposedRowColors = [
     '#f8fafc', // Slate
     '#f0fdf4', // Emerald
@@ -1162,13 +1233,12 @@ function generateUnifiedPrintHTML() {
       const isDisabled = data.disabledCells[key] === true;
 
       if (isDisabled) {
-        // Celda inactiva: completamente limpia, fondo blanco, sin texto
         html += `<td class="cell-print-disabled"></td>`;
       } else {
         const bal = data.balances[key] || {};
         const sc = calcConciliado(bi, ci);
         
-        // Procesar todos los movimientos (conciliados y pendientes)
+        // Procesar todos los movimientos
         const movs = data.movements[key] || [];
         let movsHTML = '';
         if (movs.length > 0) {
@@ -1210,7 +1280,7 @@ function generateUnifiedPrintHTML() {
   // ─── SECCIÓN 2: DOBLE COLUMNA PARA FACTURAS E IMPUESTOS (SIDE-BY-SIDE) ───
   html += `<div style="display: flex; gap: 10px; width: 100%; margin-top: 8px;">`;
 
-  // Columna Izquierda: Facturas Recurrentes (Con todas las columnas solicitadas)
+  // Columna Izquierda: Facturas Recurrentes
   html += `<div style="flex: 1.1; min-width: 0;">
     <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Facturas Recurrentes</h2>
     <table class="print-matrix-table">
@@ -1275,13 +1345,18 @@ function generateUnifiedPrintHTML() {
   return html;
 }
 
+function generateNotesPrintHTML() {
+  return `<h1>Notas - Control Bancario</h1>
+          <p class="meta">Generado automáticamente el ${new Date().toLocaleDateString('es-ES')}</p>
+          <div style="font-size: 11px; white-space: pre-wrap; font-family: monospace; line-height: 1.5; border: 1px solid #cbd5e1; padding: 12px; background: #fafafa; border-radius: 4px;">${esc(data.notes || '')}</div>`;
+}
+
 window.printSectionReport = function(sectionType) {
   let contentHTML = '';
   
   if (sectionType === 'notes') {
     contentHTML = generateNotesPrintHTML();
   } else {
-    // Al presionar imprimir en Balances, Facturas o Impuestos, generamos la hoja integrada unificada
     contentHTML = generateUnifiedPrintHTML();
   }
 
@@ -1361,7 +1436,7 @@ function renderBalances() {
     'rgba(131, 24, 67, 0.15)', 'rgba(20, 83, 45, 0.15)', 'rgba(112, 26, 117, 0.15)', 'rgba(59, 7, 100, 0.15)'
   ];
 
-  // Controladores de navegación esquina superior izquierda (Con soporte de colapsado horizontal)
+  // Controladores de navegación esquina superior izquierda
   if (data.collapsedBankColumn) {
     html += '<div class="grid-cell header-corner col-collapsed-cell" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2);">'
       + '<button class="action-btn-fold btn-toggle-bank-col" title="Expandir columna de bancos">&#x25B6;</button>'
@@ -1384,16 +1459,25 @@ function renderBalances() {
   data.companies.forEach((c,ci) => {
     const isColCollapsed = data.collapsedCompanies[ci] === true;
     if (isColCollapsed) {
-      html += '<div class="grid-cell header-company col-collapsed-cell" style="background-color: '+companyColors[ci % companyColors.length]+'; border-bottom: 2px solid rgba(255,255,255,0.2);">'
+      html += '<div class="grid-cell header-company col-collapsed-cell" style="background-color: '+companyColors[ci % companyColors.length]+'; border-bottom: 2px solid rgba(255,255,255,0.2); justify-content: flex-start;">'
         + '<button class="action-btn-fold btn-toggle-col" data-ci="'+ci+'" title="Expandir columna" style="margin-bottom: 4px;">&#x25B6;</button>'
         + '<span style="font-size: 11px; writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-weight: 700; letter-spacing: 0.5px;">'+esc(c)+'</span>'
+        + '<div style="font-size: 8px; margin-top: 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: rgba(255,255,255,0.85); width: 100%; text-align: center; overflow: hidden; pointer-events: none;">'
+        + '  <div id="col-total-act-collapsed-'+ci+'" style="max-width: 32px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
+        + '  <div id="col-total-con-collapsed-'+ci+'" style="color: var(--emerald); max-width: 32px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
+        + '</div>'
         + '</div>';
     } else {
       html += '<div class="grid-cell header-company" style="background-color: '+companyColors[ci % companyColors.length]+'; border-bottom: 2px solid rgba(255,255,255,0.2);"><div class="header-editable-wrapper">'
         + '<button class="action-btn-fold btn-toggle-col" data-ci="'+ci+'" title="Contraer columna">&#x25C0;</button>'
         + '<input type="text" class="header-input company-input" data-ci="'+ci+'" value="'+esc(c)+'" placeholder="Empresa '+(ci+1)+'"/>'
         + '<button class="btn-delete-col" data-ci="'+ci+'" title="Eliminar empresa">\u2715</button>'
-        + '</div></div>';
+        + '</div>'
+        + '<div style="font-size: 10px; margin-top: 4px; display: flex; flex-direction: column; align-items: center; gap: 1px; opacity: 0.9; width: 100%; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">'
+        + '  <div><span style="color: var(--teal-light); font-weight: bold;">Act:</span> <span id="col-total-act-'+ci+'" style="font-weight: 700;">0,00</span></div>'
+        + '  <div><span style="color: var(--emerald); font-weight: bold;">Con:</span> <span id="col-total-con-'+ci+'" style="font-weight: 700;">0,00</span></div>'
+        + '</div>'
+        + '</div>';
     }
   });
 
@@ -1403,22 +1487,34 @@ function renderBalances() {
     const isRowCollapsed = data.collapsedBanks[bi] === true;
     
     if (data.collapsedBankColumn) {
-      // Si la columna de bancos está contraída horizontalmente, mantenemos el color original y ampliamos la fuente vertical a 11px
-      html += '<div class="grid-cell header-bank col-collapsed-cell" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: '+(isRowCollapsed ? '1px solid '+bColor : '5px solid '+bColor)+';">'
-        + '<span style="font-size: 11px; writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-weight: 700; letter-spacing: 0.5px;">'+esc(b.split('\n')[0])+'</span>'
+      html += '<div class="grid-cell header-bank col-collapsed-cell" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: '+(isRowCollapsed ? '1px solid '+bColor : '5px solid '+bColor)+'; justify-content: flex-start; min-height: 90px;">'
+        + '<span style="font-size: 11px; writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-weight: 700; letter-spacing: 0.5px; margin-bottom: auto;">'+esc(b.split('\n')[0])+'</span>'
+        + '<div style="font-size: 8px; margin-top: 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: rgba(255,255,255,0.85); width: 100%; text-align: center; overflow: hidden; pointer-events: none;">'
+        + '  <div id="row-total-act-bankcol-collapsed-'+bi+'" style="max-width: 32px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
+        + '  <div id="row-total-con-bankcol-collapsed-'+bi+'" style="color: var(--emerald); max-width: 32px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
+        + '</div>'
         + '</div>';
     } else {
       if (isRowCollapsed) {
-        html += '<div class="grid-cell header-bank header-bank-collapsed" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 1px solid '+bColor+';"><div class="header-editable-wrapper">'
+        html += '<div class="grid-cell header-bank header-bank-collapsed" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 1px solid '+bColor+';"><div class="header-editable-wrapper" style="align-items: center;">'
           + '<button class="action-btn-fold btn-toggle-row" data-bi="'+bi+'" title="Expandir fila">&#x25BC;</button>'
-          + '<span style="font-size: 10px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; margin-left: 4px;">'+esc(b.split('\n')[0])+'</span>'
+          + '<span style="font-size: 10px; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; margin-left: 4px; flex-grow: 1;">'+esc(b.split('\n')[0])+'</span>'
+          + '<div style="margin-left: auto; font-size: 9px; display: flex; gap: 6px; align-items: center; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 4px; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">'
+          + '  <div>Act: <span id="row-total-act-collapsed-'+bi+'" style="font-weight:700;">0,00</span></div>'
+          + '  <div style="color: var(--emerald);">Con: <span id="row-total-con-collapsed-'+bi+'" style="font-weight:700;">0,00</span></div>'
+          + '</div>'
           + '</div></div>';
       } else {
         html += '<div class="grid-cell header-bank" style="background-color: '+bColor+'; border-right: 2px solid rgba(255,255,255,0.2); --row-border: 5px solid '+bColor+';"><div class="header-editable-wrapper">'
           + '<button class="action-btn-fold btn-toggle-row" data-bi="'+bi+'" title="Contraer fila">&#x25B2;</button>'
-          + '<textarea class="header-input bank-input" data-bi="'+bi+'" placeholder="Banco '+(bi+1)+'\n...\n..." rows="6">'+esc(b)+'</textarea>'
+          + '<textarea class="header-input bank-input" data-bi="'+bi+'" placeholder="Banco '+(bi+1)+'\n...\n..." rows="4">'+esc(b)+'</textarea>'
           + '<button class="btn-delete-row" data-bi="'+bi+'" title="Eliminar banco">\u2715</button>'
-          + '</div></div>';
+          + '</div>'
+          + '<div style="margin-top: auto; padding-top: 4px; border-top: 1px solid var(--border-strong); font-size: 10px; display: flex; flex-direction: column; gap: 1px; width: 100%; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">'
+          + '  <div><span style="color: var(--teal-light); font-weight: bold;">Act:</span> <span id="row-total-act-'+bi+'" style="font-weight: 700;">0,00</span></div>'
+          + '  <div><span style="color: var(--emerald); font-weight: bold;">Con:</span> <span id="row-total-con-'+bi+'" style="font-weight: 700;">0,00</span></div>'
+          + '</div>'
+          + '</div>';
       }
     }
     
@@ -1488,6 +1584,7 @@ function renderBalances() {
   });
 
   g.innerHTML = html;
+  updateAllTotals();
 }
 
 // ─── RENDERIZADO FACTURAS ──────────────────────────────────
@@ -1603,12 +1700,20 @@ function setupEvents() {
         if (!data.movements[key] || !data.movements[key][mi]) return;
         data.movements[key][mi][el.dataset.field] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
         saveData();
-        if (el.dataset.field==='importe') updateConciliado(bi,ci);
+        if (el.dataset.field==='importe') {
+          updateConciliado(bi,ci);
+          updateAllTotals();
+        }
       } else {
         if (!data.balances[key]) data.balances[key]={};
         data.balances[key][el.dataset.field] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
         saveData();
-        if (el.dataset.field==='saldoActual') updateConciliado(bi,ci);
+        if (el.dataset.field==='saldoActual') {
+          updateConciliado(bi,ci);
+          updateAllTotals();
+        } else if (el.dataset.field==='saldoPunteado') {
+          updateAllTotals();
+        }
       }
     }
   });
@@ -1709,12 +1814,15 @@ function setupEvents() {
       data.movements[key][mi].conciliado = el.checked;
       const item=el.closest('.movement-item');
       if(item) item.classList.toggle('mov-conciliado',el.checked);
-      saveData(); updateConciliado(bi,ci);
+      saveData(); 
+      updateConciliado(bi,ci);
+      updateAllTotals();
     }
     if (el.classList.contains('cell-activate-check')) {
       const bi=el.dataset.bi, ci=el.dataset.ci, key=bi+'-'+ci;
       data.disabledCells[key] = !el.checked;
-      saveData(); renderBalances();
+      saveData(); 
+      renderBalances();
     }
   });
 
