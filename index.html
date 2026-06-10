@@ -639,6 +639,11 @@
     .col-collapsed-cell .movements-list {
       display: none !important;
     }
+    #btn-use-result:hover {
+      background: var(--teal) !important;
+      color: #fff !important;
+      border-color: var(--teal-light) !important;
+     }
 
     /* ESTILOS DE CELDAS COLAPSADAS (FILA BANCO) */
     .row-collapsed-cell {
@@ -721,9 +726,14 @@
     <input type="text" id="floating-calc-input" class="floating-calc-input" placeholder="Operación (ej. 30-2)..." spellcheck="false" />
     <button type="button" id="btn-clear-calc" title="Borrar operación">&#x2715;</button>
   </div>
-  <div class="floating-calc-result">
+  
+ 
+  <div class="floating-calc-result" style="display: flex; align-items: center; justify-content: space-between;">
+  <div style="display: flex; align-items: center; gap: 4px;">
     <span style="color: var(--text-muted); font-size: 9px;">Res:</span>
-    <span id="floating-calc-result-val">0</span>
+    <span id="floating-calc-result-val" data-raw="0">0</span>
+  </div>
+     <button type="button" id="btn-use-result" title="Usar resultado en la operación" style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.15); color: var(--teal-light); cursor: pointer; font-size: 8px; padding: 2px 4px; border-radius: 3px; line-height: 1; transition: all 0.15s ease;">&#x279D; Usar</button>
   </div>
 </div>
 
@@ -2409,6 +2419,7 @@ if (data.masterPassword === undefined) {
     });
   }
 
+  // CONTROL DE LA VENTANA FLOTANTE DE CÁLCULO
   if (calcInput && calcResult) {
     calcInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
@@ -2417,6 +2428,7 @@ if (data.masterPassword === undefined) {
         const sanitized = expr.replace(/[^0-9+\-*/().%\s]/g, '');
         if (!sanitized.trim()) {
           calcResult.textContent = '0';
+          calcResult.dataset.raw = '0';
           return;
         }
         try {
@@ -2424,16 +2436,33 @@ if (data.masterPassword === undefined) {
           const res = evalFn();
           if (res === undefined || isNaN(res) || !isFinite(res)) {
             calcResult.textContent = 'Error';
+            calcResult.dataset.raw = '0';
           } else {
-            calcResult.textContent = Number(res.toFixed(4)).toLocaleString('es-ES');
+            const rawVal = Number(res.toFixed(4));
+            calcResult.textContent = rawVal.toLocaleString('es-ES');
+            calcResult.dataset.raw = rawVal; // Guarda el valor numérico limpio para operar
           }
         } catch (err) {
           calcResult.textContent = 'Error';
+          calcResult.dataset.raw = '0';
         }
       }
     });
   }
 
+  // Evento para enviar el resultado de vuelta al campo de entrada de la calculadora
+  const btnUseResult = document.getElementById('btn-use-result');
+  if (btnUseResult && calcInput && calcResult) {
+    btnUseResult.addEventListener('click', () => {
+      const raw = calcResult.dataset.raw;
+      if (raw && raw !== '0' && calcResult.textContent !== 'Error') {
+        calcInput.value = raw;
+        calcInput.focus();
+      }
+    });
+  }
+
+ 
   // Evento para el guardado manual de datos
   document.getElementById('btn-manual-save').addEventListener('click', () => {
     manualSave();
