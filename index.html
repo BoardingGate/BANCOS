@@ -913,7 +913,7 @@ let data = {
   banks: ['Banco 1','Banco 2','Banco 3','Banco 4'],
   companies: ['Empresa 1','Empresa 2','Empresa 3','Empresa 4','Empresa 5','Empresa 6'],
   balances: {},
-  movements: {},
+  movements: {},  
   disabledCells: {},
   collapsedBanks: {},
   collapsedCompanies: {},
@@ -922,7 +922,8 @@ let data = {
   taxCompanies: ['Empresa A','Empresa B'],
   taxValues: {},
   notes: '',
-  credentials: [] // Nueva clave para las 10 credenciales
+  masterPassword: '',
+  credentials: [] 
 };  
 
 // ─── PERSISTENCIA EN TIEMPO REAL ──────────────────────────
@@ -950,6 +951,9 @@ function loadData() {
     if (!data.collapsedBanks) data.collapsedBanks = {};
     if (!data.collapsedCompanies) data.collapsedCompanies = {};
     if (data.collapsedBankColumn === undefined) data.collapsedBankColumn = false;
+    if (data.masterPassword === undefined) {
+      data.masterPassword = '';
+    }
     if (!data.credentials || data.credentials.length !== 10) {
   data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
 }
@@ -1865,9 +1869,53 @@ function renderAll() {
 }  
 
 // Renderiza de manera compacta la cuadrícula de 10 filas de campos dobles
+// Comprueba si la clave maestra ha sido validada en las últimas 24 horas
+function isCredsAuthorized() {
+  const authTime = localStorage.getItem('creds_authorized_time');
+  if (!authTime) return false;
+  const diff = Date.now() - parseInt(authTime, 10);
+  return diff < 24 * 60 * 60 * 1000; // Validez de 24 horas
+}
+
+// Renderiza dinámicamente el estado de bloqueo o el panel de credenciales
 function renderCredentials() {
   const container = document.getElementById('credentials-grid-container');
   if (!container) return;
+
+  // 1. Estado: NO AUTORIZADO
+  if (!isCredsAuthorized()) {
+    container.style.display = 'block'; // Cambia el diseño temporalmente a bloque para formularios
+
+    // Caso A: Primera vez (No hay clave configurada)
+    if (!data.masterPassword) {
+      container.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 4px;">
+          <p style="font-size: 10px; color: var(--text-muted); line-height: 1.3;">Establezca una Clave Maestra para proteger sus credenciales.</p>
+          <input type="password" id="setup-master-pass" class="field-input" placeholder="Nueva Clave Maestra" style="font-size: 11px;" />
+          <input type="password" id="setup-master-pass-confirm" class="field-input" placeholder="Confirmar Clave Maestra" style="font-size: 11px;" />
+          <button type="button" class="btn btn-primary btn-sm" id="btn-save-master-pass" style="justify-content: center; width: 100%;">Establecer Clave</button>
+        </div>
+      `;
+    } 
+    // Caso B: Clave configurada anteriormente (Solicitar desbloqueo)
+    else {
+      container.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 4px;">
+          <p style="font-size: 10px; color: var(--text-muted); line-height: 1.3;">Introduzca su Clave Maestra para acceder.</p>
+          <input type="password" id="input-master-pass" class="field-input" placeholder="Clave Maestra" style="font-size: 11px;" autofocus />
+          <div style="display: flex; gap: 4px;">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-unlock-creds" style="flex: 1; justify-content: center;">Desbloquear</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-master-pass" style="font-size: 9px; padding: 2px 4px;" title="Borrará las credenciales por seguridad">Reset</button>
+          </div>
+          <span id="unlock-error" style="color: var(--danger); font-size: 10px; display: none; text-align: center;">Clave incorrecta</span>
+        </div>
+      `;
+    }
+    return;
+  }
+
+  // 2. Estado: AUTORIZADO (Muestra los campos)
+  container.style.display = 'grid'; // Restaura el diseño grid de doble columna
   let html = '';
   for (let i = 0; i < 10; i++) {
     const cred = data.credentials[i] || { usuario: '', contrasena: '' };
@@ -1908,14 +1956,72 @@ function copyToClipboard(text) {
 }
   
 
+// --- CONTROL DE ACCESO (CLAVE MAESTRA) ---
+  
+  // Función para procesar el intento de desbloqueo
+  function attemptUnlock() {
+    const input = document.getElementById('input-master-pass');
+    const err = document.getElementById('unlock-error');
+    if (!input) return;
+
+    if (input.value === data.masterPassword) {
+      localStorage.setItem('creds_authorized_time', Date.now()); // Autorizar sesión por 24 horas
+      renderCredentials();
+    } else {
+      if (err) err.style.display = 'block';
+    }
+  }
+
+  // Eventos de clic de botones internos del widget flotante de claves
+  document.getElementById('floating-creds-widget').addEventListener('click', e => {
+    // Configurar nueva clave
+    if (e.target.id === 'btn-save-master-pass') {
+      const p1 = document.getElementById('setup-master-pass').value;
+      const p2 = document.getElementById('setup-master-pass-confirm').value;
+      if (!p1) { alert('La clave no puede estar vacía.'); return; }
+      if (p1 !== p2) { alert('Las claves introducidas no coinciden.'); return; }
+      
+      data.masterPassword = p1;
+      saveData();
+      localStorage.setItem('creds_authorized_time', Date.now()); // Autorizar automáticamente
+      renderCredentials();
+    }
+
+    // Botón Desbloquear
+    if (e.target.id === 'btn-unlock-creds') {
+      attemptUnlock();
+    }
+
+    // Reset de seguridad (borra clave y credenciales)
+    if (e.target.id === 'btn-reset-master-pass') {
+      confirm_('¿Resetear la Clave Maestra? Por seguridad se borrarán todas las credenciales guardadas.', () => {
+        data.masterPassword = '';
+        data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
+        localStorage.removeItem('creds_authorized_time');
+        saveData();
+        renderCredentials();
+      });
+    }
+  });
+
+  // Soporte para desbloquear pulsando la tecla "Enter"
+  document.getElementById('floating-creds-widget').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.id === 'input-master-pass') {
+      e.preventDefault();
+      attemptUnlock();
+    }
+  });
+  
   
 // ─── EVENTOS Y LÓGICA DE INTERFACES ───────────────────────
 function setupEvents() {
-
-
+  
 if (!data.credentials || data.credentials.length !== 10) {
   data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
 }
+
+if (data.masterPassword === undefined) {
+  data.masterPassword = '';}  
 
 
 // --- LÓGICA DEL WIDGET FLOTANTE DE CREDENCIALES ---
