@@ -338,26 +338,69 @@
     .modal-footer{display:flex;gap:6px;justify-content:flex-end;padding:10px 16px;border-top:1px solid var(--border)}
     
     /* ====== VENTANA FLOTANTE DE CÁLCULO ====== */
-    .floating-calc {
-      position: fixed;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 1000;
-      background: rgba(18, 21, 43, 0.96);
-      border: 1px solid var(--border-strong);
-      border-left: none;
-      border-radius: 0 var(--radius) var(--radius) 0;
-      box-shadow: var(--shadow-lg);
-      padding: 12px;
-      width: 170px;
-      backdrop-filter: blur(10px);
-      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .floating-calc.collapsed {
-      transform: translateY(-50%) translateX(-170px);
-    }
-    .floating-calc-toggle-tab {
+.floating-calc {
+  position: fixed;
+  left: 0;
+  top: 10px; /* Alineado a la altura del logotipo/cabecera */
+  z-index: 1001; /* Por encima de la cabecera adhesiva */
+  background: rgba(18, 21, 43, 0.96);
+  border: 1px solid var(--border-strong);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: var(--shadow-lg);
+  padding: 12px;
+  width: 170px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.floating-calc.collapsed {
+  transform: translateX(-170px); /* Se elimina el translateY(-50%) */
+}
+
+/* Nuevos estilos para la Ventana Centrada de Claves */
+.credentials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+  margin-top: 10px;
+}
+.credential-field-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+.credential-field-group .field-input {
+  padding-right: 30px !important;
+}
+.credential-field-group .input-pass-wrapper {
+  position: relative;
+  width: 100%;
+}
+.credential-field-group .input-pass-wrapper .field-input {
+  padding-right: 52px !important;
+}
+
+.floating-calc {
+  position: fixed;
+  left: 0;
+  top: 10px; /* Alineado a la altura del logotipo/cabecera */
+  z-index: 1001; /* Por encima de la cabecera adhesiva */
+  background: rgba(18, 21, 43, 0.96);
+  border: 1px solid var(--border-strong);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: var(--shadow-lg);
+  padding: 12px;
+  width: 170px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.floating-calc.collapsed {
+  transform: translateX(-170px); /* Se elimina el translateY(-50%) */
+}
+
+  .floating-calc-toggle-tab {
       position: absolute;
       right: -18px;
       top: 50%;
@@ -424,6 +467,29 @@
       justify-content: space-between;
       word-break: break-all;
     }
+
+.credentials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+  margin-top: 10px;
+}
+.credential-field-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+.credential-field-group .field-input {
+  padding-right: 30px !important;
+}
+.credential-field-group .input-pass-wrapper {
+  position: relative;
+  width: 100%;
+}
+.credential-field-group .input-pass-wrapper .field-input {
+  padding-right: 52px !important;
+}
 
     /* Estilos específicos para el botón de borrado de la calculadora */
     #btn-clear-calc {
@@ -626,6 +692,8 @@
       <button class="btn btn-primary btn-sm" onclick="exportBackup(false)">&#x1F4E5; Descargar Copia</button>
     </div>
 
+   <button class="btn btn-secondary btn-sm" id="btn-open-credentials" style="background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); color: var(--accent-light);">&#x1F511; Claves</button>
+    
     <button class="btn btn-primary btn-sm" id="btn-manual-save">&#x1F4BE; Guardar Datos</button>
     <span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
     <button class="btn btn-ghost btn-sm" id="btn-clear">&#x1F5D1; Limpiar todo</button>
@@ -768,8 +836,9 @@ let data = {
   invoices: [],
   taxCompanies: ['Empresa A','Empresa B'],
   taxValues: {},
-  notes: ''
-};
+  notes: '',
+  credentials: [] // Nueva clave para las 10 credenciales
+};  
 
 // ─── PERSISTENCIA EN TIEMPO REAL ──────────────────────────
 function saveData() {
@@ -796,6 +865,9 @@ function loadData() {
     if (!data.collapsedBanks) data.collapsedBanks = {};
     if (!data.collapsedCompanies) data.collapsedCompanies = {};
     if (data.collapsedBankColumn === undefined) data.collapsedBankColumn = false;
+    if (!data.credentials || data.credentials.length !== 10) {
+  data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
+}
   } catch(e) {}
 }
 
@@ -1438,6 +1510,10 @@ window.printSectionReport = function(sectionType) {
           }, 400);
         };
       <\/script>
+
+
+
+      
     </body>
     </html>
   `);
@@ -1700,10 +1776,115 @@ function renderAll() {
   renderBalances();
   renderInvoices();
   renderTaxes();
+  renderCredentials();
+}  
+
+// Renderizado dinámico de los 10 campos dobles en la cuadrícula
+function renderCredentials() {
+  const container = document.getElementById('credentials-grid-container');
+  if (!container) return;
+  let html = '';
+  for (let i = 0; i < 10; i++) {
+    const cred = data.credentials[i] || { usuario: '', contrasena: '' };
+    html += `
+      <!-- Columna Usuario -->
+      <div class="credential-field-group">
+        <span style="font-size: 10px; color: var(--text-muted); min-width: 14px; text-align: right; user-select: none;">${i + 1}.</span>
+        <input type="text" class="field-input cred-input" data-idx="${i}" data-field="usuario" value="${esc(cred.usuario)}" placeholder="Usuario / Correo ${i + 1}" />
+        <button type="button" class="action-btn-mini copy-cred-btn" data-idx="${i}" data-field="usuario" title="Copiar Usuario" style="position: absolute; right: 4px;">📋</button>
+      </div>
+      <!-- Columna Contraseña -->
+      <div class="credential-field-group">
+        <div class="input-pass-wrapper">
+          <input type="password" class="field-input cred-input" data-idx="${i}" data-field="contrasena" value="${esc(cred.contrasena)}" placeholder="Contraseña ${i + 1}" id="cred-pass-${i}" />
+          <div style="display: flex; gap: 2px; position: absolute; right: 4px; top: 50%; transform: translateY(-50%);">
+            <button type="button" class="action-btn-mini toggle-pass-btn" data-idx="${i}" title="Mostrar/Ocultar" style="font-size: 9px;">👁️</button>
+            <button type="button" class="action-btn-mini copy-cred-btn" data-idx="${i}" data-field="contrasena" title="Copiar Contraseña">📋</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
 }
 
+// Copiar datos del portapapeles notificando al indicador del cabecero
+function copyToClipboard(text) {
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const el = document.getElementById('save-indicator');
+    const prevText = el.textContent;
+    el.textContent = '✓ Copiado al portapapeles';
+    el.classList.add('saved');
+    setTimeout(() => {
+      el.classList.remove('saved');
+      el.textContent = prevText;
+    }, 1200);
+  }).catch(() => {});
+}
+  
 // ─── EVENTOS Y LÓGICA DE INTERFACES ───────────────────────
 function setupEvents() {
+
+
+if (!data.credentials || data.credentials.length !== 10) {
+  data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
+}
+
+// --- CONTROL DEL MODAL DE CREDENCIALES ---
+  const credOverlay = document.getElementById('credentials-overlay');
+  const btnOpenCred = document.getElementById('btn-open-credentials');
+  const credCloseX = document.getElementById('credentials-close-x');
+  const credCloseBtn = document.getElementById('credentials-close-btn');
+
+  const openCreds = () => {
+    renderCredentials();
+    credOverlay.classList.remove('hidden');
+  };
+  const closeCreds = () => credOverlay.classList.add('hidden');
+
+  btnOpenCred.addEventListener('click', openCreds);
+  credCloseX.addEventListener('click', closeCreds);
+  credCloseBtn.addEventListener('click', closeCreds);
+  credOverlay.addEventListener('click', e => {
+    if (e.target === credOverlay) closeCreds();
+  });
+
+  // Guardado en tiempo real al escribir en los campos de credenciales
+  document.getElementById('credentials-grid-container').addEventListener('input', e => {
+    const el = e.target;
+    if (el.classList.contains('cred-input')) {
+      const idx = +el.dataset.idx;
+      const field = el.dataset.field;
+      data.credentials[idx][field] = el.value;
+      saveData();
+    }
+  });
+
+  // Eventos de botones internos de las credenciales (Copiar / Mostrar contraseña)
+  document.getElementById('credentials-grid-container').addEventListener('click', e => {
+    const btn = e.target.closest('.action-btn-mini');
+    if (!btn) return;
+
+    const idx = +btn.dataset.idx;
+
+    // Copiar al portapapeles
+    if (btn.classList.contains('copy-cred-btn')) {
+      const field = btn.dataset.field;
+      const textToCopy = data.credentials[idx] ? data.credentials[idx][field] : '';
+      copyToClipboard(textToCopy);
+    }
+
+    // Alternar visibilidad de contraseña
+    if (btn.classList.contains('toggle-pass-btn')) {
+      const input = document.getElementById(`cred-pass-${idx}`);
+      if (input) {
+        const isPass = input.type === 'password';
+        input.type = isPass ? 'text' : 'password';
+        btn.textContent = isPass ? '🔒' : '👁️';
+      }
+    }
+  });  
 
   document.addEventListener('focusout', e => {
     if (e.target.classList.contains('fmt-num')) {
@@ -2105,5 +2286,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setupEvents();
 });
 </script>
+
+
+<!-- VENTANA CENTRADA: RECORDATORIO DE USUARIOS Y CONTRASEÑAS -->
+<div id="credentials-overlay" class="modal-overlay hidden">
+  <div class="modal" style="max-width: 680px; width: 95%;">
+    <div class="modal-header">
+      <h3 style="display: flex; align-items: center; gap: 6px;">&#x1F511; Recordatorio de Credenciales</h3>
+      <button type="button" class="btn-delete-row" id="credentials-close-x" style="opacity:1; color: var(--text-secondary); font-size: 14px;">&#x2715;</button>
+    </div>
+    <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 8px;">
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">
+        Almacene hasta 10 accesos directos. Los datos se guardan de forma local. Use el botón <span style="color:var(--accent-light);">📋</span> para copiar al portapapeles.
+      </p>
+      
+      <!-- Cabecera de columnas -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; margin-bottom: 6px;">
+        <div style="font-size: 10px; font-weight: 600; color: var(--teal-light); text-transform: uppercase; padding-left: 18px;">Usuarios / Identificadores</div>
+        <div style="font-size: 10px; font-weight: 600; color: var(--amber); text-transform: uppercase;">Contraseñas</div>
+      </div>
+
+      <div class="credentials-grid" id="credentials-grid-container">
+        <!-- Generación dinámica de los 10 campos dobles -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="credentials-close-btn">Cerrar</button>
+    </div>
+  </div>
+</div>
+  
 </body>
 </html>
