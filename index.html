@@ -72,6 +72,80 @@
   flex-shrink: 0;         /* Evita que se encoja o deforme al deslizar */
 }
 
+/* VENTANA FLOTANTE DE CREDENCIALES (Estilo lateral izquierdo centrado) */
+.floating-creds {
+  position: fixed;
+  left: 0;
+  top: 55%; /* Ligeramente desplazado bajo la calculadora */
+  transform: translateY(-50%);
+  z-index: 1000;
+  background: rgba(18, 21, 43, 0.96);
+  border: 1px solid var(--border-strong);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: var(--shadow-lg);
+  padding: 12px;
+  width: 330px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.floating-creds.collapsed {
+  transform: translateY(-50%) translateX(-330px);
+}
+.floating-creds-toggle-tab {
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(18, 21, 43, 0.96);
+  border: 1px solid var(--border-strong);
+  border-left: none;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--accent-light);
+  cursor: pointer;
+  width: 18px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  box-shadow: 4px 0 10px rgba(0,0,0,0.3);
+  padding: 0;
+  transition: background var(--transition);
+}
+.floating-creds-toggle-tab:hover {
+  background: var(--bg-secondary);
+  color: #fff;
+}
+.credentials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+}
+.credential-field-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  position: relative;
+}
+.credential-field-group .field-input {
+  padding-right: 22px !important;
+  font-size: 10px !important;
+  padding: 3px 5px !important;
+}
+.credential-field-group .input-pass-wrapper {
+  position: relative;
+  width: 100%;
+}
+.credential-field-group .input-pass-wrapper .field-input {
+  padding-right: 36px !important;
+}
+
+/* Ocultar en el reporte de impresión */
+.pdf-mode .floating-creds {
+  display: none !important;
+}    
+
     
     .logo-icon{font-size:20px;filter:drop-shadow(0 0 6px rgba(99,102,241,0.5))}
     .app-title{font-size:15px;font-weight:700;background:linear-gradient(135deg,#6366f1,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.3px}
@@ -653,6 +727,19 @@
   </div>
 </div>
 
+<!-- VENTANA FLOTANTE DE CREDENCIALES -->
+<div id="floating-creds-widget" class="floating-creds collapsed">
+  <button type="button" id="floating-creds-tab" class="floating-creds-toggle-tab" title="Accesos directos">&#x25B6;</button>
+  <div style="font-size: 10px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; user-select: none;">
+    <span>&#x1F511; Claves rápidas</span>
+  </div>
+  <div style="max-height: 340px; overflow-y: auto; padding-right: 4px; scrollbar-width: thin;">
+    <div class="credentials-grid" id="credentials-grid-container">
+      <!-- Los 10 campos dobles se cargan dinámicamente -->
+    </div>
+  </div>
+</div>  
+
 <header class="app-header">
   <div class="header-left">
     <div class="logo-icon">&#x1F3E6;</div>
@@ -691,9 +778,7 @@
     <div class="dynamic-actions hidden" id="actions-backup">
       <button class="btn btn-primary btn-sm" onclick="exportBackup(false)">&#x1F4E5; Descargar Copia</button>
     </div>
-
-   <button class="btn btn-secondary btn-sm" id="btn-open-credentials" style="background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); color: var(--accent-light);">&#x1F511; Claves</button>
-    
+   
     <button class="btn btn-primary btn-sm" id="btn-manual-save">&#x1F4BE; Guardar Datos</button>
     <span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
     <button class="btn btn-ghost btn-sm" id="btn-clear">&#x1F5D1; Limpiar todo</button>
@@ -1779,7 +1864,7 @@ function renderAll() {
   renderCredentials();
 }  
 
-// Renderizado dinámico de los 10 campos dobles en la cuadrícula
+// Renderiza de manera compacta la cuadrícula de 10 filas de campos dobles
 function renderCredentials() {
   const container = document.getElementById('credentials-grid-container');
   if (!container) return;
@@ -1789,17 +1874,16 @@ function renderCredentials() {
     html += `
       <!-- Columna Usuario -->
       <div class="credential-field-group">
-        <span style="font-size: 10px; color: var(--text-muted); min-width: 14px; text-align: right; user-select: none;">${i + 1}.</span>
-        <input type="text" class="field-input cred-input" data-idx="${i}" data-field="usuario" value="${esc(cred.usuario)}" placeholder="Usuario / Correo ${i + 1}" />
-        <button type="button" class="action-btn-mini copy-cred-btn" data-idx="${i}" data-field="usuario" title="Copiar Usuario" style="position: absolute; right: 4px;">📋</button>
+        <input type="text" class="field-input cred-input" data-idx="${i}" data-field="usuario" value="${esc(cred.usuario)}" placeholder="Usuario ${i + 1}" />
+        <button type="button" class="action-btn-mini copy-cred-btn" data-idx="${i}" data-field="usuario" title="Copiar" style="position: absolute; right: 2px;">📋</button>
       </div>
       <!-- Columna Contraseña -->
       <div class="credential-field-group">
         <div class="input-pass-wrapper">
-          <input type="password" class="field-input cred-input" data-idx="${i}" data-field="contrasena" value="${esc(cred.contrasena)}" placeholder="Contraseña ${i + 1}" id="cred-pass-${i}" />
-          <div style="display: flex; gap: 2px; position: absolute; right: 4px; top: 50%; transform: translateY(-50%);">
-            <button type="button" class="action-btn-mini toggle-pass-btn" data-idx="${i}" title="Mostrar/Ocultar" style="font-size: 9px;">👁️</button>
-            <button type="button" class="action-btn-mini copy-cred-btn" data-idx="${i}" data-field="contrasena" title="Copiar Contraseña">📋</button>
+          <input type="password" class="field-input cred-input" data-idx="${i}" data-field="contrasena" value="${esc(cred.contrasena)}" placeholder="Clave ${i + 1}" id="cred-pass-${i}" />
+          <div style="display: flex; gap: 1px; position: absolute; right: 2px; top: 50%; transform: translateY(-50%);">
+            <button type="button" class="action-btn-mini toggle-pass-btn" data-idx="${i}" title="Mostrar" style="font-size: 8px;">👁️</button>
+            <button type="button" class="action-btn-mini copy-cred-btn" data-idx="${i}" data-field="contrasena" title="Copiar">📋</button>
           </div>
         </div>
       </div>
@@ -1808,7 +1892,7 @@ function renderCredentials() {
   container.innerHTML = html;
 }
 
-// Copiar datos del portapapeles notificando al indicador del cabecero
+// Envía texto al portapapeles informando temporalmente en el panel superior
 function copyToClipboard(text) {
   if (!text) return;
   navigator.clipboard.writeText(text).then(() => {
@@ -1823,6 +1907,8 @@ function copyToClipboard(text) {
   }).catch(() => {});
 }
   
+
+  
 // ─── EVENTOS Y LÓGICA DE INTERFACES ───────────────────────
 function setupEvents() {
 
@@ -1831,26 +1917,19 @@ if (!data.credentials || data.credentials.length !== 10) {
   data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
 }
 
-// --- CONTROL DEL MODAL DE CREDENCIALES ---
-  const credOverlay = document.getElementById('credentials-overlay');
-  const btnOpenCred = document.getElementById('btn-open-credentials');
-  const credCloseX = document.getElementById('credentials-close-x');
-  const credCloseBtn = document.getElementById('credentials-close-btn');
 
-  const openCreds = () => {
-    renderCredentials();
-    credOverlay.classList.remove('hidden');
-  };
-  const closeCreds = () => credOverlay.classList.add('hidden');
+// --- LÓGICA DEL WIDGET FLOTANTE DE CREDENCIALES ---
+  const credsWidget = document.getElementById('floating-creds-widget');
+  const credsTab = document.getElementById('floating-creds-tab');
 
-  btnOpenCred.addEventListener('click', openCreds);
-  credCloseX.addEventListener('click', closeCreds);
-  credCloseBtn.addEventListener('click', closeCreds);
-  credOverlay.addEventListener('click', e => {
-    if (e.target === credOverlay) closeCreds();
-  });
+  if (credsTab && credsWidget) {
+    credsTab.addEventListener('click', () => {
+      credsWidget.classList.toggle('collapsed');
+      credsTab.innerHTML = credsWidget.classList.contains('collapsed') ? '&#x25B6;' : '&#x25C0;';
+    });
+  }
 
-  // Guardado en tiempo real al escribir en los campos de credenciales
+  // Capturar cambios de entrada y guardarlos al instante
   document.getElementById('credentials-grid-container').addEventListener('input', e => {
     const el = e.target;
     if (el.classList.contains('cred-input')) {
@@ -1861,21 +1940,19 @@ if (!data.credentials || data.credentials.length !== 10) {
     }
   });
 
-  // Eventos de botones internos de las credenciales (Copiar / Mostrar contraseña)
+  // Eventos internos de la cuadrícula: Copiar y Alternar visibilidad de claves
   document.getElementById('credentials-grid-container').addEventListener('click', e => {
     const btn = e.target.closest('.action-btn-mini');
     if (!btn) return;
 
     const idx = +btn.dataset.idx;
 
-    // Copiar al portapapeles
     if (btn.classList.contains('copy-cred-btn')) {
       const field = btn.dataset.field;
-      const textToCopy = data.credentials[idx] ? data.credentials[idx][field] : '';
-      copyToClipboard(textToCopy);
+      const text = data.credentials[idx] ? data.credentials[idx][field] : '';
+      copyToClipboard(text);
     }
 
-    // Alternar visibilidad de contraseña
     if (btn.classList.contains('toggle-pass-btn')) {
       const input = document.getElementById(`cred-pass-${idx}`);
       if (input) {
@@ -1884,8 +1961,9 @@ if (!data.credentials || data.credentials.length !== 10) {
         btn.textContent = isPass ? '🔒' : '👁️';
       }
     }
-  });  
+  });
 
+  
   document.addEventListener('focusout', e => {
     if (e.target.classList.contains('fmt-num')) {
       e.target.value = formatCurrency(parseCurrency(e.target.value));
@@ -2281,10 +2359,11 @@ function updateNotesCount() {
 document.addEventListener('DOMContentLoaded', ()=>{
   loadData();
   renderAll();
+  renderCredentials(); 
   document.getElementById('notes-area').value = data.notes||'';
   updateNotesCount();
   setupEvents();
-});
+}); 
 </script>
 
 
