@@ -72,6 +72,80 @@
   flex-shrink: 0;         /* Evita que se encoja o deforme al deslizar */
 }
 
+/* VENTANA FLOTANTE DE CREDENCIALES (Estilo lateral izquierdo centrado) */
+.floating-creds {
+  position: fixed;
+  left: 0;
+  top: 55%; /* Ligeramente desplazado bajo la calculadora */
+  transform: translateY(-50%);
+  z-index: 1000;
+  background: rgba(18, 21, 43, 0.96);
+  border: 1px solid var(--border-strong);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: var(--shadow-lg);
+  padding: 12px;
+  width: 330px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.floating-creds.collapsed {
+  transform: translateY(-50%) translateX(-330px);
+}
+.floating-creds-toggle-tab {
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(18, 21, 43, 0.96);
+  border: 1px solid var(--border-strong);
+  border-left: none;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--accent-light);
+  cursor: pointer;
+  width: 18px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  box-shadow: 4px 0 10px rgba(0,0,0,0.3);
+  padding: 0;
+  transition: background var(--transition);
+}
+.floating-creds-toggle-tab:hover {
+  background: var(--bg-secondary);
+  color: #fff;
+}
+.credentials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+}
+.credential-field-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  position: relative;
+}
+.credential-field-group .field-input {
+  padding-right: 22px !important;
+  font-size: 10px !important;
+  padding: 3px 5px !important;
+}
+.credential-field-group .input-pass-wrapper {
+  position: relative;
+  width: 100%;
+}
+.credential-field-group .input-pass-wrapper .field-input {
+  padding-right: 36px !important;
+}
+
+/* Ocultar en el reporte de impresión */
+.pdf-mode .floating-creds {
+  display: none !important;
+}    
+
     
     .logo-icon{font-size:20px;filter:drop-shadow(0 0 6px rgba(99,102,241,0.5))}
     .app-title{font-size:15px;font-weight:700;background:linear-gradient(135deg,#6366f1,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.3px}
@@ -338,26 +412,69 @@
     .modal-footer{display:flex;gap:6px;justify-content:flex-end;padding:10px 16px;border-top:1px solid var(--border)}
     
     /* ====== VENTANA FLOTANTE DE CÁLCULO ====== */
-    .floating-calc {
-      position: fixed;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 1000;
-      background: rgba(18, 21, 43, 0.96);
-      border: 1px solid var(--border-strong);
-      border-left: none;
-      border-radius: 0 var(--radius) var(--radius) 0;
-      box-shadow: var(--shadow-lg);
-      padding: 12px;
-      width: 170px;
-      backdrop-filter: blur(10px);
-      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .floating-calc.collapsed {
-      transform: translateY(-50%) translateX(-170px);
-    }
-    .floating-calc-toggle-tab {
+.floating-calc {
+  position: fixed;
+  left: 0;
+  top: 10px; /* Alineado a la altura del logotipo/cabecera */
+  z-index: 1001; /* Por encima de la cabecera adhesiva */
+  background: rgba(18, 21, 43, 0.96);
+  border: 1px solid var(--border-strong);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: var(--shadow-lg);
+  padding: 12px;
+  width: 170px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.floating-calc.collapsed {
+  transform: translateX(-170px); /* Se elimina el translateY(-50%) */
+}
+
+/* Nuevos estilos para la Ventana Centrada de Claves */
+.credentials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+  margin-top: 10px;
+}
+.credential-field-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+.credential-field-group .field-input {
+  padding-right: 30px !important;
+}
+.credential-field-group .input-pass-wrapper {
+  position: relative;
+  width: 100%;
+}
+.credential-field-group .input-pass-wrapper .field-input {
+  padding-right: 52px !important;
+}
+
+.floating-calc {
+  position: fixed;
+  left: 0;
+  top: 10px; /* Alineado a la altura del logotipo/cabecera */
+  z-index: 1001; /* Por encima de la cabecera adhesiva */
+  background: rgba(18, 21, 43, 0.96);
+  border: 1px solid var(--border-strong);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: var(--shadow-lg);
+  padding: 12px;
+  width: 170px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.floating-calc.collapsed {
+  transform: translateX(-170px); /* Se elimina el translateY(-50%) */
+}
+
+  .floating-calc-toggle-tab {
       position: absolute;
       right: -18px;
       top: 50%;
@@ -424,6 +541,29 @@
       justify-content: space-between;
       word-break: break-all;
     }
+
+.credentials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+  margin-top: 10px;
+}
+.credential-field-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+.credential-field-group .field-input {
+  padding-right: 30px !important;
+}
+.credential-field-group .input-pass-wrapper {
+  position: relative;
+  width: 100%;
+}
+.credential-field-group .input-pass-wrapper .field-input {
+  padding-right: 52px !important;
+}
 
     /* Estilos específicos para el botón de borrado de la calculadora */
     #btn-clear-calc {
@@ -587,6 +727,19 @@
   </div>
 </div>
 
+<!-- VENTANA FLOTANTE DE CREDENCIALES -->
+<div id="floating-creds-widget" class="floating-creds collapsed">
+  <button type="button" id="floating-creds-tab" class="floating-creds-toggle-tab" title="Accesos directos">&#x25B6;</button>
+  <div style="font-size: 10px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; user-select: none;">
+    <span>&#x1F511; Claves rápidas</span>
+  </div>
+  <div style="max-height: 340px; overflow-y: auto; padding-right: 4px; scrollbar-width: thin;">
+    <div class="credentials-grid" id="credentials-grid-container">
+      <!-- Los 10 campos dobles se cargan dinámicamente -->
+    </div>
+  </div>
+</div>  
+
 <header class="app-header">
   <div class="header-left">
     <div class="logo-icon">&#x1F3E6;</div>
@@ -625,7 +778,7 @@
     <div class="dynamic-actions hidden" id="actions-backup">
       <button class="btn btn-primary btn-sm" onclick="exportBackup(false)">&#x1F4E5; Descargar Copia</button>
     </div>
-
+   
     <button class="btn btn-primary btn-sm" id="btn-manual-save">&#x1F4BE; Guardar Datos</button>
     <span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
     <button class="btn btn-ghost btn-sm" id="btn-clear">&#x1F5D1; Limpiar todo</button>
@@ -760,7 +913,7 @@ let data = {
   banks: ['Banco 1','Banco 2','Banco 3','Banco 4'],
   companies: ['Empresa 1','Empresa 2','Empresa 3','Empresa 4','Empresa 5','Empresa 6'],
   balances: {},
-  movements: {},
+  movements: {},  
   disabledCells: {},
   collapsedBanks: {},
   collapsedCompanies: {},
@@ -768,8 +921,10 @@ let data = {
   invoices: [],
   taxCompanies: ['Empresa A','Empresa B'],
   taxValues: {},
-  notes: ''
-};
+  notes: '',
+  masterPassword: '',
+  credentials: [] 
+};  
 
 // ─── PERSISTENCIA EN TIEMPO REAL ──────────────────────────
 function saveData() {
@@ -796,6 +951,12 @@ function loadData() {
     if (!data.collapsedBanks) data.collapsedBanks = {};
     if (!data.collapsedCompanies) data.collapsedCompanies = {};
     if (data.collapsedBankColumn === undefined) data.collapsedBankColumn = false;
+    if (data.masterPassword === undefined) {
+      data.masterPassword = '';
+    }
+    if (!data.credentials || data.credentials.length !== 10) {
+  data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
+}
   } catch(e) {}
 }
 
@@ -1438,6 +1599,10 @@ window.printSectionReport = function(sectionType) {
           }, 400);
         };
       <\/script>
+
+
+
+      
     </body>
     </html>
   `);
@@ -1700,11 +1865,211 @@ function renderAll() {
   renderBalances();
   renderInvoices();
   renderTaxes();
+  renderCredentials();
+}  
+
+// Renderiza de manera compacta la cuadrícula de 10 filas de campos dobles
+// Comprueba si la clave maestra ha sido validada en las últimas 24 horas
+function isCredsAuthorized() {
+  const authTime = localStorage.getItem('creds_authorized_time');
+  if (!authTime) return false;
+  const diff = Date.now() - parseInt(authTime, 10);
+  return diff < 24 * 60 * 60 * 1000; // Validez de 24 horas
 }
 
+// Renderiza dinámicamente el estado de bloqueo o el panel de credenciales
+function renderCredentials() {
+  const container = document.getElementById('credentials-grid-container');
+  if (!container) return;
+
+  // 1. Estado: NO AUTORIZADO
+  if (!isCredsAuthorized()) {
+    container.style.display = 'block'; // Cambia el diseño temporalmente a bloque para formularios
+
+    // Caso A: Primera vez (No hay clave configurada)
+    if (!data.masterPassword) {
+      container.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 4px;">
+          <p style="font-size: 10px; color: var(--text-muted); line-height: 1.3;">Establezca una Clave Maestra para proteger sus credenciales.</p>
+          <input type="password" id="setup-master-pass" class="field-input" placeholder="Nueva Clave Maestra" style="font-size: 11px;" />
+          <input type="password" id="setup-master-pass-confirm" class="field-input" placeholder="Confirmar Clave Maestra" style="font-size: 11px;" />
+          <button type="button" class="btn btn-primary btn-sm" id="btn-save-master-pass" style="justify-content: center; width: 100%;">Establecer Clave</button>
+        </div>
+      `;
+    } 
+    // Caso B: Clave configurada anteriormente (Solicitar desbloqueo)
+    else {
+      container.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 4px;">
+          <p style="font-size: 10px; color: var(--text-muted); line-height: 1.3;">Introduzca su Clave Maestra para acceder.</p>
+          <input type="password" id="input-master-pass" class="field-input" placeholder="Clave Maestra" style="font-size: 11px;" autofocus />
+          <div style="display: flex; gap: 4px;">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-unlock-creds" style="flex: 1; justify-content: center;">Desbloquear</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-master-pass" style="font-size: 9px; padding: 2px 4px;" title="Borrará las credenciales por seguridad">Reset</button>
+          </div>
+          <span id="unlock-error" style="color: var(--danger); font-size: 10px; display: none; text-align: center;">Clave incorrecta</span>
+        </div>
+      `;
+    }
+    return;
+  }
+
+  // 2. Estado: AUTORIZADO (Muestra los campos)
+  container.style.display = 'grid'; // Restaura el diseño grid de doble columna
+  let html = '';
+  for (let i = 0; i < 10; i++) {
+    const cred = data.credentials[i] || { usuario: '', contrasena: '' };
+    html += `
+      <!-- Columna Usuario -->
+      <div class="credential-field-group">
+        <input type="text" class="field-input cred-input" data-idx="${i}" data-field="usuario" value="${esc(cred.usuario)}" placeholder="Usuario ${i + 1}" />
+        <button type="button" class="action-btn-mini copy-cred-btn" data-idx="${i}" data-field="usuario" title="Copiar" style="position: absolute; right: 2px;">📋</button>
+      </div>
+      <!-- Columna Contraseña -->
+      <div class="credential-field-group">
+        <div class="input-pass-wrapper">
+          <input type="password" class="field-input cred-input" data-idx="${i}" data-field="contrasena" value="${esc(cred.contrasena)}" placeholder="Clave ${i + 1}" id="cred-pass-${i}" />
+          <div style="display: flex; gap: 1px; position: absolute; right: 2px; top: 50%; transform: translateY(-50%);">
+            <button type="button" class="action-btn-mini toggle-pass-btn" data-idx="${i}" title="Mostrar" style="font-size: 8px;">👁️</button>
+            <button type="button" class="action-btn-mini copy-cred-btn" data-idx="${i}" data-field="contrasena" title="Copiar">📋</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+// Envía texto al portapapeles informando temporalmente en el panel superior
+function copyToClipboard(text) {
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const el = document.getElementById('save-indicator');
+    const prevText = el.textContent;
+    el.textContent = '✓ Copiado al portapapeles';
+    el.classList.add('saved');
+    setTimeout(() => {
+      el.classList.remove('saved');
+      el.textContent = prevText;
+    }, 1200);
+  }).catch(() => {});
+}
+  
+
+// --- CONTROL DE ACCESO (CLAVE MAESTRA) ---
+  
+  // Función para procesar el intento de desbloqueo
+  function attemptUnlock() {
+    const input = document.getElementById('input-master-pass');
+    const err = document.getElementById('unlock-error');
+    if (!input) return;
+
+    if (input.value === data.masterPassword) {
+      localStorage.setItem('creds_authorized_time', Date.now()); // Autorizar sesión por 24 horas
+      renderCredentials();
+    } else {
+      if (err) err.style.display = 'block';
+    }
+  }
+
+  // Eventos de clic de botones internos del widget flotante de claves
+  document.getElementById('floating-creds-widget').addEventListener('click', e => {
+    // Configurar nueva clave
+    if (e.target.id === 'btn-save-master-pass') {
+      const p1 = document.getElementById('setup-master-pass').value;
+      const p2 = document.getElementById('setup-master-pass-confirm').value;
+      if (!p1) { alert('La clave no puede estar vacía.'); return; }
+      if (p1 !== p2) { alert('Las claves introducidas no coinciden.'); return; }
+      
+      data.masterPassword = p1;
+      saveData();
+      localStorage.setItem('creds_authorized_time', Date.now()); // Autorizar automáticamente
+      renderCredentials();
+    }
+
+    // Botón Desbloquear
+    if (e.target.id === 'btn-unlock-creds') {
+      attemptUnlock();
+    }
+
+    // Reset de seguridad (borra clave y credenciales)
+    if (e.target.id === 'btn-reset-master-pass') {
+      confirm_('¿Resetear la Clave Maestra? Por seguridad se borrarán todas las credenciales guardadas.', () => {
+        data.masterPassword = '';
+        data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
+        localStorage.removeItem('creds_authorized_time');
+        saveData();
+        renderCredentials();
+      });
+    }
+  });
+
+  // Soporte para desbloquear pulsando la tecla "Enter"
+  document.getElementById('floating-creds-widget').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.id === 'input-master-pass') {
+      e.preventDefault();
+      attemptUnlock();
+    }
+  });
+  
+  
 // ─── EVENTOS Y LÓGICA DE INTERFACES ───────────────────────
 function setupEvents() {
+  
+if (!data.credentials || data.credentials.length !== 10) {
+  data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
+}
 
+if (data.masterPassword === undefined) {
+  data.masterPassword = '';}  
+
+
+// --- LÓGICA DEL WIDGET FLOTANTE DE CREDENCIALES ---
+  const credsWidget = document.getElementById('floating-creds-widget');
+  const credsTab = document.getElementById('floating-creds-tab');
+
+  if (credsTab && credsWidget) {
+    credsTab.addEventListener('click', () => {
+      credsWidget.classList.toggle('collapsed');
+      credsTab.innerHTML = credsWidget.classList.contains('collapsed') ? '&#x25B6;' : '&#x25C0;';
+    });
+  }
+
+  // Capturar cambios de entrada y guardarlos al instante
+  document.getElementById('credentials-grid-container').addEventListener('input', e => {
+    const el = e.target;
+    if (el.classList.contains('cred-input')) {
+      const idx = +el.dataset.idx;
+      const field = el.dataset.field;
+      data.credentials[idx][field] = el.value;
+      saveData();
+    }
+  });
+
+  // Eventos internos de la cuadrícula: Copiar y Alternar visibilidad de claves
+  document.getElementById('credentials-grid-container').addEventListener('click', e => {
+    const btn = e.target.closest('.action-btn-mini');
+    if (!btn) return;
+
+    const idx = +btn.dataset.idx;
+
+    if (btn.classList.contains('copy-cred-btn')) {
+      const field = btn.dataset.field;
+      const text = data.credentials[idx] ? data.credentials[idx][field] : '';
+      copyToClipboard(text);
+    }
+
+    if (btn.classList.contains('toggle-pass-btn')) {
+      const input = document.getElementById(`cred-pass-${idx}`);
+      if (input) {
+        const isPass = input.type === 'password';
+        input.type = isPass ? 'text' : 'password';
+        btn.textContent = isPass ? '🔒' : '👁️';
+      }
+    }
+  });
+
+  
   document.addEventListener('focusout', e => {
     if (e.target.classList.contains('fmt-num')) {
       e.target.value = formatCurrency(parseCurrency(e.target.value));
@@ -2100,10 +2465,41 @@ function updateNotesCount() {
 document.addEventListener('DOMContentLoaded', ()=>{
   loadData();
   renderAll();
+  renderCredentials(); 
   document.getElementById('notes-area').value = data.notes||'';
   updateNotesCount();
   setupEvents();
-});
+}); 
 </script>
+
+
+<!-- VENTANA CENTRADA: RECORDATORIO DE USUARIOS Y CONTRASEÑAS -->
+<div id="credentials-overlay" class="modal-overlay hidden">
+  <div class="modal" style="max-width: 680px; width: 95%;">
+    <div class="modal-header">
+      <h3 style="display: flex; align-items: center; gap: 6px;">&#x1F511; Recordatorio de Credenciales</h3>
+      <button type="button" class="btn-delete-row" id="credentials-close-x" style="opacity:1; color: var(--text-secondary); font-size: 14px;">&#x2715;</button>
+    </div>
+    <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 8px;">
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">
+        Almacene hasta 10 accesos directos. Los datos se guardan de forma local. Use el botón <span style="color:var(--accent-light);">📋</span> para copiar al portapapeles.
+      </p>
+      
+      <!-- Cabecera de columnas -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; margin-bottom: 6px;">
+        <div style="font-size: 10px; font-weight: 600; color: var(--teal-light); text-transform: uppercase; padding-left: 18px;">Usuarios / Identificadores</div>
+        <div style="font-size: 10px; font-weight: 600; color: var(--amber); text-transform: uppercase;">Contraseñas</div>
+      </div>
+
+      <div class="credentials-grid" id="credentials-grid-container">
+        <!-- Generación dinámica de los 10 campos dobles -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="credentials-close-btn">Cerrar</button>
+    </div>
+  </div>
+</div>
+  
 </body>
 </html>
