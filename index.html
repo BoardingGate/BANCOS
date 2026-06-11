@@ -712,6 +712,50 @@
     .pdf-mode .action-btn-fold {
       display: none !important;
     }
+    /* Estilos del selector desplegable de navegación */
+    .tab-nav-select {
+      display: none;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      padding: 5px 24px 5px 8px;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 6px center;
+      background-size: 12px;
+    }
+    .tab-nav-select option {
+      background: #12152b;
+      color: var(--text-primary);
+    }
+
+    /* Agrupador de los botones para poder ocultarlos */
+    .nav-buttons-container {
+      display: flex;
+      gap: 3px;
+    }
+
+    /* Punto de ruptura adaptativo: oculta botones y muestra el select */
+    @media (max-width: 950px) {
+      .nav-buttons-container {
+        display: none !important;
+      }
+      .tab-nav-select {
+        display: block !important;
+        margin-left: 8px;
+      }
+      .app-header {
+        overflow-x: visible; /* Desactiva la necesidad de desplazamiento en el cabecero */
+        white-space: normal;
+      }
+    }
   </style>
 </head>
 <body>
@@ -755,12 +799,23 @@
     <div class="logo-icon">&#x1F3E6;</div>
     <h1 class="app-title">Control Bancario</h1>
     <nav class="tab-nav-inline">
-      <button class="tab-btn active" data-section="balances">&#x1F4CA; Saldos y Movimientos</button>
-      <button class="tab-btn" data-section="invoices">&#x1F4C4; Facturas</button>
-      <button class="tab-btn" data-section="taxes">&#x1F3DB; Impuestos</button>
-      <button class="tab-btn" data-section="notes">&#x1F4DD; Notas</button>
-      <button class="tab-btn" data-section="backup">&#x1F4BE; Copia Seguridad</button>
-    </nav>
+      <!-- Botones visibles en pantallas grandes -->
+      <div class="nav-buttons-container">
+        <button class="tab-btn active" data-section="balances">&#x1F4CA; Saldos y Movimientos</button>
+        <button class="tab-btn" data-section="invoices">&#x1F4C4; Facturas</button>
+        <button class="tab-btn" data-section="taxes">&#x1F3DB; Impuestos</button>
+        <button class="tab-btn" data-section="notes">&#x1F4DD; Notas</button>
+        <button class="tab-btn" data-section="backup">&#x1F4BE; Copia Seguridad</button>
+      </div>
+      <!-- Selector desplegable visible en pantallas estrechas -->
+      <select class="tab-nav-select" id="header-section-select">
+        <option value="balances">📊 Saldos y Movimientos</option>
+        <option value="invoices">📄 Facturas</option>
+        <option value="taxes">🏛️ Impuestos</option>
+        <option value="notes">📝 Notas</option>
+        <option value="backup">💾 Copia Seguridad</option>
+      </select>
+    </nav>   
   </div>
   <div class="header-right">
     <!-- Acciones contextuales dinámicas -->
@@ -2086,21 +2141,49 @@ if (data.masterPassword === undefined) {
     }
   });
 
+  // Lógica unificada para el cambio de sección
+  function switchSection(targetSec) {
+    // Sincronizar clases activas en los botones de escritorio
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.section === targetSec);
+    });
+
+    // Sincronizar el valor seleccionado en el menú desplegable móvil
+    const selectEl = document.getElementById('header-section-select');
+    if (selectEl) {
+      selectEl.value = targetSec;
+    }
+
+    // Activar sección visible en pantalla
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const targetSectionEl = document.getElementById('section-' + targetSec);
+    if (targetSectionEl) {
+      targetSectionEl.classList.add('active');
+    }
+
+    // Conmutar botones dinámicos y contextuales en el cabecero
+    document.querySelectorAll('.dynamic-actions').forEach(el => el.classList.add('hidden'));
+    const activeActions = document.getElementById('actions-' + targetSec);
+    if (activeActions) {
+      activeActions.classList.remove('hidden');
+    }
+  }
+
+  // Evento asignado a los botones tradicionales
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const targetSec = btn.dataset.section;
-      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('section-'+targetSec).classList.add('active');
-      
-      // Conmutar botones dinámicos en el cabecero
-      document.querySelectorAll('.dynamic-actions').forEach(el => el.classList.add('hidden'));
-      const activeActions = document.getElementById('actions-' + targetSec);
-      if (activeActions) activeActions.classList.remove('hidden');
+      switchSection(btn.dataset.section);
     });
   });
 
+  // Evento asignado al nuevo selector desplegable
+  const selectNav = document.getElementById('header-section-select');
+  if (selectNav) {
+    selectNav.addEventListener('change', (e) => {
+      switchSection(e.target.value);
+    });
+  }
+  
   document.getElementById('btn-add-bank').addEventListener('click', () => {
     data.banks.push('Banco '+(data.banks.length+1));
     saveData(); renderAll();
