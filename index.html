@@ -617,17 +617,17 @@
     }
 
     /* ESTILOS DE CELDAS COLAPSADAS (COLUMNA EMPRESA) */
-    .col-collapsed-cell {
-      min-width: 35px !important;
-      max-width: 35px !important;
-      width: 35px !important;
-      padding: 4px !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      justify-content: flex-start !important;
-      overflow: hidden !important;
-    }
+   .col-collapsed-cell {
+  min-width: 75px !important; /* Ancho incrementado */
+  max-width: 75px !important;
+  width: 75px !important;
+  padding: 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  overflow: hidden !important;
+}
     .balance-cell.col-collapsed-cell {
       background-color: rgba(0, 0, 0, 0.4) !important;
       background-image: none !important;
@@ -1694,14 +1694,14 @@ function renderBalances() {
   
   // Construcción dinámica de columnas según estado de contracción de empresas y de la primera columna de bancos
   let bankColWidth = data.collapsedBankColumn ? '35px' : '240px';
-  let colSpecs = [bankColWidth];
-  data.companies.forEach((_, ci) => {
-    if (data.collapsedCompanies[ci] === true) {
-      colSpecs.push('35px');
-    } else {
-      colSpecs.push('minmax(170px,1fr)');
-    }
-  });
+ let colSpecs = [bankColWidth];
+data.companies.forEach((_, ci) => {
+  if (data.collapsedCompanies[ci] === true) {
+    colSpecs.push('75px'); // Ancho incrementado aquí también
+  } else {
+    colSpecs.push('minmax(170px,1fr)');
+  }
+});
   g.style.gridTemplateColumns = colSpecs.join(' ');
   
   let html = '';
@@ -1750,7 +1750,8 @@ function renderBalances() {
         + '<button class="action-btn-fold btn-toggle-col" data-ci="'+ci+'" title="Expandir columna" style="margin-bottom: 4px;">&#x25B6;</button>'
         + '<span style="font-size: 11px; writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-weight: 700; letter-spacing: 0.5px;">'+esc(c)+'</span>'
         + '<div style="font-size: 8px; margin-top: 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: rgba(255,255,255,0.85); width: 100%; text-align: center; overflow: hidden; pointer-events: none;">'
-        + '  <div id="col-total-act-collapsed-'+ci+'" style="max-width: 32px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
+        + '  <div id="col-total-act-collapsed-'+ci+'" style="max-width: 70px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
++ '  <div id="col-total-con-collapsed-'+ci+'" style="color: var(--emerald); max-width: 70px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
         + '  <div id="col-total-con-collapsed-'+ci+'" style="color: var(--emerald); max-width: 32px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
         + '</div>'
         + '</div>';
