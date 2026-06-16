@@ -617,8 +617,33 @@
     }
 
     /* ESTILOS DE CELDAS COLAPSADAS (COLUMNA EMPRESA) */
-   .col-collapsed-cell {
-  min-width: 75px !important; /* Ancho incrementado */
+ /* 1. Reestablezca la clase original de los bancos a 35px */
+.col-collapsed-cell {
+  min-width: 35px !important;
+  max-width: 35px !important;
+  width: 35px !important;
+  padding: 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  overflow: hidden !important;
+}
+.balance-cell.col-collapsed-cell {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  background-image: none !important;
+}
+.col-collapsed-cell .cell-content,
+.col-collapsed-cell .cell-toggle,
+.col-collapsed-cell .btn-add-mov,
+.col-collapsed-cell .movements-divider,
+.col-collapsed-cell .movements-list {
+  display: none !important;
+}
+
+/* 2. AÑADA ESTA NUEVA CLASE PARA LAS EMPRESAS JUSTO DEBAJO */
+.company-collapsed-cell {
+  min-width: 75px !important;
   max-width: 75px !important;
   width: 75px !important;
   padding: 4px !important;
@@ -628,17 +653,17 @@
   justify-content: flex-start !important;
   overflow: hidden !important;
 }
-    .balance-cell.col-collapsed-cell {
-      background-color: rgba(0, 0, 0, 0.4) !important;
-      background-image: none !important;
-    }
-    .col-collapsed-cell .cell-content,
-    .col-collapsed-cell .cell-toggle,
-    .col-collapsed-cell .btn-add-mov,
-    .col-collapsed-cell .movements-divider,
-    .col-collapsed-cell .movements-list {
-      display: none !important;
-    }
+.balance-cell.company-collapsed-cell {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  background-image: none !important;
+}
+.company-collapsed-cell .cell-content,
+.company-collapsed-cell .cell-toggle,
+.company-collapsed-cell .btn-add-mov,
+.company-collapsed-cell .movements-divider,
+.company-collapsed-cell .movements-list {
+  display: none !important;
+}
     #btn-use-result:hover {
       background: var(--teal) !important;
       color: #fff !important;
@@ -1746,7 +1771,7 @@ data.companies.forEach((_, ci) => {
   data.companies.forEach((c,ci) => {
     const isColCollapsed = data.collapsedCompanies[ci] === true;
     if (isColCollapsed) {
-      html += '<div class="grid-cell header-company col-collapsed-cell" style="background-color: '+companyColors[ci % companyColors.length]+'; border-bottom: 2px solid rgba(255,255,255,0.2); justify-content: flex-start;">'
+      html += '<div class="grid-cell header-company company-collapsed-cell" style="background-color: '+companyColors[ci % companyColors.length]+'; border-bottom: 2px solid rgba(255,255,255,0.2); justify-content: flex-start;">'
         + '<button class="action-btn-fold btn-toggle-col" data-ci="'+ci+'" title="Expandir columna" style="margin-bottom: 4px;">&#x25B6;</button>'
         + '<span style="font-size: 11px; writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-weight: 700; letter-spacing: 0.5px;">'+esc(c)+'</span>'
         + '<div style="font-size: 8px; margin-top: 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: rgba(255,255,255,0.85); width: 100%; text-align: center; overflow: hidden; pointer-events: none;">'
@@ -1833,9 +1858,10 @@ data.companies.forEach((_, ci) => {
         + '</div></div>'
       ).join('');
 
+      
       let cellClasses = 'grid-cell balance-cell';
       if (isDisabled) cellClasses += ' cell-disabled';
-      if (isColCollapsed) cellClasses += ' col-collapsed-cell';
+      if (isColCollapsed) cellClasses += ' company-collapsed-cell'; // Usa la nueva clase de 75px
       if (isRowCollapsed) cellClasses += ' row-collapsed-cell';
 
       html += '<div class="' + cellClasses + '" style="--cell-bg: ' + faintColor + '; --row-border: 5px solid '+bColor+';">'
