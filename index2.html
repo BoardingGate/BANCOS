@@ -1,5 +1,3 @@
-<!-- START OF FILE index.html -->
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -26,8 +24,7 @@
     body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;font-size:13px;line-height:1.5;transition: background 0.3s;}
     body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 20%,rgba(99,102,241,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(6,182,212,0.06) 0%,transparent 50%);pointer-events:none;z-index:0}
     
- 
-    /* CABECERO COMPACTO INTEGRADO - AHORA DESLIZANTE HORIZONTALMENTE */
+ /* CABECERO COMPACTO INTEGRADO - AHORA DESLIZANTE HORIZONTALMENTE */
 .app-header {
   position: sticky;
   top: 0;
@@ -145,8 +142,7 @@
 .pdf-mode .floating-creds {
   display: none !important;
 }    
-
-    
+   
     .logo-icon{font-size:20px;filter:drop-shadow(0 0 6px rgba(99,102,241,0.5))}
     .app-title{font-size:15px;font-weight:700;background:linear-gradient(135deg,#6366f1,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.3px}
     
@@ -247,7 +243,6 @@
     .header-editable-wrapper:hover .btn-delete-row,.header-editable-wrapper:hover .btn-delete-col{opacity:1;color:rgba(255,255,255,0.9)}
     .btn-delete-row:hover,.btn-delete-col:hover{color:#ef4444!important}
 
-    /* DETALLE DE SALDOS */
     .balance-cell{
       background-color: var(--cell-bg, rgba(18,21,43,0.5));
       min-width: 170px;
@@ -415,8 +410,8 @@
 .floating-calc {
   position: fixed;
   left: 0;
-  top: 10px; /* Alineado a la altura del logotipo/cabecera */
-  z-index: 1001; /* Por encima de la cabecera adhesiva */
+  top: 10px; 
+  z-index: 1001; 
   background: rgba(18, 21, 43, 0.96);
   border: 1px solid var(--border-strong);
   border-left: none;
@@ -428,10 +423,9 @@
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .floating-calc.collapsed {
-  transform: translateX(-170px); /* Se elimina el translateY(-50%) */
+  transform: translateX(-170px); 
 }
 
-/* Nuevos estilos para la Ventana Centrada de Claves */
 .credentials-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -458,8 +452,8 @@
 .floating-calc {
   position: fixed;
   left: 0;
-  top: 10px; /* Alineado a la altura del logotipo/cabecera */
-  z-index: 1001; /* Por encima de la cabecera adhesiva */
+  top: 10px; 
+  z-index: 1001;
   background: rgba(18, 21, 43, 0.96);
   border: 1px solid var(--border-strong);
   border-left: none;
@@ -471,7 +465,7 @@
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .floating-calc.collapsed {
-  transform: translateX(-170px); /* Se elimina el translateY(-50%) */
+  transform: translateX(-170px); 
 }
 
   .floating-calc-toggle-tab {
@@ -565,7 +559,6 @@
   padding-right: 52px !important;
 }
 
-    /* Estilos específicos para el botón de borrado de la calculadora */
     #btn-clear-calc {
       position: absolute !important;
       right: 6px !important;
@@ -616,8 +609,6 @@
       border-color: var(--accent-light);
     }
 
-    /* ESTILOS DE CELDAS COLAPSADAS (COLUMNA EMPRESA) */
- /* 1. Reestablezca la clase original de los bancos a 35px */
 .col-collapsed-cell {
   min-width: 35px !important;
   max-width: 35px !important;
@@ -670,8 +661,7 @@
       border-color: var(--teal-light) !important;
      }
 
-    /* ESTILOS DE CELDAS COLAPSADAS (FILA BANCO) */
-    .row-collapsed-cell {
+     .row-collapsed-cell {
       min-height: 48px !important;
       max-height: 48px !important;
       height: 48px !important;
@@ -708,8 +698,7 @@
     ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
     ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
 
-    /* ====== REGLAS DE OPTIMIZACIÓN PDF / IMPRESIÓN ====== */
-    .pdf-mode {
+     .pdf-mode {
       background: #fff !important; 
       color: #000 !important;
     }
@@ -777,10 +766,52 @@
         margin-left: 8px;
       }
       .app-header {
-        overflow-x: visible; /* Desactiva la necesidad de desplazamiento en el cabecero */
+        overflow-x: visible; 
         white-space: normal;
       }
     }
+
+ /* Estilos para el resumen de saldos en celdas de empresa minimizadas */
+.collapsed-summary {
+  display: none;
+}
+.company-collapsed-cell:not(.cell-disabled):not(.row-collapsed-cell) .collapsed-summary {
+  display: flex !important;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 4px 2px;
+  box-sizing: border-box;
+  font-family: 'Inter', monospace;
+  font-size: 9px;
+  line-height: 1.1;
+  margin-top: 6px;
+}
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+.sum-lbl {
+  font-weight: 700;
+  font-size: 8px;
+}
+.sum-lbl.act { color: var(--teal-light); }
+.sum-lbl.con { color: var(--emerald); }
+.sum-val {
+  font-weight: 600;
+  text-align: right;
+  color: var(--text-primary);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  flex-grow: 1;
+  margin-left: 2px;
+}
+.sum-val.calc-negative, .sum-lbl.calc-negative { color: var(--danger) !important; }
+.sum-val.calc-zero, .sum-lbl.calc-zero { color: var(--text-muted) !important; }
   </style>
 </head>
 <body>
@@ -960,8 +991,7 @@
 
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 6px 0;"/>
 
-        <!-- Importar -->
-        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
           <h3 style="font-size: 13px; font-weight: 600; color: var(--amber);">Restaurar copia de seguridad</h3>
           <p style="color: var(--text-muted); font-size: 11px; line-height: 1.4;">
             Seleccione un archivo de copia de seguridad previo en su equipo. <strong>Atención:</strong> Esta acción sobrescribirá por completo toda la información actual almacenada en su navegador.
@@ -1056,13 +1086,12 @@ function reindexBalancesAndMovementsAfterRowDelete(targetBi) {
   const newMovements = {};
   const newDisabled = {};
   const newCollapsedBanks = {};
-
-  // Reindexar saldos
+  
   Object.keys(data.balances).forEach(key => {
     const parts = key.split('-');
     const bi = parseInt(parts[0], 10);
     const ci = parseInt(parts[1], 10);
-    if (bi === targetBi) return; // Descartar fila eliminada
+    if (bi === targetBi) return; 
     const newBi = bi > targetBi ? bi - 1 : bi;
     newBalances[newBi + '-' + ci] = data.balances[key];
   });
@@ -1077,7 +1106,6 @@ function reindexBalancesAndMovementsAfterRowDelete(targetBi) {
     newMovements[newBi + '-' + ci] = data.movements[key];
   });
 
-  // Reindexar celdas inactivas
   Object.keys(data.disabledCells).forEach(key => {
     const parts = key.split('-');
     const bi = parseInt(parts[0], 10);
@@ -1087,7 +1115,6 @@ function reindexBalancesAndMovementsAfterRowDelete(targetBi) {
     newDisabled[newBi + '-' + ci] = data.disabledCells[key];
   });
 
-  // Reindexar bancos colapsados
   Object.keys(data.collapsedBanks).forEach(key => {
     const bi = parseInt(key, 10);
     if (bi === targetBi) return;
@@ -1117,7 +1144,6 @@ function reindexBalancesAndMovementsAfterColDelete(targetCi) {
     newBalances[bi + '-' + newCi] = data.balances[key];
   });
 
-  // Reindexar movimientos
   Object.keys(data.movements).forEach(key => {
     const parts = key.split('-');
     const bi = parseInt(parts[0], 10);
@@ -1127,7 +1153,6 @@ function reindexBalancesAndMovementsAfterColDelete(targetCi) {
     newMovements[bi + '-' + newCi] = data.movements[key];
   });
 
-  // Reindexar celdas inactivas
   Object.keys(data.disabledCells).forEach(key => {
     const parts = key.split('-');
     const bi = parseInt(parts[0], 10);
@@ -1137,7 +1162,6 @@ function reindexBalancesAndMovementsAfterColDelete(targetCi) {
     newDisabled[bi + '-' + newCi] = data.disabledCells[key];
   });
 
-  // Reindexar empresas colapsadas
   Object.keys(data.collapsedCompanies).forEach(key => {
     const ci = parseInt(key, 10);
     if (ci === targetCi) return;
@@ -1211,7 +1235,6 @@ function calcConciliado(bi, ci) {
   return actual + pending;
 }
 
-// Escapado simple de seguridad para strings en el template
 function esc(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1859,13 +1882,22 @@ data.companies.forEach((_, ci) => {
       ).join('');
 
       
-      let cellClasses = 'grid-cell balance-cell';
+let cellClasses = 'grid-cell balance-cell';
       if (isDisabled) cellClasses += ' cell-disabled';
       if (isColCollapsed) cellClasses += ' company-collapsed-cell'; // Usa la nueva clase de 75px
       if (isRowCollapsed) cellClasses += ' row-collapsed-cell';
 
+     const fActual = hasActual ? (formatCurrency(bal.saldoActual) || '0,00') : '\u2014';
+      const fConciliado = concText;
+      
+      const summaryHTML = '<div class="collapsed-summary">'
+        + '<div class="sum-row" title="Saldo Actual"><span class="sum-lbl act">A:</span><span class="sum-val">' + esc(fActual) + '</span></div>'
+        + '<div class="sum-row" title="Saldo Conciliado"><span class="sum-lbl con ' + concClass + '">C:</span><span class="sum-val ' + concClass + '">' + esc(fConciliado) + '</span></div>'
+        + '</div>';
+
       html += '<div class="' + cellClasses + '" style="--cell-bg: ' + faintColor + '; --row-border: 5px solid '+bColor+';">'
         + '<label class="cell-toggle" title="Activar/Desactivar cuenta"><input type="checkbox" class="cell-activate-check" data-bi="'+bi+'" data-ci="'+ci+'" '+(isDisabled?'':'checked')+'/></label>'
+        + summaryHTML 
         + '<div class="cell-content">'
         + '<div class="balance-fields">'
         + '<div class="balance-field"><label class="field-label label-actual">Saldo Actual</label>'
@@ -1960,8 +1992,6 @@ function renderAll() {
   renderCredentials();
 }  
 
-// Renderiza de manera compacta la cuadrícula de 10 filas de campos dobles
-// Comprueba si la clave maestra ha sido validada en las últimas 24 horas
 function isCredsAuthorized() {
   const authTime = localStorage.getItem('creds_authorized_time');
   if (!authTime) return false;
@@ -1969,7 +1999,6 @@ function isCredsAuthorized() {
   return diff < 24 * 60 * 60 * 1000; // Validez de 24 horas
 }
 
-// Renderiza dinámicamente el estado de bloqueo o el panel de credenciales
 function renderCredentials() {
   const container = document.getElementById('credentials-grid-container');
   if (!container) return;
@@ -1978,7 +2007,6 @@ function renderCredentials() {
   if (!isCredsAuthorized()) {
     container.style.display = 'block'; // Cambia el diseño temporalmente a bloque para formularios
 
-    // Caso A: Primera vez (No hay clave configurada)
     if (!data.masterPassword) {
       container.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 8px; padding: 4px;">
@@ -1989,7 +2017,6 @@ function renderCredentials() {
         </div>
       `;
     } 
-    // Caso B: Clave configurada anteriormente (Solicitar desbloqueo)
     else {
       container.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 8px; padding: 4px;">
@@ -2050,7 +2077,6 @@ function copyToClipboard(text) {
 
 // --- CONTROL DE ACCESO (CLAVE MAESTRA) ---
   
-  // Función para procesar el intento de desbloqueo
   function attemptUnlock() {
     const input = document.getElementById('input-master-pass');
     const err = document.getElementById('unlock-error');
@@ -2066,7 +2092,6 @@ function copyToClipboard(text) {
 
   // Eventos de clic de botones internos del widget flotante de claves
   document.getElementById('floating-creds-widget').addEventListener('click', e => {
-    // Configurar nueva clave
     if (e.target.id === 'btn-save-master-pass') {
       const p1 = document.getElementById('setup-master-pass').value;
       const p2 = document.getElementById('setup-master-pass-confirm').value;
@@ -2079,7 +2104,6 @@ function copyToClipboard(text) {
       renderCredentials();
     }
 
-    // Botón Desbloquear
     if (e.target.id === 'btn-unlock-creds') {
       attemptUnlock();
     }
@@ -2096,7 +2120,6 @@ function copyToClipboard(text) {
     }
   });
 
-  // Soporte para desbloquear pulsando la tecla "Enter"
   document.getElementById('floating-creds-widget').addEventListener('keydown', e => {
     if (e.key === 'Enter' && e.target.id === 'input-master-pass') {
       e.preventDefault();
@@ -2455,7 +2478,6 @@ if (data.masterPassword === undefined) {
     confirm_('¿Limpiar todas las notas?', ()=>{ data.notes=''; notesEl.value=''; saveData(); updateNotesCount(); });
   });
 
-  // CONTROL DE COPIA DE SEGURIDAD (IMPORTACIÓN)
   document.getElementById('input-restore-file').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -2507,7 +2529,6 @@ if (data.masterPassword === undefined) {
     });
   });
 
-  // CONTROL DE LA VENTANA FLOTANTE DE CÁLCULO
   const calcWidget = document.getElementById('floating-calc-widget');
   const calcTab = document.getElementById('floating-calc-tab');
   const calcInput = document.getElementById('floating-calc-input');
@@ -2529,7 +2550,6 @@ if (data.masterPassword === undefined) {
     });
   }
 
-  // CONTROL DE LA VENTANA FLOTANTE DE CÁLCULO
   if (calcInput && calcResult) {
     calcInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
@@ -2560,7 +2580,6 @@ if (data.masterPassword === undefined) {
     });
   }
 
-  // Evento para enviar el resultado de vuelta al campo de entrada de la calculadora
   const btnUseResult = document.getElementById('btn-use-result');
   if (btnUseResult && calcInput && calcResult) {
     btnUseResult.addEventListener('click', () => {
@@ -2573,12 +2592,10 @@ if (data.masterPassword === undefined) {
   }
 
  
-  // Evento para el guardado manual de datos
   document.getElementById('btn-manual-save').addEventListener('click', () => {
     manualSave();
   });
 
-  // MODAL DE CONFIRMACIÓN
   document.getElementById('confirm-cancel').addEventListener('click', ()=>{ document.getElementById('confirm-overlay').classList.add('hidden'); confirmCb=null; });
   document.getElementById('confirm-ok').addEventListener('click', ()=>{
     document.getElementById('confirm-overlay').classList.add('hidden');
@@ -2588,7 +2605,6 @@ if (data.masterPassword === undefined) {
     if(e.target===document.getElementById('confirm-overlay')){ document.getElementById('confirm-overlay').classList.add('hidden'); confirmCb=null; }
   });
 
-  // RESETEAR DATOS GENERALES
   document.getElementById('btn-clear').addEventListener('click', ()=>{
     confirm_('¿Eliminar TODOS los datos guardados en la aplicación? Esta acción no se puede deshacer.', ()=>{ localStorage.removeItem(STORAGE_KEY); location.reload(); });
   });
@@ -2624,14 +2640,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
         Almacene hasta 10 accesos directos. Los datos se guardan de forma local. Use el botón <span style="color:var(--accent-light);">📋</span> para copiar al portapapeles.
       </p>
       
-      <!-- Cabecera de columnas -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; margin-bottom: 6px;">
         <div style="font-size: 10px; font-weight: 600; color: var(--teal-light); text-transform: uppercase; padding-left: 18px;">Usuarios / Identificadores</div>
         <div style="font-size: 10px; font-weight: 600; color: var(--amber); text-transform: uppercase;">Contraseñas</div>
       </div>
 
       <div class="credentials-grid" id="credentials-grid-container">
-        <!-- Generación dinámica de los 10 campos dobles -->
       </div>
     </div>
     <div class="modal-footer">
