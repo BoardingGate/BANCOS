@@ -727,43 +727,22 @@
       display: none !important;
     }
     /* Estilos del selector desplegable de navegación */
-    .tab-nav-select {
-      display: none;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-strong);
-      color: var(--text-primary);
-      padding: 5px 24px 5px 8px;
-      border-radius: var(--radius-sm);
-      font-family: inherit;
-      font-size: 11px;
-      font-weight: 500;
-      outline: none;
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 6px center;
-      background-size: 12px;
-    }
-    .tab-nav-select option {
-      background: #12152b;
-      color: var(--text-primary);
-    }
-
-    /* Agrupador de los botones para poder ocultarlos */
-    .nav-buttons-container {
+.nav-buttons-container {
       display: flex;
       gap: 3px;
     }
 
-    /* Punto de ruptura adaptativo: oculta botones y muestra el select */
     @media (max-width: 950px) {
-      .nav-buttons-container {
+      .tab-btn-text {
         display: none !important;
       }
-      .tab-nav-select {
-        display: block !important;
-        margin-left: 8px;
+      .nav-buttons-container {
+        display: flex !important;
+        gap: 6px !important;
+      }
+      .tab-btn {
+        font-size: 15px !important;
+        padding: 6px 10px !important;
       }
       .app-header {
         overflow-x: visible; 
@@ -854,24 +833,15 @@
   <div class="header-left">
     <div class="logo-icon">&#x1F3E6;</div>
     <h1 class="app-title">Control Bancario</h1>
-    <nav class="tab-nav-inline">
-      <!-- Botones visibles en pantallas grandes -->
+ <nav class="tab-nav-inline">
       <div class="nav-buttons-container">
-        <button class="tab-btn active" data-section="balances">&#x1F4CA; Saldos y Movimientos</button>
-        <button class="tab-btn" data-section="invoices">&#x1F4C4; Facturas</button>
-        <button class="tab-btn" data-section="taxes">&#x1F3DB; Impuestos</button>
-        <button class="tab-btn" data-section="notes">&#x1F4DD; Notas</button>
-        <button class="tab-btn" data-section="backup">&#x1F4BE; Copia Seguridad</button>
+        <button class="tab-btn active" data-section="balances">&#x1F4CA; <span class="tab-btn-text">Saldos y Movimientos</span></button>
+        <button class="tab-btn" data-section="invoices">&#x1F4C4; <span class="tab-btn-text">Facturas</span></button>
+        <button class="tab-btn" data-section="taxes">&#x1F3DB; <span class="tab-btn-text">Impuestos</span></button>
+        <button class="tab-btn" data-section="notes">&#x1F4DD; <span class="tab-btn-text">Notas</span></button>
+        <button class="tab-btn" data-section="backup">&#x1F4BE; <span class="tab-btn-text">Copia Seguridad</span></button>
       </div>
-      <!-- Selector desplegable visible en pantallas estrechas -->
-      <select class="tab-nav-select" id="header-section-select">
-        <option value="balances">📊 Saldos y Movimientos</option>
-        <option value="invoices">📄 Facturas</option>
-        <option value="taxes">🏛️ Impuestos</option>
-        <option value="notes">📝 Notas</option>
-        <option value="backup">💾 Copia Seguridad</option>
-      </select>
-    </nav>   
+    </nav>  
   </div>
   <div class="header-right">
     <!-- Acciones contextuales dinámicas -->
@@ -1881,25 +1851,33 @@ data.companies.forEach((_, ci) => {
         + '</div></div>'
       ).join('');
 
-      
+
 let cellClasses = 'grid-cell balance-cell';
       if (isDisabled) cellClasses += ' cell-disabled';
       if (isColCollapsed) cellClasses += ' company-collapsed-cell'; // Usa la nueva clase de 75px
       if (isRowCollapsed) cellClasses += ' row-collapsed-cell';
 
-     const fActual = hasActual ? (formatCurrency(bal.saldoActual) || '0,00') : '\u2014';
+      const fActual = hasActual ? (formatCurrency(bal.saldoActual) || '0,00') : '\u2014';
       const fConciliado = concText;
       
-      const summaryHTML = '<div class="collapsed-summary">'
-        + '<div class="sum-row" title="Saldo Actual"><span class="sum-lbl act">A:</span><span class="sum-val">' + esc(fActual) + '</span></div>'
-        + '<div class="sum-row" title="Saldo Conciliado"><span class="sum-lbl con ' + concClass + '">C:</span><span class="sum-val ' + concClass + '">' + esc(fConciliado) + '</span></div>'
-        + '</div>';
+      const actualNum = parseFloat(bal.saldoActual) || 0;
+      const isDiff = hasActual && (Math.abs(actualNum - cv) > 0.009);
+
+      let summaryHTML = '<div class="collapsed-summary">'
+        + '<div class="sum-row" title="Saldo Actual"><span class="sum-lbl act">A:</span><span class="sum-val">' + esc(fActual) + '</span></div>';
+      
+     if (isDiff) {
+        summaryHTML += '<div class="sum-row" title="Saldo Conciliado"><span class="sum-lbl con ' + concClass + '">C:</span><span class="sum-val ' + concClass + '">' + esc(fConciliado) + '</span></div>';
+      }
+      
+      summaryHTML += '</div>';
 
       html += '<div class="' + cellClasses + '" style="--cell-bg: ' + faintColor + '; --row-border: 5px solid '+bColor+';">'
         + '<label class="cell-toggle" title="Activar/Desactivar cuenta"><input type="checkbox" class="cell-activate-check" data-bi="'+bi+'" data-ci="'+ci+'" '+(isDisabled?'':'checked')+'/></label>'
         + summaryHTML 
         + '<div class="cell-content">'
-        + '<div class="balance-fields">'
+        + '<div class="balance-fields">'      
+
         + '<div class="balance-field"><label class="field-label label-actual">Saldo Actual</label>'
         + '<div class="input-group-wrapper">'
         + '<input type="text" class="field-input input-actual fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoActual" value="'+esc(formatCurrency(bal.saldoActual))+'" placeholder="0,00"/>'
