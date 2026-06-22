@@ -1016,6 +1016,54 @@ let data = {
   credentials: [] 
 };  
 
+// --- SISTEMA DE DESHACER (UNDO) ---
+let undoStack = [];
+
+// Guarda una copia del estado actual antes de que cambie
+function pushUndo() {
+  const serialized = JSON.stringify(data);
+  // Evita duplicar el último estado idéntico
+  if (undoStack.length > 0 && undoStack[undoStack.length - 1] === serialized) {
+    return;
+  }
+  undoStack.push(serialized);
+  if (undoStack.length > 40) { // Límite de 40 niveles de deshacer
+    undoStack.shift();
+  }
+}
+
+// Restaura el último estado guardado
+window.undoLastChange = function() {
+  if (undoStack.length === 0) return;
+  
+  const previousState = JSON.parse(undoStack.pop());
+  data = previousState;
+  
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {
+    console.error("No se pudo guardar tras deshacer:", e);
+  }
+  
+  // Re-renderizar toda la interfaz con los datos antiguos
+  renderAll();
+  
+  // Sincronizar el área de notas por si acaso
+  const notesEl = document.getElementById('notes-area');
+  if (notesEl) {
+    notesEl.value = data.notes || '';
+    updateNotesCount();
+  }
+  showSaved(true);
+};
+
+// Captura el estado previo antes de que el usuario comience a escribir en cualquier input
+document.addEventListener('focusin', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+    pushUndo();
+  }
+});
+  
 // ─── PERSISTENCIA EN TIEMPO REAL ──────────────────────────
 function saveData() {
   try {
@@ -1742,8 +1790,9 @@ data.companies.forEach((_, ci) => {
     html += '<div class="grid-cell header-corner col-collapsed-cell" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center;">'
       + '<button class="action-btn-fold btn-toggle-bank-col" title="Expandir columna de bancos">&#x25B6;</button>'
       + '<button class="action-btn-fold btn-toggle-all-cols" title="' + toggleColsTitle + '" style="font-weight: bold; font-size: 10px;">' + toggleColsSymbol + '</button>'
+      + '<button class="action-btn-fold btn-undo" title="Deshacer último cambio" style="color: var(--amber); font-weight: bold;">&#x21B6;</button>'
       + '</div>';
-  } else {
+} else {
     html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2); display: flex; justify-content: space-between; align-items: center; padding: 4px 6px !important;">'
       + '<div class="nav-controls">'
       + '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C0;</button>'
@@ -1756,6 +1805,7 @@ data.companies.forEach((_, ci) => {
       + '<div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">'
       +   '<button class="action-btn-fold btn-toggle-bank-col" title="Contraer columna de bancos">&#x25C0;</button>'
       +   '<button class="action-btn-fold btn-toggle-all-cols" title="' + toggleColsTitle + '" style="font-weight: bold; font-size: 10px;">' + toggleColsSymbol + '</button>'
+      +   '<button class="action-btn-fold btn-undo" title="Deshacer último cambio" style="color: var(--amber); font-weight: bold;">&#x21B6;</button>'
       + '</div>'
       + '</div>';
   }
@@ -2213,10 +2263,12 @@ if (data.masterPassword === undefined) {
   }
   
   document.getElementById('btn-add-bank').addEventListener('click', () => {
+    pusthUndo();
     data.banks.push('Banco '+(data.banks.length+1));
     saveData(); renderAll();
   });
   document.getElementById('btn-add-company').addEventListener('click', () => {
+    pusthUndo();
     data.companies.push('Empresa '+(data.companies.length+1));
     saveData(); renderAll();
   });
@@ -2263,6 +2315,17 @@ if (data.masterPassword === undefined) {
 
   // GRID DE BALANCES - Clics y Checkboxes
   document.getElementById('grid-balances').addEventListener('click', e => {
+
+     if (e.target.closest('.btn-undo')) {
+      undoLastChange();
+      return;
+    }
+
+    // Guardar estado previo en el resto de clics interactivos
+    if (e.target.closest('.copy-actual-btn') || e.target.closest('.clear-field-btn') || e.target.classList.contains('btn-add-mov') || e.target.classList.contains('btn-del-mov')) {
+      pushUndo();
+    }
+    
     // Expandir/Contraer Columna de Empresa (Persistente al instante)
     if (e.target.closest('.btn-toggle-col')) {
       const btn = e.target.closest('.btn-toggle-col');
@@ -2273,6 +2336,7 @@ if (data.masterPassword === undefined) {
       return;
     }
 
+    
     // Expandir/Contraer TODAS las Columnas de Empresa de golpe (Persistente al instante)
     if (e.target.closest('.btn-toggle-all-cols')) {
       const anyExpanded = data.companies.some((_, ci) => !data.collapsedCompanies[ci]);
@@ -2332,6 +2396,7 @@ if (data.masterPassword === undefined) {
     if (e.target.classList.contains('btn-delete-row')) {
       const bi = +e.target.dataset.bi;
       confirm_('Eliminar banco "'+data.banks[bi]+'" y todos sus datos?', () => {
+        pushUndo(); 
         reindexBalancesAndMovementsAfterRowDelete(bi);
         data.banks.splice(bi,1);
         saveData(); renderBalances();
@@ -2342,6 +2407,7 @@ if (data.masterPassword === undefined) {
     if (e.target.classList.contains('btn-delete-col')) {
       const ci = +e.target.dataset.ci;
       confirm_('Eliminar empresa "'+data.companies[ci]+'" y todos sus datos?', () => {
+        pushUndo(); 
         reindexBalancesAndMovementsAfterColDelete(ci);
         data.companies.splice(ci,1);
         saveData(); renderBalances();
@@ -2366,6 +2432,7 @@ if (data.masterPassword === undefined) {
     if (el.classList.contains('mov-conciliado-check')) {
       const bi=+el.dataset.bi, ci=+el.dataset.ci, mi=+el.dataset.mi, key=bi+'-'+ci;
       data.movements[key][mi].conciliado = el.checked;
+      pushUndo();
       const item=el.closest('.movement-item');
       if(item) item.classList.toggle('mov-conciliado',el.checked);
       saveData(); 
