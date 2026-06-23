@@ -957,15 +957,7 @@
           </div>
         </div>
 
-        <div class="dynamic-actions">
-          <button class="btn btn-secondary btn-sm" onclick="getGoogleToken(() => alert('Conectado a Google Drive'))">
-            🔗 Conectar GDrive
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="restoreFromGDrive()">
-            🔄 Restaurar Nube
-          </button>
-        </div>
-
+     
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 6px 0;"/>
 
           <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -980,6 +972,28 @@
             <button class="btn btn-danger btn-sm" id="btn-import-backup" style="display: none;">Ejecutar Restauración</button>
           </div>
         </div>
+        
+              <!-- Sincronización con Google Drive -->
+              <hr style="border: 0; border-top: 1px solid var(--border); margin: 6px 0;"/>
+      
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <h3 style="font-size: 13px; font-weight: 600; color: #4285F4;">Sincronización en la Nube (Google Drive)</h3>
+                <p style="color: var(--text-muted); font-size: 11px; line-height: 1.4;">
+                  Conecta tu cuenta para guardar una copia automática en tu Drive. Esto permite recuperar tus datos desde cualquier dispositivo o tras borrar la caché.
+                </p>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                  <button class="btn btn-secondary btn-sm" onclick="getGoogleToken(() => alert('Conectado a Google Drive con éxito. La sincronización automática está activa.'))" style="border-color: #4285F4; color: #bbdefb;">
+                    🔗 Conectar cuenta de Google
+                  </button>
+                  <button class="btn btn-ghost btn-sm" onclick="restoreFromGDrive()">
+                    🔄 Restaurar desde la Nube
+                  </button>
+                </div>
+                <div id="gdrive-status" style="font-size: 10px; color: var(--emerald); margin-top: 2px; display: none;">
+                  ✓ Sincronizado con Google Drive
+                </div>
+              </div>
+        
       </div>
     </div>
   </section>
