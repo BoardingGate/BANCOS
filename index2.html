@@ -285,28 +285,24 @@
     .calc-zero{color:var(--text-muted);border-color:var(--border);border-left-color:var(--border-strong);background:transparent}
 
     /* CONTENEDOR PARA ENTRADAS CON ACCIONES */
-    .input-group-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      width: 100%;
-    }
-    .input-group-wrapper .field-input {
-        padding-right: 26px !important; 
-      }
-      .input-group-wrapper .input-actual {
-        padding-right: 46px !important;
-      }
- 
-    .input-group-actions {
-      display: flex;
-      gap: 2px;
-      position: absolute;
-      right: 4px;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 10;
-    }
+/* Ajuste de espacio para iconos a la izquierda */
+.input-group-wrapper .field-input {
+    padding-right: 5px !important;   /* Quitamos el espacio de la derecha */
+    padding-left: 26px !important;    /* Espacio para 1 icono a la izquierda */
+}
+
+.input-group-wrapper .input-actual {
+    padding-right: 5px !important;   /* Quitamos el espacio de la derecha */
+    padding-left: 46px !important;    /* Espacio para 2 iconos a la izquierda */
+}
+
+/* Posicionar el contenedor de acciones a la izquierda */
+.input-group-actions {
+    right: auto !important;           /* Desactiva el pegado a la derecha */
+    left: 4px !important;             /* Lo pega a la izquierda */
+    top: 50%;
+    transform: translateY(-50%);
+}
     .action-btn-mini {
       background: rgba(13, 15, 26, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.2);
@@ -634,9 +630,9 @@
 
 /* 2. AÑADA ESTA NUEVA CLASE PARA LAS EMPRESAS JUSTO DEBAJO */
 .company-collapsed-cell {
-  min-width: 75px !important;
-  max-width: 75px !important;
-  width: 75px !important;
+  min-width: 85px !important;
+  max-width: 85px !important;
+  width: 85px !important;
   padding: 4px !important;
   display: flex !important;
   flex-direction: column !important;
@@ -757,12 +753,12 @@
 .company-collapsed-cell:not(.cell-disabled):not(.row-collapsed-cell) .collapsed-summary {
   display: flex !important;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   width: 100%;
   padding: 4px 2px;
   box-sizing: border-box;
   font-family: 'Inter', monospace;
-  font-size: 9px;
+  font-size: 10px !important;
   line-height: 1.1;
   margin-top: 6px;
 }
@@ -775,12 +771,13 @@
 }
 .sum-lbl {
   font-weight: 700;
-  font-size: 8px;
+  font-size: 9px !important;
 }
 .sum-lbl.act { color: var(--teal-light); }
 .sum-lbl.con { color: var(--emerald); }
 .sum-val {
-  font-weight: 600;
+  font-weight: 700 !important;
+  font-size: 10px !important;
   text-align: right;
   color: var(--text-primary);
   text-overflow: ellipsis;
@@ -788,6 +785,7 @@
   white-space: nowrap;
   flex-grow: 1;
   margin-left: 2px;
+   
 }
 .sum-val.calc-negative, .sum-lbl.calc-negative { color: var(--danger) !important; }
 .sum-val.calc-zero, .sum-lbl.calc-zero { color: var(--text-muted) !important; }
@@ -1763,7 +1761,7 @@ function renderBalances() {
  let colSpecs = [bankColWidth];
 data.companies.forEach((_, ci) => {
   if (data.collapsedCompanies[ci] === true) {
-    colSpecs.push('75px'); // Ancho incrementado aquí también
+    colSpecs.push('85px'); // Ancho incrementado aquí también
   } else {
     colSpecs.push('minmax(170px,1fr)');
   }
