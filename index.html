@@ -1080,21 +1080,18 @@ function getGoogleToken(callback) {
 
 // 3. GUARDAR EN GOOGLE DRIVE (Automático)
 async function saveToGDrive() {
-  // 1. Verificar si estamos conectados
+  // Verificamos conexión
   if (!gapiInited || !gapi.client || gapi.client.getToken() === null) {
-      console.warn("No conectado a Google Drive. No se subirá la copia.");
+      console.log("Sincronización saltada: No hay conexión con Google.");
       return;
   }
 
   const fileName = 'DATOSBANCARIOS_CLOUD.json';
   const content = JSON.stringify(data);
-  
-  // Cambiamos el indicador de guardado para que se vea que está "Subiendo..."
   const indicator = document.getElementById('save-indicator');
-  if (indicator) indicator.textContent = "☁️ Subiendo a la nube...";
 
   try {
-    // 2. Buscar si el archivo ya existe
+    // 1. Buscar si existe
     const listResponse = await gapi.client.drive.files.list({
       q: `name = '${fileName}' and trashed = false`,
       fields: 'files(id)',
@@ -1103,7 +1100,7 @@ async function saveToGDrive() {
     const file = listResponse.result.files[0];
     const fileId = file ? file.id : null;
 
-    // 3. Preparar la subida (Multipart)
+    // 2. Construir el cuerpo de la petición
     const metadata = { name: fileName, mimeType: 'application/json' };
     const boundary = 'foo_bar_baz';
     const delimiter = "\r\n--" + boundary + "\r\n";
@@ -1113,27 +1110,27 @@ async function saveToGDrive() {
       delimiter + 'Content-Type: application/json\r\n\r\n' + JSON.stringify(metadata) +
       delimiter + 'Content-Type: application/json\r\n\r\n' + content + close_delim;
 
-    // 4. Ejecutar la petición
-    await gapi.client.request({
+    // 3. Enviar a Google
+    const response = await gapi.client.request({
       path: fileId ? `/upload/drive/v3/files/${fileId}` : '/upload/drive/v3/files',
       method: fileId ? 'PATCH' : 'POST',
-      params: { uploadType: 'multipart' },
+      params: { uploadType: 'multipart', fields: 'id' },
       headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
       body: multipartRequestBody,
     });
 
-    console.log("✅ Sincronizado en Google Drive con éxito");
+    // --- ESTA ES LA PRUEBA DEFINITIVA ---
+    const cloudId = response.result.id;
+    console.log("ID del archivo en la nube:", cloudId);
+    
     if (indicator) {
-        indicator.textContent = "☁️ Sincronizado en Drive";
+        indicator.textContent = "☁️ Sincronizado (ID: " + cloudId.substring(0,5) + "...)";
         indicator.classList.add('saved');
-        setTimeout(() => { 
-            indicator.classList.remove('saved'); 
-            indicator.textContent = "✓ Datos guardados"; 
-        }, 3000);
+        setTimeout(() => { indicator.classList.remove('saved'); indicator.textContent = "✓ Datos guardados"; }, 3000);
     }
   } catch (err) {
-    console.error("❌ Error GDrive:", err);
-    if (indicator) indicator.textContent = "⚠️ Error en la nube";
+    console.error("Error detallado de Google:", err);
+    if (indicator) indicator.textContent = "⚠️ Error Nube";
   }
 }
 
@@ -1255,6 +1252,7 @@ function manualSave() {
   try { 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
     showSaved(false); 
+     saveToGDrive(); 
   } catch(e) {}
 }
 
