@@ -1058,6 +1058,7 @@ function gapiLoaded() {
   gapi.load('client', async () => {
     await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
     gapiInited = true;
+     verificarConexionInicial(); 
   });
 }
 
@@ -1174,11 +1175,12 @@ window.ejecutarConexionGoogle = function(proximoPaso, esSilencioso = false) {
 
   tokenClient.callback = async (respuesta) => {
     if (respuesta.error !== undefined) {
-      console.log("No se pudo conectar automáticamente:", respuesta.error);
+      console.warn("Google denegó la conexión automática.");
       updateCloudStatus(false);
       return;
     }
 
+    // --- GUARDADO PERSISTENTE DEL TOKEN ---
     localStorage.setItem('gdrive_token', respuesta.access_token);
     const tiempoExpiracion = Date.now() + (respuesta.expires_in * 1000);
     localStorage.setItem('gdrive_token_expiry', tiempoExpiracion);
@@ -1194,9 +1196,31 @@ window.ejecutarConexionGoogle = function(proximoPaso, esSilencioso = false) {
     }
   };
 
-   tokenClient.requestAccessToken({ prompt: esSilencioso ? '' : 'select_account' });
+  // El 'prompt: empty' intenta conectar sin abrir ventana
+  tokenClient.requestAccessToken({ prompt: esSilencioso ? '' : 'select_account' });
 };
 
+function verificarConexionInicial() {
+  if (!gapiInited || !gsiInited) return; // Esperar a que ambas librerías carguen
+
+  const tokenGuardado = localStorage.getItem('gdrive_token');
+  const expiracion = localStorage.getItem('gdrive_token_expiry');
+
+  // Si tenemos un token guardado que aún sirve:
+  if (tokenGuardado && expiracion && Date.now() < (parseInt(expiracion) - 60000)) {
+    console.log("🚀 Reutilizando llave guardada...");
+    gapi.client.setToken({ access_token: tokenGuardado });
+    gdriveEnabled = true;
+    updateCloudStatus(true);
+    saveToGDrive(); 
+  } 
+  // Si no hay token pero el usuario activó la nube antes:
+  else if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
+    console.log("🔄 Intentando reconexión silenciosa con Google...");
+    window.ejecutarConexionGoogle(null, true); 
+  }
+}
+  
 function gsiLoaded() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
@@ -1204,25 +1228,7 @@ function gsiLoaded() {
     callback: '', 
   });
   gsiInited = true;
-
-  // --- LÓGICA DE PERSISTENCIA REAL ---
-  const tokenGuardado = localStorage.getItem('gdrive_token');
-  const expiracion = localStorage.getItem('gdrive_token_expiry');
-
-  // Si tenemos un token y no ha caducado (dejamos 1 min de margen)
-  if (tokenGuardado && expiracion && Date.now() < (parseInt(expiracion) - 60000)) {
-    console.log("Reutilizando llave existente (validez confirmada)");
-    gapi.client.setToken({ access_token: tokenGuardado });
-    gdriveEnabled = true;
-    updateCloudStatus(true);
-    // Ya estamos conectados, podemos sincronizar
-    saveToGDrive();
-  } 
-  // Si el usuario tenía la nube activa pero el token caducó, intentamos refrescar en silencio
-  else if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
-    console.log("Llave caducada. Intentando refrescar silenciosamente...");
-    window.ejecutarConexionGoogle(null, true); 
-  }
+  verificarConexionInicial();
 }
 
 async function restoreFromGDrive() {
@@ -2961,8 +2967,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   </div>
 </div>
 
-<script src="https://accounts.google.com/gsi/client"></script>
-<script src="https://apis.google.com/js/api.js"></script>  
+<script src="https://accounts.google.com/gsi/client" onload="gsiLoaded()"></script>
+<script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   
 </body>
 </html>
