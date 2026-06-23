@@ -868,9 +868,14 @@
       <button class="btn btn-primary btn-sm" onclick="exportBackup(false)">&#x1F4E5; Descargar Copia</button>
     </div>
    
+
     <button class="btn btn-primary btn-sm" id="btn-manual-save">&#x1F4BE; Guardar Datos</button>
-    <span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
-    <button class="btn btn-ghost btn-sm" id="btn-clear">&#x1F5D1; Limpiar todo</button>
+    <span id="gdrive-status-icon" style="font-size: 11px; margin-left: 10px; cursor: pointer; user-select: none;" onclick="getGoogleToken()">
+      ☁️ <span style="color:var(--text-muted)">Nube...</span>
+    </span>
+
+<span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
+<button class="btn btn-ghost btn-sm" id="btn-clear">&#x1F5D1; Limpiar todo</button>
   </div>
 </header>
 
@@ -957,6 +962,7 @@
           </div>
         </div>
 
+     
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 6px 0;"/>
 
           <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -971,6 +977,28 @@
             <button class="btn btn-danger btn-sm" id="btn-import-backup" style="display: none;">Ejecutar Restauración</button>
           </div>
         </div>
+        
+              <!-- Sincronización con Google Drive -->
+              <hr style="border: 0; border-top: 1px solid var(--border); margin: 6px 0;"/>
+      
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <h3 style="font-size: 13px; font-weight: 600; color: #4285F4;">Sincronización en la Nube (Google Drive)</h3>
+                <p style="color: var(--text-muted); font-size: 11px; line-height: 1.4;">
+                  Conecta tu cuenta para guardar una copia automática en tu Drive. Esto permite recuperar tus datos desde cualquier dispositivo o tras borrar la caché.
+                </p>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                  <button class="btn btn-secondary btn-sm" onclick="getGoogleToken(() => alert('Conectado a Google Drive con éxito. La sincronización automática está activa.'))" style="border-color: #4285F4; color: #bbdefb;">
+                    🔗 Conectar cuenta de Google
+                  </button>
+                  <button class="btn btn-ghost btn-sm" onclick="restoreFromGDrive()">
+                    🔄 Restaurar desde la Nube
+                  </button>
+                </div>
+                <div id="gdrive-status" style="font-size: 10px; color: var(--emerald); margin-top: 2px; display: none;">
+                  ✓ Sincronizado con Google Drive
+                </div>
+              </div>
+        
       </div>
     </div>
   </section>
@@ -1013,6 +1041,181 @@ let data = {
   masterPassword: '',
   credentials: [] 
 };  
+
+
+// CONFIGURACIÓN DE GOOGLE (Rellena esto con tus datos)
+const CLIENT_ID = '1015353372327-qnofnvsqmd4oojn143p34193gusafhhh.apps.googleusercontent.com';
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+let tokenClient;
+let gapiInited = false;
+let gsiInited = false;
+let gdriveFileId = null; // ID del archivo en la nube
+
+// 1. Inicializar APIs
+function gapiLoaded() {
+  gapi.load('client', async () => {
+    await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
+    gapiInited = true;
+  });
+}
+
+let gdriveEnabled = localStorage.getItem('gdrive_sync_enabled') === 'true';
+
+function gsiLoaded() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error !== undefined) throw (resp);
+      gdriveEnabled = true;
+      localStorage.setItem('gdrive_sync_enabled', 'true');
+      updateCloudStatus(true);
+      console.log("Token recibido");
+      saveToGDrive(); // Guardar nada más conectar
+    },
+  });
+  gsiInited = true;
+  
+  // RECONEXIÓN AUTOMÁTICA:
+  if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
+      setTimeout(() => {
+          // Intenta pedir el token sin mostrar la ventana (silencioso)
+          tokenClient.requestAccessToken({ prompt: '' });
+      }, 1000);
+  }
+}
+  
+function updateCloudStatus(active) {
+    const statusEl = document.getElementById('gdrive-status-icon');
+    if (!statusEl) return;
+    if (active) {
+        statusEl.innerHTML = '☁️ <span style="color:#10b981">Conectada</span>';
+    } else {
+        statusEl.innerHTML = '☁️ <span style="color:var(--text-muted)">Desconectada</span>';
+    }
+}  
+
+// 2. Autenticación y obtención de Token
+function getGoogleToken(callback) {
+  tokenClient.callback = async (resp) => {
+    if (resp.error !== undefined) throw (resp);
+    callback();
+  };
+  if (gapi.client.getToken() === null) {
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+  } else {
+    tokenClient.requestAccessToken({ prompt: '' });
+  }
+}
+
+async function saveToGDrive() {
+  if (!gapiInited || !gapi.client || gapi.client.getToken() === null) return;
+
+  const fileName = 'DATOSBANCARIOS_CLOUD.json';
+  const content = JSON.stringify(data);
+  const indicator = document.getElementById('save-indicator');
+
+  try {
+    // 1. Buscamos si el archivo existe
+    const listResponse = await gapi.client.drive.files.list({
+      q: `name = '${fileName}' and trashed = false`,
+      fields: 'files(id)',
+    });
+    
+    const file = listResponse.result.files[0];
+    const fileId = file ? file.id : null;
+
+    // 2. Preparamos el cuerpo (Cuidado: Google es estricto con los saltos de línea \r\n)
+    const metadata = { name: fileName, mimeType: 'application/json' };
+    const boundary = 'foo_bar_baz';
+    const delimiter = "\r\n--" + boundary + "\r\n";
+    const close_delim = "\r\n--" + boundary + "--";
+
+    const multipartRequestBody =
+      delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(metadata) +
+      delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' + content +
+      close_delim;
+
+    // 3. Petición a la URL completa de subida
+    await gapi.client.request({
+      path: fileId ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}` : 'https://www.googleapis.com/upload/drive/v3/files',
+      method: fileId ? 'PATCH' : 'POST',
+      params: { uploadType: 'multipart' },
+      headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+      body: multipartRequestBody,
+    });
+
+    // Éxito: Actualizamos UI
+    console.log("✅ Sincronizado en Drive");
+    updateCloudStatus(true);
+    if (indicator) {
+        indicator.textContent = "☁️ Nube sincronizada";
+        indicator.classList.add('saved');
+        setTimeout(() => { indicator.classList.remove('saved'); indicator.textContent = "✓ Datos guardados"; }, 2000);
+    }
+  } catch (err) {
+    console.error("❌ Error Drive:", err);
+    updateCloudStatus(false);
+  }
+}
+
+// 4. RESTAURAR DESDE GOOGLE DRIVE
+async function restoreFromGDrive() {
+  getGoogleToken(async () => {
+    try {
+      const response = await gapi.client.drive.files.list({
+        q: "name = 'DATOSBANCARIOS_CLOUD.json' and trashed = false",
+        fields: 'files(id, name)',
+      });
+
+      const file = response.result.files[0];
+      if (!file) {
+        alert("No se encontró ninguna copia en Google Drive.");
+        return;
+      }
+
+      const fileData = await gapi.client.drive.files.get({
+        fileId: file.id,
+        alt: 'media',
+      });
+
+      if (fileData.result) {
+        data = fileData.result;
+        saveData(); // Guardar en localstorage
+        renderAll();
+        alert("Datos restaurados desde Google Drive con éxito.");
+      }
+    } catch (err) {
+      alert("Error al restaurar: " + err.message);
+    }
+  });
+}
+
+// --- CONTROL DE INTERVALOS PARA NO SATURAR ---
+let gdriveTimer;
+function debouncedGDriveSave() {
+  clearTimeout(gdriveTimer);
+  gdriveTimer = setTimeout(() => {
+    saveToGDrive();
+  }, 5000); // Solo guarda en la nube si no hay cambios durante 5 MINUTOS
+}
+
+// Integrar en tu función saveData existente
+const originalSaveData = saveData;
+saveData = function() {
+    originalSaveData(); // Sigue guardando en local
+    debouncedGDriveSave(); // Intenta sincronizar en la nube
+}
+
+// Inicializar scripts al cargar
+window.onload = () => {
+  gapiLoaded();
+  gsiLoaded();
+};
+
+  
 
 // --- SISTEMA DE DESHACER (UNDO) ---
 let undoStack = [];
@@ -1066,16 +1269,21 @@ document.addEventListener('focusin', e => {
 function saveData() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    showSaved(true);
+    showSaved(true); // Esto avisa del guardado en el PC (Instantáneo)
+    
+    if (gdriveEnabled) {
+      debouncedGDriveSave(); 
+    }
   } catch(e) {
-    console.error("No se pudieron guardar los datos en tiempo real:", e);
+    console.error("Error local:", e);
   }
-}
+}  
 
 function manualSave() {
   try { 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
     showSaved(false); 
+     saveToGDrive(); 
   } catch(e) {}
 }
 
@@ -2696,6 +2904,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     </div>
   </div>
 </div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>  
   
 </body>
 </html>
