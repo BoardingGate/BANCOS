@@ -1169,23 +1169,24 @@ async function saveToGDrive() {
 }
 
   
-window.ejecutarConexionGoogle = function(proximoPaso) {
+window.ejecutarConexionGoogle = function(proximoPaso, esSilencioso = false) {
   if (!tokenClient) return;
 
-  // Configuramos la respuesta de Google
   tokenClient.callback = async (respuesta) => {
     if (respuesta.error !== undefined) {
-      console.log("Error de autenticación:", respuesta.error);
+      console.log("No se pudo conectar automáticamente:", respuesta.error);
       updateCloudStatus(false);
       return;
     }
 
-    console.log("✅ Llave de Google obtenida");
+    localStorage.setItem('gdrive_token', respuesta.access_token);
+    const tiempoExpiracion = Date.now() + (respuesta.expires_in * 1000);
+    localStorage.setItem('gdrive_token_expiry', tiempoExpiracion);
+    
     gdriveEnabled = true;
     localStorage.setItem('gdrive_sync_enabled', 'true');
     updateCloudStatus(true);
 
-    // Verificamos si proximoPaso es realmente una función antes de llamarla
     if (proximoPaso && typeof proximoPaso === 'function') {
       proximoPaso();
     } else {
@@ -1193,26 +1194,34 @@ window.ejecutarConexionGoogle = function(proximoPaso) {
     }
   };
 
-  // Si proximoPaso no es una función (como el clic del botón), pedimos elegir cuenta
-  const esCierreSesion = !proximoPaso || typeof proximoPaso !== 'function';
-  tokenClient.requestAccessToken({ prompt: esCierreSesion ? 'select_account' : '' });
+   tokenClient.requestAccessToken({ prompt: esSilencioso ? '' : 'select_account' });
 };
 
 function gsiLoaded() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
-    callback: '', // Se define dinámicamente en ejecutarConexionGoogle
+    callback: '', 
   });
   gsiInited = true;
 
-  // RECONEXIÓN AUTOMÁTICA AL CARGAR
-  if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
-    setTimeout(() => {
-      console.log("Intentando recuperar sesión silenciosa...");
-      // Llamamos a la conexión sin pasar ninguna función
-      window.ejecutarConexionGoogle(null);
-    }, 1500);
+  // --- LÓGICA DE PERSISTENCIA REAL ---
+  const tokenGuardado = localStorage.getItem('gdrive_token');
+  const expiracion = localStorage.getItem('gdrive_token_expiry');
+
+  // Si tenemos un token y no ha caducado (dejamos 1 min de margen)
+  if (tokenGuardado && expiracion && Date.now() < (parseInt(expiracion) - 60000)) {
+    console.log("Reutilizando llave existente (validez confirmada)");
+    gapi.client.setToken({ access_token: tokenGuardado });
+    gdriveEnabled = true;
+    updateCloudStatus(true);
+    // Ya estamos conectados, podemos sincronizar
+    saveToGDrive();
+  } 
+  // Si el usuario tenía la nube activa pero el token caducó, intentamos refrescar en silencio
+  else if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
+    console.log("Llave caducada. Intentando refrescar silenciosamente...");
+    window.ejecutarConexionGoogle(null, true); 
   }
 }
 
@@ -1238,7 +1247,7 @@ async function restoreFromGDrive() {
     } catch (err) {
       console.error("Error al restaurar:", err);
     }
-  });
+  }, false);
 }
 // --- CONTROL DE INTERVALOS PARA NO SATURAR ---
 let gdriveTimer;
