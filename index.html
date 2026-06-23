@@ -1069,21 +1069,22 @@ function gsiLoaded() {
     scope: SCOPES,
     callback: async (resp) => {
       if (resp.error !== undefined) throw (resp);
+      
       gdriveEnabled = true;
       localStorage.setItem('gdrive_sync_enabled', 'true');
-      updateCloudStatus(true);
-      console.log("Token recibido");
-      saveToGDrive(); // Guardar nada más conectar
+      
+     updateCloudStatus(true); 
+      console.log("Conexión Google Drive activa");
+      
+      saveToGDrive();
     },
   });
   gsiInited = true;
   
-  // RECONEXIÓN AUTOMÁTICA:
   if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
       setTimeout(() => {
-          // Intenta pedir el token sin mostrar la ventana (silencioso)
-          tokenClient.requestAccessToken({ prompt: '' });
-      }, 1000);
+          tokenClient.requestAccessToken({ prompt: '' }); // Pide la llave sin molestar
+      }, 1500);
   }
 }
   
@@ -1111,6 +1112,16 @@ function getGoogleToken(callback) {
 }
 
 async function saveToGDrive() {
+  if (localStorage.getItem('gdrive_sync_enabled') !== 'true') return;
+
+  // Si la llave (token) no está lista todavía:
+  if (gapi.client.getToken() === null) {
+      console.log("Reconectando con Drive antes de subir...");
+      tokenClient.requestAccessToken({ prompt: '' });
+      return; 
+  }  
+  
+  
   if (!gapiInited || !gapi.client || gapi.client.getToken() === null) return;
 
   const fileName = 'DATOSBANCARIOS_CLOUD.json';
