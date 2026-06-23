@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
@@ -870,7 +870,7 @@
    
 
     <button class="btn btn-primary btn-sm" id="btn-manual-save">&#x1F4BE; Guardar Datos</button>
-    <span id="gdrive-status-icon" style="font-size: 11px; margin-left: 10px; cursor: pointer; user-select: none;" onclick="getGoogleToken()">
+    <span id="gdrive-status-icon" style="font-size: 11px; margin-left: 10px; cursor: pointer; user-select: none;" onclick="ejecutarConexionGoogle()">
       ☁️ <span style="color:var(--text-muted)">Nube...</span>
     </span>
 
@@ -1058,44 +1058,30 @@ function gapiLoaded() {
   gapi.load('client', async () => {
     await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
     gapiInited = true;
+     verificarConexionInicial(); 
   });
 }
 
 let gdriveEnabled = localStorage.getItem('gdrive_sync_enabled') === 'true';
 
-function gsiLoaded() {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: async (resp) => {
-      if (resp.error !== undefined) throw (resp);
-      gdriveEnabled = true;
-      localStorage.setItem('gdrive_sync_enabled', 'true');
-      updateCloudStatus(true);
-      console.log("Token recibido");
-      saveToGDrive(); // Guardar nada más conectar
-    },
-  });
-  gsiInited = true;
-  
-  // RECONEXIÓN AUTOMÁTICA:
-  if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
-      setTimeout(() => {
-          // Intenta pedir el token sin mostrar la ventana (silencioso)
-          tokenClient.requestAccessToken({ prompt: '' });
-      }, 1000);
-  }
-}
+
+
+// Sustituye getGoogleToken para que siempre abra el diálogo si se llama manualmente
+
+
+
   
 function updateCloudStatus(active) {
-    const statusEl = document.getElementById('gdrive-status-icon');
-    if (!statusEl) return;
-    if (active) {
-        statusEl.innerHTML = '☁️ <span style="color:#10b981">Conectada</span>';
-    } else {
-        statusEl.innerHTML = '☁️ <span style="color:var(--text-muted)">Desconectada</span>';
-    }
-}  
+  const statusEl = document.getElementById('gdrive-status-icon');
+  if (!statusEl) return;
+  if (active) {
+    statusEl.innerHTML = '☁️ <span style="color:#10b981; font-weight:bold;">Conectada</span>';
+    statusEl.title = "Sincronización activa con Google Drive";
+  } else {
+    statusEl.innerHTML = '☁️ <span style="color:#94a3b8;">Nube...</span>';
+    statusEl.title = "Haga clic para conectar Google Drive";
+  }
+}
 
 // 2. Autenticación y obtención de Token
 function getGoogleToken(callback) {
@@ -1111,14 +1097,22 @@ function getGoogleToken(callback) {
 }
 
 async function saveToGDrive() {
-  if (!gapiInited || !gapi.client || gapi.client.getToken() === null) return;
+  // Si la nube no está habilitada por el usuario, salimos
+  if (localStorage.getItem('gdrive_sync_enabled') !== 'true') return;
+
+  // SI NO HAY TOKEN, LO PEDIMOS Y PARAMOS (el callback de arriba retomará el guardado)
+  if (!gapi.client || gapi.client.getToken() === null) {
+    console.log("🔑 No hay token. Pidiendo uno nuevo automáticamente...");
+    tokenClient.requestAccessToken({ prompt: '' });
+    return; 
+  }
 
   const fileName = 'DATOSBANCARIOS_CLOUD.json';
   const content = JSON.stringify(data);
   const indicator = document.getElementById('save-indicator');
 
   try {
-    // 1. Buscamos si el archivo existe
+    // 1. Buscar si el archivo existe
     const listResponse = await gapi.client.drive.files.list({
       q: `name = '${fileName}' and trashed = false`,
       fields: 'files(id)',
@@ -1127,43 +1121,119 @@ async function saveToGDrive() {
     const file = listResponse.result.files[0];
     const fileId = file ? file.id : null;
 
-    // 2. Preparamos el cuerpo (Cuidado: Google es estricto con los saltos de línea \r\n)
-    const metadata = { name: fileName, mimeType: 'application/json' };
+    // 2. Construir cuerpo multipart
     const boundary = 'foo_bar_baz';
     const delimiter = "\r\n--" + boundary + "\r\n";
     const close_delim = "\r\n--" + boundary + "--";
+    const metadata = { name: fileName, mimeType: 'application/json' };
 
     const multipartRequestBody =
-      delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(metadata) +
-      delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' + content +
+      delimiter +
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(metadata) +
+      delimiter +
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+      content +
       close_delim;
 
-    // 3. Petición a la URL completa de subida
+    // 3. Petición de subida
+    const path = fileId 
+      ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
+      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+
     await gapi.client.request({
-      path: fileId ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}` : 'https://www.googleapis.com/upload/drive/v3/files',
+      path: path,
       method: fileId ? 'PATCH' : 'POST',
-      params: { uploadType: 'multipart' },
-      headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
       body: multipartRequestBody,
+      headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }
     });
 
-    // Éxito: Actualizamos UI
-    console.log("✅ Sincronizado en Drive");
+    console.log("✅ Sincronizado en Google Drive");
     updateCloudStatus(true);
+    
     if (indicator) {
-        indicator.textContent = "☁️ Nube sincronizada";
-        indicator.classList.add('saved');
-        setTimeout(() => { indicator.classList.remove('saved'); indicator.textContent = "✓ Datos guardados"; }, 2000);
+      indicator.innerHTML = "☁️ Nube sincronizada";
+      indicator.classList.add('saved');
+      setTimeout(() => { 
+        indicator.classList.remove('saved'); 
+        indicator.innerHTML = "&#x2713; Datos guardados"; 
+      }, 2500);
     }
   } catch (err) {
-    console.error("❌ Error Drive:", err);
-    updateCloudStatus(false);
+    console.error("❌ Error en subida:", err);
+    if (err.status === 401) {
+      console.log("Token caducado. Limpiando...");
+      gapi.client.setToken(null);
+      updateCloudStatus(false);
+    }
   }
 }
 
-// 4. RESTAURAR DESDE GOOGLE DRIVE
+  
+window.ejecutarConexionGoogle = function(proximoPaso, esSilencioso = false) {
+  if (!tokenClient) return;
+
+  tokenClient.callback = async (respuesta) => {
+    if (respuesta.error !== undefined) {
+      console.warn("Google denegó la conexión automática.");
+      updateCloudStatus(false);
+      return;
+    }
+
+    // --- GUARDADO PERSISTENTE DEL TOKEN ---
+    localStorage.setItem('gdrive_token', respuesta.access_token);
+    const tiempoExpiracion = Date.now() + (respuesta.expires_in * 1000);
+    localStorage.setItem('gdrive_token_expiry', tiempoExpiracion);
+    
+    gdriveEnabled = true;
+    localStorage.setItem('gdrive_sync_enabled', 'true');
+    updateCloudStatus(true);
+
+    if (proximoPaso && typeof proximoPaso === 'function') {
+      proximoPaso();
+    } else {
+      saveToGDrive();
+    }
+  };
+
+  // El 'prompt: empty' intenta conectar sin abrir ventana
+  tokenClient.requestAccessToken({ prompt: esSilencioso ? '' : 'select_account' });
+};
+
+function verificarConexionInicial() {
+  if (!gapiInited || !gsiInited) return; // Esperar a que ambas librerías carguen
+
+  const tokenGuardado = localStorage.getItem('gdrive_token');
+  const expiracion = localStorage.getItem('gdrive_token_expiry');
+
+  // Si tenemos un token guardado que aún sirve:
+  if (tokenGuardado && expiracion && Date.now() < (parseInt(expiracion) - 60000)) {
+    console.log("🚀 Reutilizando llave guardada...");
+    gapi.client.setToken({ access_token: tokenGuardado });
+    gdriveEnabled = true;
+    updateCloudStatus(true);
+    saveToGDrive(); 
+  } 
+  // Si no hay token pero el usuario activó la nube antes:
+  else if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
+    console.log("🔄 Intentando reconexión silenciosa con Google...");
+    window.ejecutarConexionGoogle(null, true); 
+  }
+}
+  
+function gsiLoaded() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: '', 
+  });
+  gsiInited = true;
+  verificarConexionInicial();
+}
+
 async function restoreFromGDrive() {
-  getGoogleToken(async () => {
+  // Aquí sí pasamos una función como argumento
+  window.ejecutarConexionGoogle(async () => {
     try {
       const response = await gapi.client.drive.files.list({
         q: "name = 'DATOSBANCARIOS_CLOUD.json' and trashed = false",
@@ -1171,28 +1241,20 @@ async function restoreFromGDrive() {
       });
 
       const file = response.result.files[0];
-      if (!file) {
-        alert("No se encontró ninguna copia en Google Drive.");
-        return;
-      }
+      if (!file) { alert("No se encontró copia en la nube."); return; }
 
-      const fileData = await gapi.client.drive.files.get({
-        fileId: file.id,
-        alt: 'media',
-      });
-
+      const fileData = await gapi.client.drive.files.get({ fileId: file.id, alt: 'media' });
       if (fileData.result) {
         data = fileData.result;
-        saveData(); // Guardar en localstorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         renderAll();
-        alert("Datos restaurados desde Google Drive con éxito.");
+        alert("¡Datos restaurados con éxito!");
       }
     } catch (err) {
-      alert("Error al restaurar: " + err.message);
+      console.error("Error al restaurar:", err);
     }
-  });
+  }, false);
 }
-
 // --- CONTROL DE INTERVALOS PARA NO SATURAR ---
 let gdriveTimer;
 function debouncedGDriveSave() {
@@ -2905,8 +2967,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   </div>
 </div>
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://apis.google.com/js/api.js" async defer></script>  
+<script src="https://accounts.google.com/gsi/client" onload="gsiLoaded()"></script>
+<script src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   
 </body>
 </html>
