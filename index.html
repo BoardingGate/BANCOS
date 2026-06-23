@@ -630,9 +630,9 @@
 
 /* 2. AÑADA ESTA NUEVA CLASE PARA LAS EMPRESAS JUSTO DEBAJO */
 .company-collapsed-cell {
-  min-width: 75px !important;
-  max-width: 75px !important;
-  width: 75px !important;
+  min-width: 85px !important;
+  max-width: 85px !important;
+  width: 85px !important;
   padding: 4px !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1761,7 +1761,7 @@ function renderBalances() {
  let colSpecs = [bankColWidth];
 data.companies.forEach((_, ci) => {
   if (data.collapsedCompanies[ci] === true) {
-    colSpecs.push('75px'); // Ancho incrementado aquí también
+    colSpecs.push('85px'); // Ancho incrementado aquí también
   } else {
     colSpecs.push('minmax(170px,1fr)');
   }
