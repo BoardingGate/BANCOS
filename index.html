@@ -1080,58 +1080,60 @@ function getGoogleToken(callback) {
 
 // 3. GUARDAR EN GOOGLE DRIVE (Automático)
 async function saveToGDrive() {
-  if (!gapiInited || gapi.client.getToken() === null) return;
+  // 1. Verificar si estamos conectados
+  if (!gapiInited || !gapi.client || gapi.client.getToken() === null) {
+      console.warn("No conectado a Google Drive. No se subirá la copia.");
+      return;
+  }
 
   const fileName = 'DATOSBANCARIOS_CLOUD.json';
   const content = JSON.stringify(data);
   
+  // Cambiamos el indicador de guardado para que se vea que está "Subiendo..."
+  const indicator = document.getElementById('save-indicator');
+  if (indicator) indicator.textContent = "☁️ Subiendo a la nube...";
+
   try {
-    // Buscar si el archivo ya existe
-    const response = await gapi.client.drive.files.list({
+    // 2. Buscar si el archivo ya existe
+    const listResponse = await gapi.client.drive.files.list({
       q: `name = '${fileName}' and trashed = false`,
       fields: 'files(id)',
     });
     
-    const file = response.result.files[0];
+    const file = listResponse.result.files[0];
     const fileId = file ? file.id : null;
 
+    // 3. Preparar la subida (Multipart)
+    const metadata = { name: fileName, mimeType: 'application/json' };
     const boundary = 'foo_bar_baz';
     const delimiter = "\r\n--" + boundary + "\r\n";
     const close_delim = "\r\n--" + boundary + "--";
 
-    const metadata = {
-      name: fileName,
-      mimeType: 'application/json',
-    };
-
-    let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-    let method = 'POST';
-
-    if (fileId) {
-      url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`;
-      method = 'PATCH';
-    }
-
     const multipartRequestBody =
-      delimiter +
-      'Content-Type: application/json\r\n\r\n' +
-      JSON.stringify(metadata) +
-      delimiter +
-      'Content-Type: application/json\r\n\r\n' +
-      content +
-      close_delim;
+      delimiter + 'Content-Type: application/json\r\n\r\n' + JSON.stringify(metadata) +
+      delimiter + 'Content-Type: application/json\r\n\r\n' + content + close_delim;
 
+    // 4. Ejecutar la petición
     await gapi.client.request({
-      path: url,
-      method: method,
+      path: fileId ? `/upload/drive/v3/files/${fileId}` : '/upload/drive/v3/files',
+      method: fileId ? 'PATCH' : 'POST',
       params: { uploadType: 'multipart' },
       headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
       body: multipartRequestBody,
     });
 
-    console.log("Sincronizado con Google Drive correctamente");
+    console.log("✅ Sincronizado en Google Drive con éxito");
+    if (indicator) {
+        indicator.textContent = "☁️ Sincronizado en Drive";
+        indicator.classList.add('saved');
+        setTimeout(() => { 
+            indicator.classList.remove('saved'); 
+            indicator.textContent = "✓ Datos guardados"; 
+        }, 3000);
+    }
   } catch (err) {
-    console.error("Error guardando en GDrive", err);
+    console.error("❌ Error GDrive:", err);
+    if (indicator) indicator.textContent = "⚠️ Error en la nube";
   }
 }
 
