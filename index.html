@@ -868,9 +868,14 @@
       <button class="btn btn-primary btn-sm" onclick="exportBackup(false)">&#x1F4E5; Descargar Copia</button>
     </div>
    
+
     <button class="btn btn-primary btn-sm" id="btn-manual-save">&#x1F4BE; Guardar Datos</button>
-    <span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
-    <button class="btn btn-ghost btn-sm" id="btn-clear">&#x1F5D1; Limpiar todo</button>
+    <span id="gdrive-status-icon" style="font-size: 11px; margin-left: 10px; cursor: pointer; user-select: none;" onclick="getGoogleToken()">
+      ☁️ <span style="color:var(--text-muted)">Nube...</span>
+    </span>
+
+<span class="save-indicator" id="save-indicator">&#x2713; Datos guardados</span>
+<button class="btn btn-ghost btn-sm" id="btn-clear">&#x1F5D1; Limpiar todo</button>
   </div>
 </header>
 
@@ -1056,14 +1061,45 @@ function gapiLoaded() {
   });
 }
 
+let gdriveEnabled = localStorage.getItem('gdrive_sync_enabled') === 'true';
+
 function gsiLoaded() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
-    callback: '', // se define al llamar
+    callback: async (resp) => {
+      if (resp.error !== undefined) throw (resp);
+      // Al recibir el token, marcamos que la nube está activa
+      gdriveEnabled = true;
+      localStorage.setItem('gdrive_sync_enabled', 'true');
+      updateCloudStatus(true);
+      console.log("Token de Google recibido y guardado en sesión");
+      // Si el login fue exitoso, intentamos guardar inmediatamente
+      saveToGDrive();
+    },
   });
   gsiInited = true;
+  
+  // Si el usuario ya lo activó antes, intentamos pedir el token silenciosamente
+  if (gdriveEnabled) {
+      setTimeout(() => {
+          // Intentamos pedir el token sin "prompt" (silencioso)
+          // Nota: Algunos navegadores bloquean esto si no hay interacción, 
+          // pero GIS intentará refrescarlo si la sesión de Google sigue abierta.
+          tokenClient.requestAccessToken({ prompt: '' });
+      }, 2000);
+  }
 }
+
+function updateCloudStatus(active) {
+    const statusEl = document.getElementById('gdrive-status-icon');
+    if (!statusEl) return;
+    if (active) {
+        statusEl.innerHTML = '☁️ <span style="color:#10b981">Conectada</span>';
+    } else {
+        statusEl.innerHTML = '☁️ <span style="color:var(--text-muted)">Desconectada</span>';
+    }
+}  
 
 // 2. Autenticación y obtención de Token
 function getGoogleToken(callback) {
@@ -1080,10 +1116,14 @@ function getGoogleToken(callback) {
 
 // 3. GUARDAR EN GOOGLE DRIVE (Automático)
 async function saveToGDrive() {
-  // Verificamos conexión
-  if (!gapiInited || !gapi.client || gapi.client.getToken() === null) {
-      console.log("Sincronización saltada: No hay conexión con Google.");
-      return;
+  // Si el usuario nunca activó la nube, no hacemos nada
+  if (!gdriveEnabled) return;
+
+  // Si no tenemos token, lo pedimos
+  if (gapi.client.getToken() === null) {
+      console.log("Token caducado, solicitando uno nuevo...");
+      tokenClient.requestAccessToken({ prompt: '' });
+      return; // El guardado se ejecutará en el 'callback' del tokenClient
   }
 
   const fileName = 'DATOSBANCARIOS_CLOUD.json';
@@ -1091,7 +1131,6 @@ async function saveToGDrive() {
   const indicator = document.getElementById('save-indicator');
 
   try {
-    // 1. Buscar si existe
     const listResponse = await gapi.client.drive.files.list({
       q: `name = '${fileName}' and trashed = false`,
       fields: 'files(id)',
@@ -1100,7 +1139,6 @@ async function saveToGDrive() {
     const file = listResponse.result.files[0];
     const fileId = file ? file.id : null;
 
-    // 2. Construir el cuerpo de la petición
     const metadata = { name: fileName, mimeType: 'application/json' };
     const boundary = 'foo_bar_baz';
     const delimiter = "\r\n--" + boundary + "\r\n";
@@ -1110,27 +1148,23 @@ async function saveToGDrive() {
       delimiter + 'Content-Type: application/json\r\n\r\n' + JSON.stringify(metadata) +
       delimiter + 'Content-Type: application/json\r\n\r\n' + content + close_delim;
 
-    // 3. Enviar a Google
-    const response = await gapi.client.request({
+    await gapi.client.request({
       path: fileId ? `/upload/drive/v3/files/${fileId}` : '/upload/drive/v3/files',
       method: fileId ? 'PATCH' : 'POST',
-      params: { uploadType: 'multipart', fields: 'id' },
+      params: { uploadType: 'multipart' },
       headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
       body: multipartRequestBody,
     });
 
-    // --- ESTA ES LA PRUEBA DEFINITIVA ---
-    const cloudId = response.result.id;
-    console.log("ID del archivo en la nube:", cloudId);
-    
-    if (indicator) {
-        indicator.textContent = "☁️ Sincronizado (ID: " + cloudId.substring(0,5) + "...)";
-        indicator.classList.add('saved');
-        setTimeout(() => { indicator.classList.remove('saved'); indicator.textContent = "✓ Datos guardados"; }, 3000);
-    }
+    console.log("✅ Sincronización automática completada");
+    updateCloudStatus(true);
   } catch (err) {
-    console.error("Error detallado de Google:", err);
-    if (indicator) indicator.textContent = "⚠️ Error Nube";
+    if (err.status === 401) {
+        // Si el error es falta de autorización, limpiamos y pedimos de nuevo
+        gapi.client.setToken(null);
+        tokenClient.requestAccessToken({ prompt: '' });
+    }
+    console.error("Error en GDrive:", err);
   }
 }
 
