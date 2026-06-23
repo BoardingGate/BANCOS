@@ -1068,27 +1068,29 @@ function gsiLoaded() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
-    callback: (resp) => {
+    callback: async (resp) => {
       if (resp.error !== undefined) {
         console.error("Error de Google:", resp.error);
+        updateCloudStatus(false);
         return;
       }
-      console.log("Token recibido correctamente");
+      console.log("✅ Llave de acceso recibida");
       gdriveEnabled = true;
       localStorage.setItem('gdrive_sync_enabled', 'true');
       updateCloudStatus(true);
-      saveToGDrive(); // Guardar tras conectar
+      
+      // Intentar guardar inmediatamente ahora que tenemos la llave
+      saveToGDrive();
     },
   });
   gsiInited = true;
 
-  // Reconexión automática
+  // Reconexión automática al cargar la página
   if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
-    console.log("Intentando recuperar sesión de Google...");
     setTimeout(() => {
-      // Intentamos refrescar el token de forma silenciosa
+      console.log("Solicitando restauración de sesión silenciosa...");
       tokenClient.requestAccessToken({ prompt: '' });
-    }, 2000);
+    }, 1000);
   }
 }
 
@@ -1126,10 +1128,14 @@ function getGoogleToken(callback) {
 }
 
 async function saveToGDrive() {
+  // Si la nube no está habilitada por el usuario, salimos
+  if (localStorage.getItem('gdrive_sync_enabled') !== 'true') return;
+
+  // SI NO HAY TOKEN, LO PEDIMOS Y PARAMOS (el callback de arriba retomará el guardado)
   if (!gapi.client || gapi.client.getToken() === null) {
-    console.warn("No hay token de Google. Sincronización cancelada.");
-    updateCloudStatus(false);
-    return;
+    console.log("🔑 No hay token. Pidiendo uno nuevo automáticamente...");
+    tokenClient.requestAccessToken({ prompt: '' });
+    return; 
   }
 
   const fileName = 'DATOSBANCARIOS_CLOUD.json';
@@ -1146,11 +1152,10 @@ async function saveToGDrive() {
     const file = listResponse.result.files[0];
     const fileId = file ? file.id : null;
 
-    // 2. Construir cuerpo multipart (Formato estricto para Google)
+    // 2. Construir cuerpo multipart
     const boundary = 'foo_bar_baz';
     const delimiter = "\r\n--" + boundary + "\r\n";
     const close_delim = "\r\n--" + boundary + "--";
-
     const metadata = { name: fileName, mimeType: 'application/json' };
 
     const multipartRequestBody =
@@ -1158,7 +1163,7 @@ async function saveToGDrive() {
       'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
       JSON.stringify(metadata) +
       delimiter +
-      'Content-Type: application/json\r\n\r\n' +
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
       content +
       close_delim;
 
@@ -1171,12 +1176,10 @@ async function saveToGDrive() {
       path: path,
       method: fileId ? 'PATCH' : 'POST',
       body: multipartRequestBody,
-      headers: {
-        'Content-Type': `multipart/related; boundary=${boundary}`
-      }
+      headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }
     });
 
-    console.log("✅ Archivo actualizado en Google Drive");
+    console.log("✅ Sincronizado en Google Drive");
     updateCloudStatus(true);
     
     if (indicator) {
@@ -1188,15 +1191,14 @@ async function saveToGDrive() {
       }, 2500);
     }
   } catch (err) {
-    console.error("❌ Error subiendo a Drive:", err);
-    // Si el error es de autorización (token caducado), lo limpiamos
+    console.error("❌ Error en subida:", err);
     if (err.status === 401) {
+      console.log("Token caducado. Limpiando...");
       gapi.client.setToken(null);
       updateCloudStatus(false);
     }
   }
 }
-
 // 4. RESTAURAR DESDE GOOGLE DRIVE
 async function restoreFromGDrive() {
   getGoogleToken(async () => {
