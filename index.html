@@ -1069,28 +1069,24 @@ function gsiLoaded() {
     scope: SCOPES,
     callback: async (resp) => {
       if (resp.error !== undefined) throw (resp);
-      // Al recibir el token, marcamos que la nube está activa
       gdriveEnabled = true;
       localStorage.setItem('gdrive_sync_enabled', 'true');
       updateCloudStatus(true);
-      console.log("Token de Google recibido y guardado en sesión");
-      // Si el login fue exitoso, intentamos guardar inmediatamente
-      saveToGDrive();
+      console.log("Token recibido");
+      saveToGDrive(); // Guardar nada más conectar
     },
   });
   gsiInited = true;
   
-  // Si el usuario ya lo activó antes, intentamos pedir el token silenciosamente
-  if (gdriveEnabled) {
+  // RECONEXIÓN AUTOMÁTICA:
+  if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
       setTimeout(() => {
-          // Intentamos pedir el token sin "prompt" (silencioso)
-          // Nota: Algunos navegadores bloquean esto si no hay interacción, 
-          // pero GIS intentará refrescarlo si la sesión de Google sigue abierta.
+          // Intenta pedir el token sin mostrar la ventana (silencioso)
           tokenClient.requestAccessToken({ prompt: '' });
-      }, 2000);
+      }, 1000);
   }
 }
-
+  
 function updateCloudStatus(active) {
     const statusEl = document.getElementById('gdrive-status-icon');
     if (!statusEl) return;
@@ -1206,7 +1202,7 @@ function debouncedGDriveSave() {
   clearTimeout(gdriveTimer);
   gdriveTimer = setTimeout(() => {
     saveToGDrive();
-  }, 3000000); // Solo guarda en la nube si no hay cambios durante 5 MINUTOS
+  }, 5000); // Solo guarda en la nube si no hay cambios durante 5 MINUTOS
 }
 
 // Integrar en tu función saveData existente
