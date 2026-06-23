@@ -1097,10 +1097,17 @@ function getGoogleToken(callback) {
 }
 
 async function saveToGDrive() {
-  // Si la nube no está habilitada por el usuario, salimos
   if (localStorage.getItem('gdrive_sync_enabled') !== 'true') return;
 
-  // SI NO HAY TOKEN, LO PEDIMOS Y PARAMOS (el callback de arriba retomará el guardado)
+  const tieneSaldos = Object.keys(data.balances).length > 0;
+  const tieneMovimientos = Object.keys(data.movements).length > 0;
+  const tieneNotas = data.notes && data.notes.trim().length > 0;
+
+  if (!tieneSaldos && !tieneMovimientos && !tieneNotas) {
+      console.warn("Sincronización abortada: Los datos locales están vacíos.");
+      return;
+  }
+
   if (!gapi.client || gapi.client.getToken() === null) {
     console.log("🔑 No hay token. Pidiendo uno nuevo automáticamente...");
     tokenClient.requestAccessToken({ prompt: '' });
@@ -1112,8 +1119,7 @@ async function saveToGDrive() {
   const indicator = document.getElementById('save-indicator');
 
   try {
-    // 1. Buscar si el archivo existe
-    const listResponse = await gapi.client.drive.files.list({
+   const listResponse = await gapi.client.drive.files.list({
       q: `name = '${fileName}' and trashed = false`,
       fields: 'files(id)',
     });
@@ -1121,7 +1127,6 @@ async function saveToGDrive() {
     const file = listResponse.result.files[0];
     const fileId = file ? file.id : null;
 
-    // 2. Construir cuerpo multipart
     const boundary = 'foo_bar_baz';
     const delimiter = "\r\n--" + boundary + "\r\n";
     const close_delim = "\r\n--" + boundary + "--";
@@ -1136,7 +1141,6 @@ async function saveToGDrive() {
       content +
       close_delim;
 
-    // 3. Petición de subida
     const path = fileId 
       ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
       : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
@@ -1180,8 +1184,7 @@ window.ejecutarConexionGoogle = function(proximoPaso, esSilencioso = false) {
       return;
     }
 
-    // --- GUARDADO PERSISTENTE DEL TOKEN ---
-    localStorage.setItem('gdrive_token', respuesta.access_token);
+     localStorage.setItem('gdrive_token', respuesta.access_token);
     const tiempoExpiracion = Date.now() + (respuesta.expires_in * 1000);
     localStorage.setItem('gdrive_token_expiry', tiempoExpiracion);
     
@@ -1206,7 +1209,6 @@ function verificarConexionInicial() {
   const tokenGuardado = localStorage.getItem('gdrive_token');
   const expiracion = localStorage.getItem('gdrive_token_expiry');
 
-  // Si tenemos un token guardado que aún sirve:
   if (tokenGuardado && expiracion && Date.now() < (parseInt(expiracion) - 60000)) {
     console.log("🚀 Reutilizando llave guardada...");
     gapi.client.setToken({ access_token: tokenGuardado });
@@ -1214,7 +1216,6 @@ function verificarConexionInicial() {
     updateCloudStatus(true);
     saveToGDrive(); 
   } 
-  // Si no hay token pero el usuario activó la nube antes:
   else if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
     console.log("🔄 Intentando reconexión silenciosa con Google...");
     window.ejecutarConexionGoogle(null, true); 
@@ -1232,7 +1233,6 @@ function gsiLoaded() {
 }
 
 async function restoreFromGDrive() {
-  // Aquí sí pasamos una función como argumento
   window.ejecutarConexionGoogle(async () => {
     try {
       const response = await gapi.client.drive.files.list({
@@ -1255,7 +1255,6 @@ async function restoreFromGDrive() {
     }
   }, false);
 }
-// --- CONTROL DE INTERVALOS PARA NO SATURAR ---
 let gdriveTimer;
 function debouncedGDriveSave() {
   clearTimeout(gdriveTimer);
@@ -1264,14 +1263,12 @@ function debouncedGDriveSave() {
   }, 5000); // Solo guarda en la nube si no hay cambios durante 5 MINUTOS
 }
 
-// Integrar en tu función saveData existente
 const originalSaveData = saveData;
 saveData = function() {
     originalSaveData(); // Sigue guardando en local
     debouncedGDriveSave(); // Intenta sincronizar en la nube
 }
 
-// Inicializar scripts al cargar
 window.onload = () => {
   gapiLoaded();
   gsiLoaded();
@@ -1279,18 +1276,16 @@ window.onload = () => {
 
   
 
-// --- SISTEMA DE DESHACER (UNDO) ---
 let undoStack = [];
 
-// Guarda una copia del estado actual antes de que cambie
 function pushUndo() {
   const serialized = JSON.stringify(data);
-  // Evita duplicar el último estado idéntico
+
   if (undoStack.length > 0 && undoStack[undoStack.length - 1] === serialized) {
     return;
   }
   undoStack.push(serialized);
-  if (undoStack.length > 40) { // Límite de 40 niveles de deshacer
+  if (undoStack.length > 40) { 
     undoStack.shift();
   }
 }
@@ -1308,10 +1303,8 @@ window.undoLastChange = function() {
     console.error("No se pudo guardar tras deshacer:", e);
   }
   
-  // Re-renderizar toda la interfaz con los datos antiguos
   renderAll();
   
-  // Sincronizar el área de notas por si acaso
   const notesEl = document.getElementById('notes-area');
   if (notesEl) {
     notesEl.value = data.notes || '';
@@ -1320,7 +1313,6 @@ window.undoLastChange = function() {
   showSaved(true);
 };
 
-// Captura el estado previo antes de que el usuario comience a escribir en cualquier input
 document.addEventListener('focusin', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
     pushUndo();
@@ -1558,8 +1550,7 @@ function updateConciliado(bi, ci) {
 
 // ─── ACUMULADO GLOBAL DINÁMICO (FILAS Y COLUMNAS) ───────────────────
 function updateAllTotals() {
-  // 1. Acumulados para Columnas (Empresas)
-  data.companies.forEach((_, ci) => {
+   data.companies.forEach((_, ci) => {
     let totalAct = 0;
     let totalCon = 0;
     
@@ -1574,20 +1565,17 @@ function updateAllTotals() {
     const fAct = formatCurrency(totalAct) || '0,00';
     const fCon = formatCurrency(totalCon) || '0,00';
 
-    // Columna Expandida
     const elAct = document.getElementById('col-total-act-' + ci);
     if (elAct) elAct.textContent = fAct;
     const elCon = document.getElementById('col-total-con-' + ci);
     if (elCon) elCon.textContent = fCon;
 
-    // Columna Colapsada (Horizontal)
     const elActCol = document.getElementById('col-total-act-collapsed-' + ci);
     if (elActCol) elActCol.textContent = fAct;
     const elConCol = document.getElementById('col-total-con-collapsed-' + ci);
     if (elConCol) elConCol.textContent = fCon;
   });
 
-  // 2. Acumulados para Filas (Bancos)
   data.banks.forEach((_, bi) => {
     let totalAct = 0;
     let totalCon = 0;
@@ -1603,20 +1591,17 @@ function updateAllTotals() {
     const fAct = formatCurrency(totalAct) || '0,00';
     const fCon = formatCurrency(totalCon) || '0,00';
 
-    // Fila Expandida / Banco Expandido
     const elRowAct = document.getElementById('row-total-act-' + bi);
     if (elRowAct) elRowAct.textContent = fAct;
     const elRowCon = document.getElementById('row-total-con-' + bi);
     if (elRowCon) elRowCon.textContent = fCon;
 
-    // Fila Colapsada / Banco Colapsado
-    const elRowActCol = document.getElementById('row-total-act-collapsed-' + bi);
+     const elRowActCol = document.getElementById('row-total-act-collapsed-' + bi);
     if (elRowActCol) elRowActCol.textContent = fAct;
     const elRowConCol = document.getElementById('row-total-con-collapsed-' + bi);
     if (elRowConCol) elRowConCol.textContent = fCon;
 
-    // Columna de Bancos Colapsada (Horizontal)
-    const elRowActBCCol = document.getElementById('row-total-act-bankcol-collapsed-' + bi);
+   const elRowActBCCol = document.getElementById('row-total-act-bankcol-collapsed-' + bi);
     if (elRowActBCCol) elRowActBCCol.textContent = fAct;
     const elRowConBCCol = document.getElementById('row-total-con-bankcol-collapsed-' + bi);
     if (elRowConBCCol) elRowConBCCol.textContent = fCon;
@@ -1810,17 +1795,14 @@ function generateUnifiedPrintHTML() {
   let html = `<h1>Reporte General Consolidado - Control Bancario</h1>`;
   html += `<p class="meta">Generado automáticamente el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')} - Cuadrícula Transpuesta (Eje Vertical) optimizada para Hoja Única</p>`;
 
-  // ─── SECCIÓN 1: SALDOS Y MOVIMIENTOS (TRANSPUESTA) ───
   html += `<table class="print-matrix-table">`;
   
-  // Asignar proporción de anchos perfecta: Empresa = 16%, los bancos dividen el 84% restante
   html += `<colgroup>
     <col style="width: 16%;" />
     ${data.banks.map(() => `<col style="width: ${84 / nb}%;" />`).join('')}
   </colgroup>`;
 
-  // Encabezado horizontal (Bancos en el eje X)
-  html += `<thead><tr>
+   html += `<thead><tr>
     <th style="background-color: #0f172a; color: #fff; font-size: 7.5px;">Empresas / Bancos</th>`;
   data.banks.forEach((bank) => {
     const bankNameClean = bank.split('\n')[0];
@@ -1828,15 +1810,12 @@ function generateUnifiedPrintHTML() {
   });
   html += `</tr></thead><tbody>`;
 
-  // Filas (Empresas en el eje Y con color de fila único)
   data.companies.forEach((company, ci) => {
     const bgColor = transposedRowColors[ci % transposedRowColors.length];
     html += `<tr style="background-color: ${bgColor};">`;
-    // Celda de cabecera de la Empresa
     html += `<td class="print-company-col" style="border-left: 3px solid #6366f1;">${esc(company)}</td>`;
 
-    // Celdas por Banco
-    data.banks.forEach((_, bi) => {
+      data.banks.forEach((_, bi) => {
       const key = bi + '-' + ci;
       const isDisabled = data.disabledCells[key] === true;
 
@@ -1888,7 +1867,6 @@ function generateUnifiedPrintHTML() {
   // ─── SECCIÓN 2: DOBLE COLUMNA PARA FACTURAS E IMPUESTOS (SIDE-BY-SIDE) ───
   html += `<div style="display: flex; gap: 10px; width: 100%; margin-top: 8px;">`;
 
-  // Columna Izquierda: Facturas Recurrentes
   html += `<div style="flex: 1.1; min-width: 0;">
     <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Facturas Recurrentes</h2>
     <table class="print-matrix-table">
@@ -2053,7 +2031,6 @@ data.companies.forEach((_, ci) => {
   const toggleColsSymbol = anyColExpanded ? '&#x2212;' : '&#xFF0B;'; // Signo de menos (−) vs Signo de más (＋)
   const toggleColsTitle = anyColExpanded ? 'Contraer todas las columnas' : 'Expandir todas las columnas';
 
-  // Controladores de navegación esquina superior izquierda
   if (data.collapsedBankColumn) {
     html += '<div class="grid-cell header-corner col-collapsed-cell" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center;">'
       + '<button class="action-btn-fold btn-toggle-bank-col" title="Expandir columna de bancos">&#x25B6;</button>'
@@ -2078,7 +2055,6 @@ data.companies.forEach((_, ci) => {
       + '</div>';
   }
   
-  // Encabezados de Empresas (Columnas)
   data.companies.forEach((c,ci) => {
     const isColCollapsed = data.collapsedCompanies[ci] === true;
     if (isColCollapsed) {
