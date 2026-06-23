@@ -1070,25 +1070,23 @@ function gsiLoaded() {
     scope: SCOPES,
     callback: async (resp) => {
       if (resp.error !== undefined) {
-        console.error("Error de Google:", resp.error);
+        console.error("Error en el acceso:", resp.error);
         updateCloudStatus(false);
         return;
       }
-      console.log("✅ Llave de acceso recibida");
+      console.log("✅ Token recibido");
       gdriveEnabled = true;
       localStorage.setItem('gdrive_sync_enabled', 'true');
       updateCloudStatus(true);
-      
-      // Intentar guardar inmediatamente ahora que tenemos la llave
       saveToGDrive();
     },
   });
   gsiInited = true;
 
-  // Reconexión automática al cargar la página
+  // Si la nube estaba activa, intentamos conectar silenciosamente
   if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
     setTimeout(() => {
-      console.log("Solicitando restauración de sesión silenciosa...");
+      console.log("Intentando recuperar sesión silenciosa...");
       tokenClient.requestAccessToken({ prompt: '' });
     }, 1000);
   }
@@ -1099,7 +1097,36 @@ function getGoogleToken() {
   console.log("Pidiendo permiso manual al usuario...");
   tokenClient.requestAccessToken({ prompt: 'select_account' });
 }
+function getGoogleToken(cb) {
+  if (!tokenClient) {
+    console.error("El cliente de Google no está listo.");
+    return;
+  }
 
+  // Configuramos qué hacer cuando llegue el token
+  tokenClient.callback = async (resp) => {
+    if (resp.error !== undefined) {
+      updateCloudStatus(false);
+      return;
+    }
+    gdriveEnabled = true;
+    localStorage.setItem('gdrive_sync_enabled', 'true');
+    updateCloudStatus(true);
+    
+    // Si 'cb' es una función (como en el caso de Restaurar), la ejecutamos.
+    // Si es un evento de clic o algo distinto, simplemente guardamos en la nube.
+    if (typeof cb === 'function') {
+      cb();
+    } else {
+      saveToGDrive();
+    }
+  };
+
+  // Si llamamos con una función, intentamos ser silenciosos. 
+  // Si llamamos desde el botón, forzamos la selección de cuenta.
+  const isManual = (typeof cb !== 'function');
+  tokenClient.requestAccessToken({ prompt: isManual ? 'select_account' : '' });
+}
 
   
 function updateCloudStatus(active) {
@@ -1221,12 +1248,13 @@ async function restoreFromGDrive() {
 
       if (fileData.result) {
         data = fileData.result;
-        saveData(); // Guardar en localstorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         renderAll();
-        alert("Datos restaurados desde Google Drive con éxito.");
+        alert("✅ Datos restaurados desde la Nube con éxito.");
       }
     } catch (err) {
-      alert("Error al restaurar: " + err.message);
+      console.error("Error al restaurar:", err);
+      alert("Error al restaurar de la nube.");
     }
   });
 }
