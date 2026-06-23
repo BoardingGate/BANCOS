@@ -1068,35 +1068,45 @@ function gsiLoaded() {
     client_id: CLIENT_ID,
     scope: SCOPES,
     callback: async (resp) => {
-      if (resp.error !== undefined) throw (resp);
-      
+      if (resp.error !== undefined) {
+        console.error("Error en token:", resp.error);
+        updateCloudStatus(false);
+        return;
+      }
+      // Si llegamos aquí, la conexión es exitosa
       gdriveEnabled = true;
       localStorage.setItem('gdrive_sync_enabled', 'true');
-      
-     updateCloudStatus(true); 
-      console.log("Conexión Google Drive activa");
-      
+      updateCloudStatus(true);
+      console.log("✅ Conexión con Drive establecida");
       saveToGDrive();
     },
   });
   gsiInited = true;
-  
+
+  // Intentar reconexión automática si el usuario la activó antes
   if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
-      setTimeout(() => {
-          tokenClient.requestAccessToken({ prompt: '' }); // Pide la llave sin molestar
-      }, 1500);
+    setTimeout(() => {
+      console.log("Intentando reconexión automática...");
+      try {
+        tokenClient.requestAccessToken({ prompt: '' }); 
+      } catch (e) {
+        console.warn("No se pudo reconectar automáticamente");
+      }
+    }, 2000); // Esperamos 2 segundos tras cargar
   }
 }
   
 function updateCloudStatus(active) {
-    const statusEl = document.getElementById('gdrive-status-icon');
-    if (!statusEl) return;
-    if (active) {
-        statusEl.innerHTML = '☁️ <span style="color:#10b981">Conectada</span>';
-    } else {
-        statusEl.innerHTML = '☁️ <span style="color:var(--text-muted)">Desconectada</span>';
-    }
-}  
+  const statusEl = document.getElementById('gdrive-status-icon');
+  if (!statusEl) return;
+  if (active) {
+    statusEl.innerHTML = '☁️ <span style="color:#10b981; font-weight:bold;">Conectada</span>';
+    statusEl.title = "Sincronización activa con Google Drive";
+  } else {
+    statusEl.innerHTML = '☁️ <span style="color:#94a3b8;">Nube...</span>';
+    statusEl.title = "Haga clic para conectar Google Drive";
+  }
+}
 
 // 2. Autenticación y obtención de Token
 function getGoogleToken(callback) {
@@ -1112,17 +1122,14 @@ function getGoogleToken(callback) {
 }
 
 async function saveToGDrive() {
+  
   if (localStorage.getItem('gdrive_sync_enabled') !== 'true') return;
 
-  // Si la llave (token) no está lista todavía:
-  if (gapi.client.getToken() === null) {
-      console.log("Reconectando con Drive antes de subir...");
-      tokenClient.requestAccessToken({ prompt: '' });
-      return; 
-  }  
-  
-  
-  if (!gapiInited || !gapi.client || gapi.client.getToken() === null) return;
+  if (!gapi.client || gapi.client.getToken() === null) {
+    console.log("Nube desconectada. Pidiendo acceso...");
+    getGoogleToken(); // Esto abrirá la ventana o refrescará el token
+    return;
+  }
 
   const fileName = 'DATOSBANCARIOS_CLOUD.json';
   const content = JSON.stringify(data);
