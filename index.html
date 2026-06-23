@@ -1064,37 +1064,41 @@ function gapiLoaded() {
 let gdriveEnabled = localStorage.getItem('gdrive_sync_enabled') === 'true';
 
 function gsiLoaded() {
+  console.log("Iniciando GSI...");
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
-    callback: async (resp) => {
+    callback: (resp) => {
       if (resp.error !== undefined) {
-        console.error("Error en token:", resp.error);
-        updateCloudStatus(false);
+        console.error("Error de Google:", resp.error);
         return;
       }
-      // Si llegamos aquí, la conexión es exitosa
+      console.log("Token recibido correctamente");
       gdriveEnabled = true;
       localStorage.setItem('gdrive_sync_enabled', 'true');
       updateCloudStatus(true);
-      console.log("✅ Conexión con Drive establecida");
-      saveToGDrive();
+      saveToGDrive(); // Guardar tras conectar
     },
   });
   gsiInited = true;
 
-  // Intentar reconexión automática si el usuario la activó antes
+  // Reconexión automática
   if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
+    console.log("Intentando recuperar sesión de Google...");
     setTimeout(() => {
-      console.log("Intentando reconexión automática...");
-      try {
-        tokenClient.requestAccessToken({ prompt: '' }); 
-      } catch (e) {
-        console.warn("No se pudo reconectar automáticamente");
-      }
-    }, 2000); // Esperamos 2 segundos tras cargar
+      // Intentamos refrescar el token de forma silenciosa
+      tokenClient.requestAccessToken({ prompt: '' });
+    }, 2000);
   }
 }
+
+// Sustituye getGoogleToken para que siempre abra el diálogo si se llama manualmente
+function getGoogleToken() {
+  console.log("Pidiendo permiso manual al usuario...");
+  tokenClient.requestAccessToken({ prompt: 'select_account' });
+}
+
+
   
 function updateCloudStatus(active) {
   const statusEl = document.getElementById('gdrive-status-icon');
@@ -1122,12 +1126,9 @@ function getGoogleToken(callback) {
 }
 
 async function saveToGDrive() {
-  
-  if (localStorage.getItem('gdrive_sync_enabled') !== 'true') return;
-
   if (!gapi.client || gapi.client.getToken() === null) {
-    console.log("Nube desconectada. Pidiendo acceso...");
-    getGoogleToken(); // Esto abrirá la ventana o refrescará el token
+    console.warn("No hay token de Google. Sincronización cancelada.");
+    updateCloudStatus(false);
     return;
   }
 
@@ -1136,7 +1137,7 @@ async function saveToGDrive() {
   const indicator = document.getElementById('save-indicator');
 
   try {
-    // 1. Buscamos si el archivo existe
+    // 1. Buscar si el archivo existe
     const listResponse = await gapi.client.drive.files.list({
       q: `name = '${fileName}' and trashed = false`,
       fields: 'files(id)',
@@ -1145,37 +1146,54 @@ async function saveToGDrive() {
     const file = listResponse.result.files[0];
     const fileId = file ? file.id : null;
 
-    // 2. Preparamos el cuerpo (Cuidado: Google es estricto con los saltos de línea \r\n)
-    const metadata = { name: fileName, mimeType: 'application/json' };
+    // 2. Construir cuerpo multipart (Formato estricto para Google)
     const boundary = 'foo_bar_baz';
     const delimiter = "\r\n--" + boundary + "\r\n";
     const close_delim = "\r\n--" + boundary + "--";
 
+    const metadata = { name: fileName, mimeType: 'application/json' };
+
     const multipartRequestBody =
-      delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(metadata) +
-      delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' + content +
+      delimiter +
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(metadata) +
+      delimiter +
+      'Content-Type: application/json\r\n\r\n' +
+      content +
       close_delim;
 
-    // 3. Petición a la URL completa de subida
+    // 3. Petición de subida
+    const path = fileId 
+      ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
+      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+
     await gapi.client.request({
-      path: fileId ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}` : 'https://www.googleapis.com/upload/drive/v3/files',
+      path: path,
       method: fileId ? 'PATCH' : 'POST',
-      params: { uploadType: 'multipart' },
-      headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
       body: multipartRequestBody,
+      headers: {
+        'Content-Type': `multipart/related; boundary=${boundary}`
+      }
     });
 
-    // Éxito: Actualizamos UI
-    console.log("✅ Sincronizado en Drive");
+    console.log("✅ Archivo actualizado en Google Drive");
     updateCloudStatus(true);
+    
     if (indicator) {
-        indicator.textContent = "☁️ Nube sincronizada";
-        indicator.classList.add('saved');
-        setTimeout(() => { indicator.classList.remove('saved'); indicator.textContent = "✓ Datos guardados"; }, 2000);
+      indicator.innerHTML = "☁️ Nube sincronizada";
+      indicator.classList.add('saved');
+      setTimeout(() => { 
+        indicator.classList.remove('saved'); 
+        indicator.innerHTML = "&#x2713; Datos guardados"; 
+      }, 2500);
     }
   } catch (err) {
-    console.error("❌ Error Drive:", err);
-    updateCloudStatus(false);
+    console.error("❌ Error subiendo a Drive:", err);
+    // Si el error es de autorización (token caducado), lo limpiamos
+    if (err.status === 401) {
+      gapi.client.setToken(null);
+      updateCloudStatus(false);
+    }
   }
 }
 
@@ -2923,8 +2941,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   </div>
 </div>
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://apis.google.com/js/api.js" async defer></script>  
+<script src="https://accounts.google.com/gsi/client"></script>
+<script src="https://apis.google.com/js/api.js"></script>  
   
 </body>
 </html>
