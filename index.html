@@ -1347,6 +1347,7 @@ function loadData() {
     if (data.masterPassword === undefined) {
       data.masterPassword = '';
     }
+     if (!data.lastUpdateDates) data.lastUpdateDates = {}; 
     if (!data.credentials || data.credentials.length !== 10) {
   data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
 }
@@ -2140,44 +2141,53 @@ data.companies.forEach((_, ci) => {
         + '</div></div>'
       ).join('');
 
-
 let cellClasses = 'grid-cell balance-cell';
       if (isDisabled) cellClasses += ' cell-disabled';
-      if (isColCollapsed) cellClasses += ' company-collapsed-cell'; // Usa la nueva clase de 75px
+      if (isColCollapsed) cellClasses += ' company-collapsed-cell'; 
       if (isRowCollapsed) cellClasses += ' row-collapsed-cell';
 
+      // 1. Valores básicos
       const fActual = hasActual ? (formatCurrency(bal.saldoActual) || '0,00') : '\u2014';
-      const updateDate = (data.lastUpdateDates && data.lastUpdateDates[key]) || '';
-      const dateHtml = updateDate ? '<span style="font-size:8px; color:var(--text-muted); font-weight:normal; margin-left:4px;">' + updateDate + '</span>' : '';
       const fConciliado = concText;
-      
       const actualNum = parseFloat(bal.saldoActual) || 0;
       const isDiff = hasActual && (Math.abs(actualNum - cv) > 0.009);
 
-      const updateDateForMin = (data.lastUpdateDates && data.lastUpdateDates[key]) || '';
-      let dateBracket = '';
-      if (updateDateForMin) {
+      // 2. Lógica de Fecha UNIFICADA
+      const uDate = (data.lastUpdateDates && data.lastUpdateDates[key]) || '';
+      let dateHtmlLabel = ''; // Para el título "Saldo Punteado"
+      let dateRowMin = '';    // Para la casilla minimizada
+      
+      if (uDate) {
         const now = new Date();
         const today = String(now.getDate()).padStart(2, '0') + '-' + String(now.getMonth() + 1).padStart(2, '0');
-        const color = (updateDateForMin === today) ? 'var(--amber)' : 'var(--text-muted)';
-        dateBracket = '<span style="color:' + color + '; font-size:8px; margin-left:2px;">[' + updateDateForMin + ']</span>';
+        const color = (uDate === today) ? 'var(--amber)' : 'var(--text-muted)';
+        
+        // Título de la celda abierta (siempre gris)
+        dateHtmlLabel = '<span style="font-size:8px; color:var(--text-muted); font-weight:normal; margin-left:4px;">' + uDate + '</span>';
+        
+        // Nueva fila para la celda minimizada (Color dinámico: amarillo o gris)
+        dateRowMin = '<div class="sum-row" style="justify-content:center; margin-top:2px;">' +
+                     '<span style="color:' + color + '; font-size:8px; font-weight:600;">(' + uDate + ')</span>' +
+                     '</div>';
       }
 
-     let summaryHTML = '<div class="collapsed-summary">'
-        + '<div class="sum-row" title="Saldo Actual"><span class="sum-lbl act">A:</span><span class="sum-val">' + esc(fActual) + dateBracket + '</span></div>';      
+      // 3. Construcción del resumen (Vista minimizada)
+      let summaryHTML = '<div class="collapsed-summary">'
+        + '<div class="sum-row" title="Saldo Actual"><span class="sum-lbl act">A:</span><span class="sum-val">' + esc(fActual) + '</span></div>';      
           
-     if (isDiff) {
+      if (isDiff) {
         summaryHTML += '<div class="sum-row" title="Saldo Conciliado"><span class="sum-lbl con ' + concClass + '">C:</span><span class="sum-val ' + concClass + '">' + esc(fConciliado) + '</span></div>';
       }
       
-      summaryHTML += '</div>';
+      // Añadimos la fila de la fecha al final del resumen
+      summaryHTML += dateRowMin + '</div>';
 
+      // 4. Construcción del HTML de la celda
       html += '<div class="' + cellClasses + '" style="--cell-bg: ' + faintColor + '; --row-border: 5px solid '+bColor+';">'
         + '<label class="cell-toggle" title="Activar/Desactivar cuenta"><input type="checkbox" class="cell-activate-check" data-bi="'+bi+'" data-ci="'+ci+'" '+(isDisabled?'':'checked')+'/></label>'
         + summaryHTML 
         + '<div class="cell-content">'
         + '<div class="balance-fields">'      
-
         + '<div class="balance-field"><label class="field-label label-actual">Saldo Actual</label>'
         + '<div class="input-group-wrapper">'
         + '<input type="text" class="field-input input-actual fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoActual" value="'+esc(formatCurrency(bal.saldoActual))+'" placeholder="0,00"/>'
@@ -2186,7 +2196,8 @@ let cellClasses = 'grid-cell balance-cell';
         + '<button type="button" class="action-btn-mini clear-field-btn" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoActual" title="Borrar">&#x2715;</button>'
         + '</div>'
         + '</div></div>'
-        + '<div class="balance-field"><label class="field-label label-punteado">Saldo Punteado ' + dateHtml + '</label>'
+        // Aplicamos la fecha al lado del título Saldo Punteado
+        + '<div class="balance-field"><label class="field-label label-punteado">Saldo Punteado ' + dateHtmlLabel + '</label>'
         + '<div class="input-group-wrapper">'
         + '<input type="text" class="field-input input-punteado fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoPunteado" value="'+esc(formatCurrency(bal.saldoPunteado))+'" placeholder="0,00"/>'
         + '<div class="input-group-actions">'
@@ -2536,7 +2547,7 @@ if (data.masterPassword === undefined) {
       saveData();
       return;
     }
-    if (el.dataset.field && el.dataset.bi!==undefined) {
+ if (el.dataset.field && el.dataset.bi!==undefined) {
       const bi=+el.dataset.bi, ci=+el.dataset.ci, key=bi+'-'+ci;
       const isMov = el.classList.contains('mov-importe') || el.classList.contains('mov-obs');
       
@@ -2549,19 +2560,18 @@ if (data.masterPassword === undefined) {
           updateConciliado(bi,ci);
           updateAllTotals();
         }
-      } else {     
+ } else {
         if (!data.balances[key]) data.balances[key]={};
         data.balances[key][el.dataset.field] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
         saveData();
-        
-        if (el.dataset.field==='saldoActual') {
-         
-          const now = new Date();
-          const day = String(now.getDate()).padStart(2, '0');
-          const month = String(now.getMonth() + 1).padStart(2, '0');
-          if (!data.lastUpdateDates) data.lastUpdateDates = {};
-          data.lastUpdateDates[key] = day + '-' + month;
 
+        if (el.dataset.field==='saldoActual') {
+              const now = new Date();
+          const d = String(now.getDate()).padStart(2, '0');
+          const m = String(now.getMonth() + 1).padStart(2, '0');
+          if (!data.lastUpdateDates) data.lastUpdateDates = {};
+          data.lastUpdateDates[key] = d + '-' + m;
+        
           updateConciliado(bi,ci);
           updateAllTotals();
         } else if (el.dataset.field==='saldoPunteado') {
