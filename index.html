@@ -1337,7 +1337,8 @@ function manualSave() {
 
 function loadData() {
   try {
-    const s = localStorage.getItem(STORAGE_KEY);
+    const s = localStorage.getItem(STORAGE_KEY);   
+    if (!data.lastUpdateDates) data.lastUpdateDates = {};
     if (s) { const p = JSON.parse(s); Object.assign(data, p); }
     if (!data.disabledCells) data.disabledCells = {};
     if (!data.collapsedBanks) data.collapsedBanks = {};
@@ -2146,14 +2147,25 @@ let cellClasses = 'grid-cell balance-cell';
       if (isRowCollapsed) cellClasses += ' row-collapsed-cell';
 
       const fActual = hasActual ? (formatCurrency(bal.saldoActual) || '0,00') : '\u2014';
+      const updateDate = (data.lastUpdateDates && data.lastUpdateDates[key]) || '';
+      const dateHtml = updateDate ? '<span style="font-size:8px; color:var(--text-muted); font-weight:normal; margin-left:4px;">' + updateDate + '</span>' : '';
       const fConciliado = concText;
       
       const actualNum = parseFloat(bal.saldoActual) || 0;
       const isDiff = hasActual && (Math.abs(actualNum - cv) > 0.009);
 
-      let summaryHTML = '<div class="collapsed-summary">'
-        + '<div class="sum-row" title="Saldo Actual"><span class="sum-lbl act">A:</span><span class="sum-val">' + esc(fActual) + '</span></div>';
-      
+      const updateDateForMin = (data.lastUpdateDates && data.lastUpdateDates[key]) || '';
+      let dateBracket = '';
+      if (updateDateForMin) {
+        const now = new Date();
+        const today = String(now.getDate()).padStart(2, '0') + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        const color = (updateDateForMin === today) ? 'var(--amber)' : 'var(--text-muted)';
+        dateBracket = '<span style="color:' + color + '; font-size:8px; margin-left:2px;">[' + updateDateForMin + ']</span>';
+      }
+
+     let summaryHTML = '<div class="collapsed-summary">'
+        + '<div class="sum-row" title="Saldo Actual"><span class="sum-lbl act">A:</span><span class="sum-val">' + esc(fActual) + dateBracket + '</span></div>';      
+          
      if (isDiff) {
         summaryHTML += '<div class="sum-row" title="Saldo Conciliado"><span class="sum-lbl con ' + concClass + '">C:</span><span class="sum-val ' + concClass + '">' + esc(fConciliado) + '</span></div>';
       }
@@ -2174,7 +2186,7 @@ let cellClasses = 'grid-cell balance-cell';
         + '<button type="button" class="action-btn-mini clear-field-btn" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoActual" title="Borrar">&#x2715;</button>'
         + '</div>'
         + '</div></div>'
-        + '<div class="balance-field"><label class="field-label label-punteado">Saldo Punteado</label>'
+        + '<div class="balance-field"><label class="field-label label-punteado">Saldo Punteado ' + dateHtml + '</label>'
         + '<div class="input-group-wrapper">'
         + '<input type="text" class="field-input input-punteado fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-field="saldoPunteado" value="'+esc(formatCurrency(bal.saldoPunteado))+'" placeholder="0,00"/>'
         + '<div class="input-group-actions">'
@@ -2537,11 +2549,19 @@ if (data.masterPassword === undefined) {
           updateConciliado(bi,ci);
           updateAllTotals();
         }
-      } else {
+      } else {     
         if (!data.balances[key]) data.balances[key]={};
         data.balances[key][el.dataset.field] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
         saveData();
+        
         if (el.dataset.field==='saldoActual') {
+         
+          const now = new Date();
+          const day = String(now.getDate()).padStart(2, '0');
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          if (!data.lastUpdateDates) data.lastUpdateDates = {};
+          data.lastUpdateDates[key] = day + '-' + month;
+
           updateConciliado(bi,ci);
           updateAllTotals();
         } else if (el.dataset.field==='saldoPunteado') {
