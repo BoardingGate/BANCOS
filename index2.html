@@ -2182,7 +2182,7 @@ let cellClasses = 'grid-cell balance-cell';
       summaryHTML += dateRowMin + '</div>';
 
       // 4. Construcción del HTML de la celda
-      html += '<div class="' + cellClasses + '" style="--cell-bg: ' + faintColor + '; --row-border: 5px solid '+bColor+';">'
+      html += '<div class="' + cellClasses + '" data-bi="'+bi+'" data-ci="'+ci+'" style="--cell-bg: ' + faintColor + '; --row-border: 5px solid '+bColor+';">'
         + '<label class="cell-toggle" title="Activar/Desactivar cuenta"><input type="checkbox" class="cell-activate-check" data-bi="'+bi+'" data-ci="'+ci+'" '+(isDisabled?'':'checked')+'/></label>'
         + summaryHTML 
         + '<div class="cell-content">'
@@ -2582,6 +2582,24 @@ if (data.masterPassword === undefined) {
 
   // GRID DE BALANCES - Clics y Checkboxes
   document.getElementById('grid-balances').addEventListener('click', e => {
+
+    const collapsedCell = e.target.closest('.balance-cell.company-collapsed-cell');
+    if (collapsedCell) {
+      const bi = collapsedCell.dataset.bi;
+      const ci = collapsedCell.dataset.ci;
+      const key = bi + '-' + ci;
+      
+      const now = new Date();
+      const d = String(now.getDate()).padStart(2, '0');
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      
+      if (!data.lastUpdateDates) data.lastUpdateDates = {};
+      data.lastUpdateDates[key] = d + '-' + m;
+      
+      saveData();
+      renderBalances();
+      return; 
+    }
 
      if (e.target.closest('.btn-undo')) {
       undoLastChange();
