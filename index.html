@@ -1869,10 +1869,9 @@ function generateUnifiedPrintHTML() {
   html += `</tbody></table>`;
 
   // ─── SECCIÓN 2: DOBLE COLUMNA PARA FACTURAS E IMPUESTOS (SIDE-BY-SIDE) ───
-  html += `<div style="display: flex; gap: 10px; width: 100%; margin-top: 8px;">`;
-
-  html += `<div style="flex: 1.1; min-width: 0;">
-    <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Facturas Recurrentes</h2>
+// ─── SECCIÓN 2: FACTURAS RECURRENTES ───
+  html += `<div style="width: 100%; margin-top: 12px;">
+    <h2 style="font-size: 9px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Facturas Recurrentes</h2>
     <table class="print-matrix-table">
       <thead>
         <tr>
@@ -1906,9 +1905,9 @@ function generateUnifiedPrintHTML() {
 
   html += `</tbody></table></div>`;
 
-  // Columna Derecha: Impuestos por Empresa
-  html += `<div style="flex: 0.9; min-width: 0;">
-    <h2 style="font-size: 8px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Liquidación de Impuestos</h2>
+  // ─── SECCIÓN 3: LIQUIDACIÓN DE IMPUESTOS (DEBAJO) ───
+  html += `<div style="width: 100%; margin-top: 12px;">
+    <h2 style="font-size: 9px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Liquidación de Impuestos</h2>
     <table class="print-matrix-table">
       <thead>
         <tr>
@@ -1925,12 +1924,42 @@ function generateUnifiedPrintHTML() {
     data.taxCompanies.forEach((_, ci) => {
       const k = TAX_KEYS[ri] + '-' + ci;
       const v = data.taxValues[k] || '';
-      html += `<td>${isObs ? esc(v) : (formatCurrency(v) || '0,00')}</td>`;
+      
+      if (isObs) {
+         html += `<td>${esc(v)}</td>`;
+      } else {
+         const presented = data.taxPresented && data.taxPresented[k];
+         const bank = (data.taxBanks && data.taxBanks[k]) || '';
+         const numV = parseFloat(v) || 0;
+         
+         // Lógica idéntica a la vista web: Si es 0 se queda totalmente en blanco
+         const valStr = (numV === 0) ? '' : formatCurrency(v);
+         
+         // Lógica de colores para impresión
+         let colorStyle = '';
+         if (numV > 0) colorStyle = 'color: #2563eb; font-weight: bold;'; // Azul para positivo
+         else if (numV < 0) colorStyle = 'color: #dc2626; font-weight: bold;'; // Rojo para negativo
+         
+         // Fondo gris forzado para impresión usando "print-color-adjust"
+         const bgStyle = presented ? 'background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;' : '';
+         const checkMark = presented ? '<span style="color: #16a34a; font-size: 10px;">☑</span>' : '<span style="color: #cbd5e1; font-size: 10px;">☐</span>';
+         const bankTag = bank ? `<span style="font-size: 6.5px; color: #475569; background: #ffffff; border: 1px solid #cbd5e1; padding: 1px 3px; border-radius: 2px; white-space: nowrap;">${esc(bank)}</span>` : '';
+
+         html += `<td style="${bgStyle}">
+            <div style="display: flex; justify-content: space-between; align-items: center; min-height: 12px;">
+               <span style="${colorStyle}">${valStr}</span>
+               <div style="display: flex; align-items: center; gap: 4px;">
+                 ${bankTag}
+                 ${checkMark}
+               </div>
+            </div>
+         </td>`;
+      }
     });
     html += `</tr>`;
   });
 
-  html += `</tbody></table></div></div>`;
+  html += `</tbody></table></div>`;
 
   return html;
 }
