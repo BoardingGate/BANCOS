@@ -789,6 +789,13 @@
 }
 .sum-val.calc-negative, .sum-lbl.calc-negative { color: var(--danger) !important; }
 .sum-val.calc-zero, .sum-lbl.calc-zero { color: var(--text-muted) !important; }
+
+.tax-cell { display: flex; flex-direction: column; gap: 4px; padding: 2px 0; }
+    .tax-val-positive { color: #60a5fa !important; font-weight: 700 !important; }
+    .tax-val-negative { color: #ef4444 !important; font-weight: 700 !important; }
+    .tax-extra-row { display: flex; gap: 4px; align-items: center; }
+    .tax-bank-input { background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: var(--text-primary); font-size: 9px; padding: 2px 4px; border-radius: 3px; width: 100%; transition: all var(--transition); }
+    .tax-bank-input:focus { border-color: var(--accent); outline: none; background: rgba(0,0,0,0.45); }    
   </style>
 </head>
 <body>
@@ -2258,14 +2265,39 @@ function renderTaxes() {
         +'</div></th>'
       ).join('')
     + '</tr></thead><tbody>';
+  
   TAX_ROWS.forEach((row,ri) => {
-    const isObs = TAX_KEYS[ri]==='obs';
-    html += '<tr><td class="tax-row-label">'+row+'</td>'
+    const isObs = TAX_KEYS[ri] === 'obs';
+    html += '<tr><td class="tax-row-label">' + row + '</td>'
       + cos.map((_,ci) => {
-          const k = TAX_KEYS[ri]+'-'+ci;
-          const v = data.taxValues[k]||'';
+          const k = TAX_KEYS[ri] + '-' + ci;
+          const v = data.taxValues[k] || '';
           const valStr = isObs ? v : formatCurrency(v);
-          return '<td><input type="text" class="tax-value-input'+(isObs?'':' tax-amount fmt-num')+'" data-row="'+TAX_KEYS[ri]+'" data-ci="'+ci+'" value="'+esc(valStr)+'" placeholder="'+(isObs?'Observaciones...':'0,00')+'"/></td>';
+          
+          if (isObs) {
+            return `<td><input type="text" class="tax-value-input" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" value="${esc(valStr)}" placeholder="Observaciones..."/></td>`;
+          } else {
+            const presented = data.taxPresented && data.taxPresented[k];
+            const bank = (data.taxBanks && data.taxBanks[k]) || '';
+            const bgStyle = presented ? 'background: rgba(128, 128, 128, 0.25);' : '';
+            
+            let colorClass = '';
+            const numV = parseFloat(v) || 0;
+            if (numV > 0) colorClass = ' tax-val-positive';
+            else if (numV < 0) colorClass = ' tax-val-negative';
+
+            return `<td style="${bgStyle}">
+              <div class="tax-cell">
+                <input type="text" class="tax-value-input tax-amount fmt-num${colorClass}" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" value="${esc(valStr)}" placeholder="0,00"/>
+                <div class="tax-extra-row">
+                  <label style="display:flex; align-items:center; cursor:pointer;" title="Marcar como presentado">
+                    <input type="checkbox" class="tax-presented-check" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" ${presented ? 'checked' : ''} style="width:11px; height:11px; accent-color:var(--emerald);"/>
+                  </label>
+                  <input type="text" class="tax-bank-input" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" value="${esc(bank)}" placeholder="Banco de pago..."/>
+                </div>
+              </div>
+            </td>`;
+          }
         }).join('')
       + '</tr>';
   });
@@ -2776,15 +2808,42 @@ if (data.masterPassword === undefined) {
     saveData(); renderTaxes();
   });
 
-  document.getElementById('table-taxes').addEventListener('input', e => {
-    const el=e.target;
+document.getElementById('table-taxes').addEventListener('input', e => {
+    const el = e.target;
     if (el.classList.contains('tax-company-input')) {
-      data.taxCompanies[+el.dataset.ci]=el.value;
+      data.taxCompanies[+el.dataset.ci] = el.value;
       saveData(); return;
     }
     if (el.classList.contains('tax-value-input')) {
-      data.taxValues[el.dataset.row+'-'+el.dataset.ci] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
+      const val = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
+      data.taxValues[el.dataset.row + '-' + el.dataset.ci] = val;
       saveData();
+      
+     if (el.classList.contains('tax-amount')) {
+         const numVal = parseFloat(val) || 0;
+         el.classList.remove('tax-val-positive', 'tax-val-negative');
+         if (numVal > 0) el.classList.add('tax-val-positive');
+         else if (numVal < 0) el.classList.add('tax-val-negative');
+      }
+    }
+    if (el.classList.contains('tax-bank-input')) {
+      if (!data.taxBanks) data.taxBanks = {};
+      data.taxBanks[el.dataset.row + '-' + el.dataset.ci] = el.value;
+      saveData();
+    }
+  });
+
+   document.getElementById('table-taxes').addEventListener('change', e => {
+    const el = e.target;
+    if (el.classList.contains('tax-presented-check')) {
+      if (!data.taxPresented) data.taxPresented = {};
+      data.taxPresented[el.dataset.row + '-' + el.dataset.ci] = el.checked;
+      saveData();
+      
+       const td = el.closest('td');
+      if (td) {
+        td.style.background = el.checked ? 'rgba(128, 128, 128, 0.25)' : '';
+      }
     }
   });
 
