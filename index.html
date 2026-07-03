@@ -789,13 +789,14 @@
 }
 .sum-val.calc-negative, .sum-lbl.calc-negative { color: var(--danger) !important; }
 .sum-val.calc-zero, .sum-lbl.calc-zero { color: var(--text-muted) !important; }
-
-.tax-cell { display: flex; flex-direction: column; gap: 4px; padding: 2px 0; }
+/* MEJORAS SECCIÓN IMPUESTOS (Ajuste Horizontal) */
+    .tax-cell { display: flex; flex-direction: row; align-items: center; gap: 6px; padding: 2px 4px; width: 100%; }
     .tax-val-positive { color: #60a5fa !important; font-weight: 700 !important; }
     .tax-val-negative { color: #ef4444 !important; font-weight: 700 !important; }
-    .tax-extra-row { display: flex; gap: 4px; align-items: center; }
-    .tax-bank-input { background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: var(--text-primary); font-size: 9px; padding: 2px 4px; border-radius: 3px; width: 100%; transition: all var(--transition); }
-    .tax-bank-input:focus { border-color: var(--accent); outline: none; background: rgba(0,0,0,0.45); }    
+    .tax-amount { flex: 1; min-width: 50px; }
+    .tax-bank-input { background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: var(--text-primary); font-size: 9px; padding: 3px 4px; border-radius: 3px; width: 80px; transition: all var(--transition); flex-shrink: 0; }
+    .tax-bank-input:focus { border-color: var(--accent); outline: none; background: rgba(0,0,0,0.45); }
+
   </style>
 </head>
 <body>
@@ -2272,10 +2273,9 @@ function renderTaxes() {
       + cos.map((_,ci) => {
           const k = TAX_KEYS[ri] + '-' + ci;
           const v = data.taxValues[k] || '';
-          const valStr = isObs ? v : formatCurrency(v);
           
           if (isObs) {
-            return `<td><input type="text" class="tax-value-input" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" value="${esc(valStr)}" placeholder="Observaciones..."/></td>`;
+            return `<td><input type="text" class="tax-value-input" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" value="${esc(v)}" placeholder="Observaciones..."/></td>`;
           } else {
             const presented = data.taxPresented && data.taxPresented[k];
             const bank = (data.taxBanks && data.taxBanks[k]) || '';
@@ -2286,15 +2286,16 @@ function renderTaxes() {
             if (numV > 0) colorClass = ' tax-val-positive';
             else if (numV < 0) colorClass = ' tax-val-negative';
 
+            // REGLA: Si es 0 o vacío, forzamos a que esté literalmente en blanco
+            const valStr = (numV === 0) ? '' : formatCurrency(v);
+
             return `<td style="${bgStyle}">
               <div class="tax-cell">
-                <input type="text" class="tax-value-input tax-amount fmt-num${colorClass}" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" value="${esc(valStr)}" placeholder="0,00"/>
-                <div class="tax-extra-row">
-                  <label style="display:flex; align-items:center; cursor:pointer;" title="Marcar como presentado">
-                    <input type="checkbox" class="tax-presented-check" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" ${presented ? 'checked' : ''} style="width:11px; height:11px; accent-color:var(--emerald);"/>
-                  </label>
-                  <input type="text" class="tax-bank-input" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" value="${esc(bank)}" placeholder="Banco de pago..."/>
-                </div>
+                <input type="text" class="tax-value-input tax-amount fmt-num${colorClass}" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" value="${valStr}" placeholder=""/>
+                <label style="display:flex; align-items:center; cursor:pointer;" title="Marcar como presentado">
+                  <input type="checkbox" class="tax-presented-check" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" ${presented ? 'checked' : ''} style="width:12px; height:12px; accent-color:var(--emerald); margin:0;"/>
+                </label>
+                <input type="text" class="tax-bank-input" data-row="${TAX_KEYS[ri]}" data-ci="${ci}" value="${esc(bank)}" placeholder="Banco..."/>
               </div>
             </td>`;
           }
@@ -2505,9 +2506,15 @@ if (data.masterPassword === undefined) {
   });
 
   
-  document.addEventListener('focusout', e => {
+ document.addEventListener('focusout', e => {
     if (e.target.classList.contains('fmt-num')) {
-      e.target.value = formatCurrency(parseCurrency(e.target.value));
+      const parsed = parseCurrency(e.target.value);
+      
+      if (e.target.classList.contains('tax-amount') && (!parsed || parsed === 0)) {
+         e.target.value = '';
+      } else {
+         e.target.value = formatCurrency(parsed);
+      }
     }
   });
 
