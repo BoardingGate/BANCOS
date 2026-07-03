@@ -926,9 +926,13 @@
     </div>
   </section>
 
-  <section id="section-taxes" class="section">
-    <div class="table-scroll-wrapper">
+ <section id="section-taxes" class="section">
+    <div class="table-scroll-wrapper" style="margin-bottom: 12px;">
       <table class="data-table taxes-table" id="table-taxes"></table>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 4px;">
+      <h3 style="font-size: 11px; font-weight: 600; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px;">&#x26A0; Notas Importantes</h3>
+      <textarea id="tax-notes-area" class="notes-textarea" style="min-height: 100px; height: 100px;" placeholder="Anota aquí detalles importantes sobre las liquidaciones de impuestos..." spellcheck="false"></textarea>
     </div>
   </section>
 
@@ -2333,6 +2337,8 @@ function renderTaxes() {
   });
   html += '</tbody>';
   t.innerHTML = html;
+  const taxNotesEl = document.getElementById('tax-notes-area');
+  if (taxNotesEl) taxNotesEl.value = data.taxNotes || '';
 }
 
 function renderAll() {
@@ -2864,6 +2870,7 @@ document.getElementById('table-taxes').addEventListener('input', e => {
     }
     if (el.classList.contains('tax-bank-input')) {
       if (!data.taxBanks) data.taxBanks = {};
+      if (data.taxNotes === undefined) data.taxNotes = '';
       data.taxBanks[el.dataset.row + '-' + el.dataset.ci] = el.value;
       saveData();
     }
@@ -2893,6 +2900,13 @@ document.getElementById('table-taxes').addEventListener('input', e => {
       });
     }
   });
+  const taxNotesEl = document.getElementById('tax-notes-area');
+  if (taxNotesEl) {
+    taxNotesEl.addEventListener('input', () => {
+      data.taxNotes = taxNotesEl.value;
+      saveData();
+    });
+  }
 
   // NOTAS
   const notesEl = document.getElementById('notes-area');
