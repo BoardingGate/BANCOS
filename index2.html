@@ -886,28 +886,6 @@
     overflow: hidden;
 }
 
-.sticky-foot-3 td, .sticky-foot-3 th { 
-    position: sticky; 
-    bottom: 52px; 
-    z-index: 14; 
-    background: #1b4332 !important; 
-    box-shadow: 0 -2px 4px rgba(0,0,0,0.4); 
-}
-.sticky-foot-2 td, .sticky-foot-2 th { 
-    position: sticky; 
-    bottom: 26px; 
-    z-index: 14; 
-    background: #171923 !important; 
-}
-.sticky-foot-1 td, .sticky-foot-1 th { 
-    position: sticky; 
-    bottom: 0px;  
-    z-index: 14; 
-    background: #171923 !important; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-}
-
-
 
   </style>
 </head>
@@ -1059,9 +1037,12 @@
         </div>
         <button class="btn btn-ghost btn-sm" onclick="window.printSectionReport('balances')">🖨️ Imprimir Hoja Única</button>
     </div>
-    <div id="tax-template-container">
-         <!-- El motor dinámico generará la hoja Excel aquí -->
+    
+    <!-- VOLVEMOS A AÑADIR LA CLASE DE SCROLL ÚNICO AQUÍ -->
+    <div class="table-scroll-wrapper" id="tax-template-container">
+        <!-- El motor dinámico generará la hoja Excel aquí -->
     </div>
+    
     <div style="padding: 0 4px; display: flex; flex-direction: column; gap: 4px; margin-top: 15px;">
         <span style="font-size: 11px; font-weight: 600; color: var(--accent-light); text-transform: uppercase;">📝 Observaciones y Comentarios de la Autoliquidación</span>
         <textarea id="tax-calc-footer-notes" class="tax-notes-footer" placeholder="Escriba aquí anotaciones generales o aclaraciones sobre el trimestre..." oninput="updateTaxFooterNotes(this.value)"></textarea>
@@ -3264,7 +3245,7 @@ function renderTaxTemplate() {
     const qs = ['1T', '2T', '3T', '4T', 'AÑO 390'];
     
     // 1. INICIO DE CONTENEDOR DE IVA INDEPENDIENTE CON SU SCROLL PROPIO
-    let html = `<div class="table-scroll-wrapper" style="max-height: calc(48vh - 40px); margin-bottom: 25px; border: 1px solid var(--border);">
+    let html = `<div class="excel-container">
     <table class="excel-table">
         <thead>
             <tr class="row-header-iva"><td colspan="6">IVA (AUTOLIQUIDACIÓN) - ${activeTaxCompany}</td></tr>
@@ -3403,8 +3384,9 @@ function renderTaxTemplate() {
     html += `</tbody></table></div>`;
 
     // 2. INICIO DE CONTENEDOR DE IGIC INDEPENDIENTE CON SU SCROLL PROPIO
-    html += `<div class="table-scroll-wrapper" style="max-height: calc(48vh - 40px); border: 1px solid var(--border);">
-    <table class="excel-table">
+    html += `</tbody></table>`;
+
+    html += `<table class="excel-table" style="margin-top: 40px;">
         <thead>
             <tr class="row-header-igic"><td colspan="6">IGIC (AUTOLIQUIDACIÓN) - ${activeTaxCompany}</td></tr>
             <tr><th>CONCEPTOS</th>${qs.map(q=>`<th>${q}</th>`).join('')}</tr>
