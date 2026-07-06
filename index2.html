@@ -3346,6 +3346,13 @@ function renderTaxTemplate() {
     }
     html += `<td class="cell-total" id="igic-prev-4">0,00</td></tr>`;
 
+    html += `<tr class="row-not-subject"><td>OPERACIÓN NO SUJETAS (Bases imponibles emitidas de sujeto pasivo (promotores, chatarra))</td>`;
+    for(let t=0; t<4; t++) {
+        const val = data.taxCalcExcel[activeTaxCompany].igic.values[`nosujeto-${t}`] || 0;
+        html += `<td><input type="text" class="cell-input fmt-num" data-section="igic" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('igic','nosujeto',${t},this.value)" value="${formatCurrency(val)}"></td>`;
+    }
+    html += `<td class="cell-total" id="igic-nosujeto-4">0,00</td></tr>`;
+
     html += `</tbody></table></div>`;
     container.innerHTML = html;
     calculateExcelTax();
@@ -3496,6 +3503,7 @@ function calculateExcelTax() {
                 anual['res_final'] = (anual['res_final'] || 0) + res;
                 
                 setV('prev', compensacion);
+                setV('nosujeto', getV('nosujeto'));
             }
         }
 
