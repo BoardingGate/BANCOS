@@ -3606,7 +3606,7 @@ function renderTaxTemplate() {
     html += drawGroupRows(ivaRows, 'iva');
     
     // Resultados IVA
-    html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IVA)</td>`;
+    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IVA</td>`;
     for(let t=0; t<5; t++) {
         html += `<td style="position:relative; padding-right:18px;">
             <span id="iva-res-final-${t}">0,00</span>
@@ -3645,7 +3645,7 @@ function renderTaxTemplate() {
     html += drawGroupRows(igicRows, 'igic');
     
     // Resultados IGIC
-    html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IGIC)</td>`;
+    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IGIC</td>`;
     for(let t=0; t<5; t++) {
         html += `<td style="position:relative; padding-right:18px;">
             <span id="igic-res-final-${t}">0,00</span>
