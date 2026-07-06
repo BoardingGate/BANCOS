@@ -1193,7 +1193,7 @@ tr:has(td[id*="r_btot_final"]) td:nth-child(6) {
              <!-- Las opciones se cargarán dinámicamente -->
           </select>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="window.printSectionReport('balances')">🖨️ Imprimir Hoja Única</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.printSectionReport('tax-template')">🖨️ Imprimir Hoja Única</button>
     </div>
     
     <!-- VOLVEMOS A AÑADIR LA CLASE DE SCROLL ÚNICO AQUÍ -->
@@ -2044,6 +2044,48 @@ const reportStyles = `
     border-color: #06b6d4;
     color: #ffffff;
   }
+  /* --- ESTILOS DE ADAPTACIÓN PARA IMPRESIÓN DEL MODELO 303/420 --- */
+  .excel-table {
+    border: 1px solid #475569 !important;
+    color: #000 !important;
+    background: #fff !important;
+    margin-top: 15px !important;
+  }
+  .excel-table th {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    font-size: 8.5px !important;
+  }
+  .excel-table td {
+    border: 1px solid #cbd5e1 !important;
+    color: #000 !important;
+    background: transparent !important;
+  }
+  .excel-table td.row-label {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    font-weight: 600 !important;
+  }
+  .excel-table td:nth-child(6) {
+    background: #f8fafc !important; /* Columna AÑO 390 en gris sutil */
+    color: #1e293b !important;
+  }
+  
+  /* Sombreado de bloques para distinguir emitidas y recibidas en papel */
+  .bg-emitidas { background-color: rgba(99, 102, 241, 0.05) !important; }
+  .bg-recibidas { background-color: rgba(16, 185, 129, 0.04) !important; }
+
+  /* Mapeo de colores para las filas especiales en papel */
+  tr:has(td[id*="iva-b_tot_final"]) td,
+  tr:has(td[id*="b_tot_gfinal"]) td,
+  tr:has(td[id*="r_btot_final"]) td {
+    background-color: #fef3c7 !important; /* Fondo crema/ocre claro para bases finales */
+    color: #92400e !important;
+  }
+  .row-resultado td {
+    background-color: #d1fae5 !important; /* Fondo verde claro para el resultado impreso */
+    color: #065f46 !important;
+  }
 `;
 
 function generateUnifiedPrintHTML() {
@@ -2274,9 +2316,6 @@ window.printSectionReport = function(sectionType) {
           }, 400);
         };
       <\/script>
-
-
-
       
     </body>
     </html>
@@ -3500,7 +3539,7 @@ function renderTaxTemplate() {
     html += drawGroupRows(ivaRows, 'iva');
     
     // Resultados IVA
-    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN (IVA)</td>`;
+    html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IVA)</td>`;
     for(let t=0; t<5; t++) {
         html += `<td style="position:relative; padding-right:18px;">
             <span id="iva-res-final-${t}">0,00</span>
@@ -3539,7 +3578,7 @@ function renderTaxTemplate() {
     html += drawGroupRows(igicRows, 'igic');
     
     // Resultados IGIC
-    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN (IGIC)</td>`;
+    html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IGIC)</td>`;
     for(let t=0; t<5; t++) {
         html += `<td style="position:relative; padding-right:18px;">
             <span id="igic-res-final-${t}">0,00</span>
