@@ -3384,10 +3384,16 @@ function renderTaxTemplate() {
         }).join('');
     }
 
-    html += drawGroupRows(ivaRows, 'iva');
+html += drawGroupRows(ivaRows, 'iva');
     // Resultados finales IVA
-// Resultados finales IVA
-    html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IVA)</td>${[0,1,2,3,4].map(t=>`<td id="iva-res-final-${t}">0,00</td>`).join('')}</tr>`;
+    html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IVA)</td>`;
+    for(let t=0; t<5; t++) {
+        html += `<td style="position:relative; padding-right:18px;">
+            <span id="iva-res-final-${t}">0,00</span>
+            <button type="button" class="action-btn-mini" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:7px; width:12px; height:12px; padding:0; display:inline-flex; align-items:center; justify-content:center; line-height:1;" title="Exportar este importe a la pestaña de Liquidaciones de ${activeTaxCompany}" onclick="exportResultToTaxes('iva', ${t})">📤</button>
+        </td>`;
+    }
+    html += `</tr>`;
     html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].iva.values[`prev-${t}`] || 0;
@@ -3415,9 +3421,15 @@ function renderTaxTemplate() {
         <tbody>`;
 
     html += drawGroupRows(igicRows, 'igic');
-  // Resultados finales IGIC
-    html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IGIC)</td>${[0,1,2,3,4].map(t=>`<td id="igic-res-final-${t}">0,00</td>`).join('')}</tr>`;
-    html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
+    // Resultados finales IGIC
+    html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IGIC)</td>`;
+    for(let t=0; t<5; t++) {
+        html += `<td style="position:relative; padding-right:18px;">
+            <span id="igic-res-final-${t}">0,00</span>
+            <button type="button" class="action-btn-mini" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:7px; width:12px; height:12px; padding:0; display:inline-flex; align-items:center; justify-content:center; line-height:1;" title="Exportar este importe a la pestaña de Liquidaciones de ${activeTaxCompany}" onclick="exportResultToTaxes('igic', ${t})">📤</button>
+        </td>`;
+    }
+    html += `</tr>`;   html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].igic.values[`prev-${t}`] || 0;
         html += `<td><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
@@ -3631,6 +3643,46 @@ document.addEventListener('keydown', e => {
         }
     }
 });  
+
+// Función para exportar el resultado calculado a la tabla de Liquidaciones del menú principal
+window.exportResultToTaxes = (sec, t) => {
+    initTaxCalcData();
+    
+    // 1. Identificar el índice de la empresa activa en el array global
+    const companyIndex = data.companies.indexOf(activeTaxCompany);
+    if (companyIndex === -1) {
+        alert("No se pudo identificar la empresa activa.");
+        return;
+    }
+
+    // 2. Obtener el valor calculado en el DOM
+    const cellId = `${sec}-res-final-${t}`;
+    const cellEl = document.getElementById(cellId);
+    if (!cellEl) return;
+    
+    const valStr = cellEl.textContent.trim();
+    const parsedVal = parseCurrency(valStr) || 0;
+
+    // 3. Sobrescribir en la base de datos de Liquidaciones de esa empresa
+    const targetKey = `${sec}-${companyIndex}`;
+    data.taxValues[targetKey] = parsedVal;
+
+    // 4. Guardar cambios y actualizar la vista
+    saveData();
+    renderTaxes(); // Regenerar la pestaña "Impuestos" original con el nuevo dato
+
+    // Mostrar aviso temporal de copiado con éxito
+    const indicator = document.getElementById('save-indicator');
+    if (indicator) {
+        const prevText = indicator.innerHTML;
+        indicator.innerHTML = `✓ Copiado a Impuestos (${activeTaxCompany})`;
+        indicator.classList.add('saved');
+        setTimeout(() => {
+            indicator.classList.remove('saved');
+            indicator.innerHTML = prevText;
+        }, 2000);
+    }
+};  
   
 </script>
 
