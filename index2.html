@@ -2913,6 +2913,15 @@ document.addEventListener('focusout', e => {
       } else {
          e.target.value = formatCurrency(parsed);
       }
+
+      // Cambiar a fuente roja y negrita de forma reactiva si el dato es negativo
+      if (parsed < 0) {
+         e.target.style.setProperty('color', '#ef4444', 'important');
+         e.target.style.setProperty('font-weight', 'bold', 'important');
+      } else {
+         e.target.style.removeProperty('color');
+         e.target.style.removeProperty('font-weight');
+      }
     }
 });
 
@@ -3578,14 +3587,16 @@ function renderTaxTemplate() {
             let cellStyleClass = `${r.class || ''} ${isRectRow ? 'color-rect' : ''}`;
             
             let tr = `<tr class="${cellStyleClass}"><td class="row-label">${label}</td>`;
-            for (let t = 0; t < 5; t++) {
+          for (let t = 0; t < 5; t++) {
                 const id = `${secId}-${r.id}-${t}`;
                 if (t === 4 || r.isSum) {
                     tr += `<td class="cell-calc ${t===4?'cell-total':''}" id="${id}">0,00</td>`;
                 } else {
                     const val = data.taxCalcExcel[activeTaxCompany][secId].values[`${r.id}-${t}`];
                     const valStr = (val === 0 || val === '' || val === undefined || val === null) ? '' : formatCurrency(val);
-                    tr += `<td><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.id}" data-t="${t}" oninput="updateTaxVal('${secId}','${r.id}',${t},this.value)" value="${valStr}"></td>`;
+                    const isNeg = (parseFloat(val) < 0);
+                    const negStyle = isNeg ? 'color: #ef4444 !important; font-weight: bold !important;' : '';
+                    tr += `<td><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.id}" data-t="${t}" oninput="updateTaxVal('${secId}','${r.id}',${t},this.value)" value="${valStr}" style="${negStyle}"></td>`;
                 }
             }
             return tr + `</tr>`;
@@ -3750,7 +3761,15 @@ function calculateExcelTax() {
             const getV = (id) => data.taxCalcExcel[activeTaxCompany][sec].values[`${id}-${t}`] || 0;
             const setV = (id, val) => { 
                 const el = document.getElementById(`${sec}-${id}-${t}`);
-                if (el) el.textContent = formatCurrency(val);
+                if (el) {
+                    el.textContent = formatCurrency(val);
+                    // Coloreado rojo si el cálculo intermedio da negativo
+                    if (val < 0) {
+                        el.style.setProperty('color', '#ef4444', 'important');
+                    } else {
+                        el.style.removeProperty('color');
+                    }
+                }
                 anual[id] = (anual[id] || 0) + val;
             };
 
@@ -3784,7 +3803,14 @@ function calculateExcelTax() {
                 const res = (cTot - rCuotas) - compensacion;
                 
                 const elRes = document.getElementById('iva-res-final-'+t);
-                if (elRes) elRes.textContent = formatCurrency(res);
+                if (elRes) {
+                    elRes.textContent = formatCurrency(res);
+                    if (res < 0) {
+                        elRes.style.setProperty('color', '#ef4444', 'important');
+                    } else {
+                        elRes.style.removeProperty('color');
+                    }
+                }
                 anual['res_final'] = (anual['res_final'] || 0) + res;
                 
                 setV('prev', compensacion);
@@ -3819,7 +3845,14 @@ function calculateExcelTax() {
                 const res = (cTot - rCuotas) - compensacion;
 
                 const elRes = document.getElementById('igic-res-final-'+t);
-                if (elRes) elRes.textContent = formatCurrency(res);
+                if (elRes) {
+                    elRes.textContent = formatCurrency(res);
+                    if (res < 0) {
+                        elRes.style.setProperty('color', '#ef4444', 'important');
+                    } else {
+                        elRes.style.removeProperty('color');
+                    }
+                }
                 anual['res_final'] = (anual['res_final'] || 0) + res;
                 
                 setV('prev', compensacion);
@@ -3844,11 +3877,25 @@ function calculateExcelTax() {
         // 3. Renderizar la columna "AÑO 390" (Columna índice 4)
         Object.keys(anual).forEach(id => {
             const el = document.getElementById(`${sec}-${id}-4`);
-            if (el) el.textContent = formatCurrency(anual[id]);
+            if (el) {
+                el.textContent = formatCurrency(anual[id]);
+                if (anual[id] < 0) {
+                    el.style.setProperty('color', '#ef4444', 'important');
+                } else {
+                    el.style.removeProperty('color');
+                }
+            }
         });
         
         const elResAnual = document.getElementById(`${sec}-res-final-4`);
-        if (elResAnual) elResAnual.textContent = formatCurrency(anual['res_final']);
+        if (elResAnual) {
+            elResAnual.textContent = formatCurrency(anual['res_final']);
+            if (anual['res_final'] < 0) {
+                elResAnual.style.setProperty('color', '#ef4444', 'important');
+            } else {
+                elResAnual.style.removeProperty('color');
+            }
+        }
     });
 }
 
