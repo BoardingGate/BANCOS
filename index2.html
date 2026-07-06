@@ -853,19 +853,19 @@
 }
 
 /* 2. Filas Especiales: Suma bases total final y Suma bases final recibidas/IGIC (Letra Azul, Negrita, Fondo Marrón) */
-tr:has(td[id*="b_tot_final"]),
+tr:has(td[id*="iva-b_tot_final"]), /* Apunta únicamente a la fila de IVA, excluyendo la de IGIC */
 tr:has(td[id*="b_tot_gfinal"]),
 tr:has(td[id*="r_btot_final"]) {
     background-color: #5c3a21 !important; /* Fondo marrón */
 }
 
-tr:has(td[id*="b_tot_final"]) td,
+tr:has(td[id*="iva-b_tot_final"]) td,
 tr:has(td[id*="b_tot_gfinal"]) td,
 tr:has(td[id*="r_btot_final"]) td,
-tr:has(td[id*="b_tot_final"]) .cell-calc,
+tr:has(td[id*="iva-b_tot_final"]) .cell-calc,
 tr:has(td[id*="b_tot_gfinal"]) .cell-calc,
 tr:has(td[id*="r_btot_final"]) .cell-calc,
-tr:has(td[id*="b_tot_final"]) .cell-total,
+tr:has(td[id*="iva-b_tot_final"]) .cell-total,
 tr:has(td[id*="b_tot_gfinal"]) .cell-total,
 tr:has(td[id*="r_btot_final"]) .cell-total {
     color: #60a5fa !important; /* Azul claro de alta visibilidad */
