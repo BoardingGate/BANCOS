@@ -956,8 +956,11 @@ tr:has(td[id*="r_btot_final"]) .cell-total {
 /* --- COMPORTAMIENTO STICKY / FLOTANTE DE RESULTADOS --- */
 
 /* Altura máxima optimizada del contenedor para forzar scroll interno y asegurar el comportamiento sticky */
+/* --- COMPORTAMIENTO STICKY / FLOTANTE DE RESULTADOS Y ALTURAS --- */
+
+/* Ajustamos el alto para aprovechar el 100% de la pantalla ya que las notas ahora bajan con el scroll */
 #tax-template-container {
-    max-height: calc(100vh - 290px) !important; /* Deja espacio exacto para cabecera, selector y caja de notas inferior */
+    max-height: calc(100vh - 160px) !important; 
     overflow-y: auto !important;
     position: relative;
 }
@@ -968,10 +971,10 @@ tr:has(td[id*="r_btot_final"]) .cell-total {
     position: sticky !important;
     bottom: 0 !important;
     z-index: 15 !important;
-    background: #1b4332 !important; /* Fondo verde opaco para evitar transparencias */
+    background: #1b4332 !important; 
     border-top: 1.5px solid #2d3748 !important;
     border-bottom: 1.5px solid #2d3748 !important;
-    box-shadow: 0 -3px 8px rgba(0,0,0,0.5); /* Sombra decorativa para denotar que flota */
+    box-shadow: 0 -3px 8px rgba(0,0,0,0.5); 
     text-align: left !important;
 }
 
@@ -981,6 +984,34 @@ tr:has(td[id*="r_btot_final"]) .cell-total {
     position: static !important;
 }
 
+/* --- COLOREADO DE CONCEPTOS Y COLUMNA AÑO 390 --- */
+
+/* Fondo gris azulado oscuro para la primera columna de conceptos */
+.excel-table td.row-label {
+    background: #141722 !important;
+    color: #cbd5e0 !important;
+    border-right: 2px solid #2d3748 !important;
+}
+
+/* Fondo gris intermedio para la columna AÑO 390 (6ª columna) */
+.excel-table td:nth-child(6) {
+    background: #202430 !important;
+    color: #fde047 !important; /* Mantiene su color amarillo distintivo */
+}
+.excel-table th:nth-child(6) {
+    background: #1c1f2b !important;
+    color: #fde047 !important;
+}
+
+/* Excepción: Asegurar que las celdas especiales marrones de totales mantengan su color marrón */
+tr:has(td[id*="b_tot_final"]) td.row-label,
+tr:has(td[id*="b_tot_gfinal"]) td.row-label,
+tr:has(td[id*="r_btot_final"]) td.row-label,
+tr:has(td[id*="b_tot_final"]) td:nth-child(6),
+tr:has(td[id*="b_tot_gfinal"]) td:nth-child(6),
+tr:has(td[id*="r_btot_final"]) td:nth-child(6) {
+    background-color: #5c3a21 !important;
+}
 
   </style>
 </head>
@@ -1136,12 +1167,8 @@ tr:has(td[id*="r_btot_final"]) .cell-total {
     <!-- VOLVEMOS A AÑADIR LA CLASE DE SCROLL ÚNICO AQUÍ -->
     <div class="table-scroll-wrapper" id="tax-template-container">
         <!-- El motor dinámico generará la hoja Excel aquí -->
-    </div>
-    
-    <div style="padding: 0 4px; display: flex; flex-direction: column; gap: 4px; margin-top: 15px;">
-        <span style="font-size: 11px; font-weight: 600; color: var(--accent-light); text-transform: uppercase;">📝 Observaciones y Comentarios de la Autoliquidación</span>
-        <textarea id="tax-calc-footer-notes" class="tax-notes-footer" placeholder="Escriba aquí anotaciones generales o aclaraciones sobre el trimestre..." oninput="updateTaxFooterNotes(this.value)"></textarea>
-    </div>
+    </div>   
+  
   </section>
 
   <section id="section-notes" class="section">
@@ -3329,11 +3356,6 @@ function renderTaxTemplate() {
         selectEl.innerHTML = data.companies.map(co => `<option value="${co}" ${co === activeTaxCompany ? 'selected' : ''}>${co}</option>`).join('');
     }
 
-    const notesArea = document.getElementById('tax-calc-footer-notes');
-    if (notesArea) {
-        notesArea.value = data.taxCalcExcel[activeTaxCompany].generalNotes || '';
-    }
-
     const container = document.getElementById('tax-template-container');
     if (!container) return;
 
@@ -3516,8 +3538,22 @@ function renderTaxTemplate() {
 
     // CIERRE DE CAJA DE SCROLL DE IGIC
     html += `</tbody></table></div>`;
+
+    // Inyectar el bloque de observaciones al final de la cola del scrollable
+    html += `
+    <div style="padding: 16px 4px; display: flex; flex-direction: column; gap: 6px; margin-top: 25px; border-top: 1px solid var(--border-strong);">
+        <span style="font-size: 11px; font-weight: 600; color: var(--accent-light); text-transform: uppercase;">📝 Observaciones y Comentarios de la Autoliquidación</span>
+        <textarea id="tax-calc-footer-notes" class="tax-notes-footer" placeholder="Escriba aquí anotaciones generales o aclaraciones sobre el trimestre..." oninput="updateTaxFooterNotes(this.value)" style="min-height: 120px; height: 140px;"></textarea>
+    </div>`;
     
     container.innerHTML = html;
+
+    // Reactivar la asignación de valor a las observaciones después de inyectarse en el DOM
+    const notesArea = document.getElementById('tax-calc-footer-notes');
+    if (notesArea) {
+        notesArea.value = data.taxCalcExcel[activeTaxCompany].generalNotes || '';
+    }
+
     calculateExcelTax();
 }
 
