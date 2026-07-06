@@ -798,9 +798,26 @@
     .tax-bank-input:focus { border-color: var(--accent); outline: none; background: rgba(0,0,0,0.45); }
 
 /* ====== ESTILOS MODELO 303/420 EXCEL REFORZADO ====== */
-.excel-container { background: #0d0f1a; padding: 10px; overflow-x: auto; width: 100%; }
-.excel-table { width: 100%; border-collapse: collapse; font-size: 11px; color: #e2e8f0; table-layout: fixed; margin-bottom: 25px; } /* Fuente general aumentada */
-.excel-table th, .excel-table td { border: 1px solid #2d3748; padding: 4px 6px; height: 26px; vertical-align: middle; }
+.excel-container { background: #0d0f1a; padding: 10px; overflow: visible; width: 100%; }    
+/* Reemplace estas dos reglas por estas versiones: */
+.excel-table { 
+    width: 100%; 
+    border-collapse: separate; 
+    border-spacing: 0; 
+    font-size: 11px; 
+    color: #e2e8f0; 
+    table-layout: fixed; 
+    margin-bottom: 25px; 
+    border-top: 1px solid #2d3748;
+    border-left: 1px solid #2d3748;
+}
+.excel-table th, .excel-table td { 
+    border-right: 1px solid #2d3748; 
+    border-bottom: 1px solid #2d3748; 
+    padding: 4px 6px; 
+    height: 26px; 
+    vertical-align: middle; 
+}    
 .excel-table th { background: #1a202c; color: #a0aec0; font-weight: 600; text-align: center; font-size: 11px; }
 .row-label { width: 340px; text-align: left; background: #171923; font-weight: 500; font-size: 11px; }
 
