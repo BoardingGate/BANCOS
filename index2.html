@@ -2650,44 +2650,30 @@ if (data.masterPassword === undefined) {
 
   // Lógica unificada para el cambio de sección
   function switchSection(targetSec) {
-    // Sincronizar clases activas en los botones de escritorio
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.section === targetSec);
-    });
+  // 1. Quitar 'active' de todos los botones
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.section === targetSec);
+  });
 
-     document.querySelectorAll('.dynamic-actions').forEach(el => el.classList.add('hidden'));
-    const activeActions = document.getElementById('actions-' + targetSec);
-    if (activeActions) {
-      activeActions.classList.remove('hidden');
-    }
+  // 2. Ocultar todas las secciones
+  document.querySelectorAll('.section').forEach(s => {
+    s.classList.remove('active');
+  });
 
-    // Sincronizar el valor seleccionado en el menú desplegable móvil
-    const selectEl = document.getElementById('header-section-select');
-    if (selectEl) {
-      selectEl.value = targetSec;
-    }
-
-    // Activar sección visible en pantalla
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    const targetSectionEl = document.getElementById('section-' + targetSec);
-    if (targetSectionEl) {
-      targetSectionEl.classList.add('active');
-    }
-
-    // Conmutar botones dinámicos y contextuales en el cabecero
-    document.querySelectorAll('.dynamic-actions').forEach(el => el.classList.add('hidden'));
-    const activeActions = document.getElementById('actions-' + targetSec);
-    if (activeActions) {
-      activeActions.classList.remove('hidden');
-    }
+  // 3. Mostrar la sección seleccionada (con seguridad)
+  const targetSectionEl = document.getElementById('section-' + targetSec);
+  if (targetSectionEl) {
+    targetSectionEl.classList.add('active');
   }
 
-  // Evento asignado a los botones tradicionales
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      switchSection(btn.dataset.section);
-    });
-  });
+  // 4. Mostrar acciones dinámicas (con seguridad para evitar el pantallazo en blanco)
+  document.querySelectorAll('.dynamic-actions').forEach(el => el.classList.add('hidden'));
+  const activeActions = document.getElementById('actions-' + targetSec);
+  if (activeActions) {
+    activeActions.classList.remove('hidden');
+  }
+}
+  
 
   // Evento asignado al nuevo selector desplegable
   const selectNav = document.getElementById('header-section-select');
