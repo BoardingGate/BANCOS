@@ -878,16 +878,24 @@
 }
 
 /* Filas de resultados fijas abajo (Aplicado sobre celdas individuales td) */
+/* Filas de resultados fijas abajo (Corregido con alturas de 26px y prevención de saltos de línea) */
+.excel-table tbody tr.row-resultado td,
+.excel-table tbody tr.row-not-subject td {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 .sticky-foot-3 td, .sticky-foot-3 th { 
     position: sticky; 
-    bottom: 48px; 
+    bottom: 52px; 
     z-index: 14; 
     background: #1b4332 !important; 
-    box-shadow: 0 -2px 4px rgba(0,0,0,0.4); /* Sombra para dar efecto flotante */
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.4); 
 }
 .sticky-foot-2 td, .sticky-foot-2 th { 
     position: sticky; 
-    bottom: 24px; 
+    bottom: 26px; 
     z-index: 14; 
     background: #171923 !important; 
 }
