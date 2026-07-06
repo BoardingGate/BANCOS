@@ -854,18 +854,16 @@
   <div class="header-left">
     <div class="logo-icon">&#x1F3E6;</div>
     <h1 class="app-title">Bancos</h1>
- <nav class="tab-nav-inline">
-      <div class="nav-buttons-container">
-        <button class="tab-btn active" data-section="balances">&#x1F4CA; <span class="tab-btn-text">Saldos y Movimientos</span></button>
-        <button class="tab-btn" data-section="invoices">&#x1F4C4; <span class="tab-btn-text">Facturas</span></button>
-        <button class="tab-btn" data-section="taxes">&#x1F3DB; <span class="tab-btn-text">Impuestos</span></button>
-        <button class="tab-btn" data-section="tax-template">📊 <span class="tab-btn-text">Modelo 303/420</span></button>
-        <button class="tab-btn" data-section="notes">&#x1F4DD; <span class="tab-btn-text">Notas</span></button>
-        <button class="tab-btn" data-section="backup">&#x1F4BE; <span class="tab-btn-text">Copia Seguridad</span></button>
-  </div>
-</nav>
-        <button class="tab-btn" data-section="notes">&#x1F4DD; <span class="tab-btn-text">Notas</span></button>
-        <button class="tab-btn" data-section="backup">&#x1F4BE; <span class="tab-btn-text">Copia Seguridad</span></button>
+    <nav class="tab-nav-inline">
+          <div class="nav-buttons-container">
+            <button class="tab-btn active" data-section="balances">&#x1F4CA; <span class="tab-btn-text">Saldos y Movimientos</span></button>
+            <button class="tab-btn" data-section="invoices">&#x1F4C4; <span class="tab-btn-text">Facturas</span></button>
+            <button class="tab-btn" data-section="taxes">&#x1F3DB; <span class="tab-btn-text">Impuestos</span></button>
+            <button class="tab-btn" data-section="tax-template">📊 <span class="tab-btn-text">Modelo 303/420</span></button>
+            <button class="tab-btn" data-section="notes">&#x1F4DD; <span class="tab-btn-text">Notas</span></button>
+            <button class="tab-btn" data-section="backup">&#x1F4BE; <span class="tab-btn-text">Copia Seguridad</span></button>
+          </div>
+        </nav>  
       </div>
     </nav>  
   </div>
@@ -955,6 +953,14 @@
       <textarea id="tax-notes-area" class="notes-textarea" style="min-height: 250px; height: 450px;" placeholder="Anota aquí detalles importantes sobre las liquidaciones de impuestos..." spellcheck="false"></textarea>
     </div>
   </section>
+
+ <section id="section-tax-template" class="section">
+    <div id="actions-tax-template" class="dynamic-actions hidden">
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨️ Imprimir Pantalla</button>
+    </div>
+    <div class="table-scroll-wrapper" id="tax-template-container">     
+    </div>
+  </section>  
 
   <section id="section-notes" class="section">
     <div class="notes-container">
@@ -2653,7 +2659,14 @@ if (data.masterPassword === undefined) {
   // 1. Quitar 'active' de todos los botones
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.section === targetSec);
-  });
+  }
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchSection(btn.dataset.section);
+    });
+  });                                              
+                                               
+  );
 
   // 2. Ocultar todas las secciones
   document.querySelectorAll('.section').forEach(s => {
@@ -2684,12 +2697,12 @@ if (data.masterPassword === undefined) {
   }
   
   document.getElementById('btn-add-bank').addEventListener('click', () => {
-    pusthUndo();
+    pushUndo();
     data.banks.push('Banco '+(data.banks.length+1));
     saveData(); renderAll();
   });
   document.getElementById('btn-add-company').addEventListener('click', () => {
-    pusthUndo();
+    pushUndo();
     data.companies.push('Empresa '+(data.companies.length+1));
     saveData(); renderAll();
   });
