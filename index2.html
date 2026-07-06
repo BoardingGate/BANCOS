@@ -840,10 +840,11 @@
 
 .cell-input { background: rgba(0,0,0,0.2); border: none; color: white; width: 100%; text-align: right; font-family: 'Inter', monospace; font-size: 11px; padding: 2px; } 
 .cell-input:focus { outline: 1px solid #6366f1; background: #2d3748; }
-/* Coloreado de Totales y Alertas */
-.row-sum-bases { font-weight: bold; color: #cbd5e1 !important; }
 
 /* Forzar que todos los elementos y números de la fila "Suma bases" tomen el color blanco grisáceo */
+/* --- ESTILOS DE FILAS DE SUMAS DE BASES --- */
+
+/* 1. Sumas de bases estándar (Blanco grisáceo en texto y números) */
 .row-sum-bases td,
 .row-sum-bases .cell-calc,
 .row-sum-bases .cell-total {
@@ -851,21 +852,51 @@
     font-weight: bold !important;
 }
 
-/* Celdas comunes con acumulados justificadas a la izquierda (Aplica también a la columna AÑO 390) */
-.cell-calc { 
-    text-align: left !important; 
-    font-weight: bold; 
-    color: #63b3ed; 
-    font-family: 'Inter', monospace; 
-    font-size: 11px; 
+/* 2. Filas Especiales: Suma bases total final y Suma bases final recibidas/IGIC (Letra Azul, Negrita, Fondo Marrón) */
+tr:has(td[id*="b_tot_final"]),
+tr:has(td[id*="b_tot_gfinal"]),
+tr:has(td[id*="r_btot_final"]) {
+    background-color: #5c3a21 !important; /* Fondo marrón */
 }
-.cell-total { 
-    background: #2d3748; 
-    font-weight: bold; 
-    text-align: left !important; 
-    color: #f6e05e; 
-    font-family: 'Inter', monospace; 
-    font-size: 11px; 
+
+tr:has(td[id*="b_tot_final"]) td,
+tr:has(td[id*="b_tot_gfinal"]) td,
+tr:has(td[id*="r_btot_final"]) td,
+tr:has(td[id*="b_tot_final"]) .cell-calc,
+tr:has(td[id*="b_tot_gfinal"]) .cell-calc,
+tr:has(td[id*="r_btot_final"]) .cell-calc,
+tr:has(td[id*="b_tot_final"]) .cell-total,
+tr:has(td[id*="b_tot_gfinal"]) .cell-total,
+tr:has(td[id*="r_btot_final"]) .cell-total {
+    color: #60a5fa !important; /* Azul claro de alta visibilidad */
+    font-weight: bold !important;
+    background-color: #5c3a21 !important; /* Asegura fondo marrón en todas las celdas */
+}
+
+/* Celdas comunes con acumulados justificadas a la izquierda (Aplica también a la columna AÑO 390) */
+/* --- ALINEACIÓN DE DATOS INTERMEDIOS Y ACUMULADOS --- */
+
+/* Celdas comunes e intermedias: siempre alineadas a la derecha por defecto */
+.cell-calc, 
+.cell-total,
+.cell-input { 
+    text-align: right !important; 
+}
+
+/* Solo las filas de acumulados globales se justifican a la izquierda (en todas sus columnas, incluyendo AÑO 390) */
+.row-sum-bases td,
+.row-sum-bases .cell-calc,
+.row-sum-bases .cell-total,
+.row-sum-cuotas td,
+.row-sum-cuotas .cell-calc,
+.row-sum-cuotas .cell-total,
+.row-resultado td,
+.row-resultado .cell-calc,
+.row-resultado .cell-total,
+.row-not-subject td,
+.row-not-subject .cell-calc,
+.row-not-subject .cell-total {
+    text-align: left !important;
 }
     
 /* Celdas comunes */
@@ -914,39 +945,40 @@
 }
 
 /* Fijación de la fila RESULTADO LIQUIDACIÓN al pie del scroll (Tanto texto como celdas numéricas) */
-.excel-table tbody tr.row-resultado td {
+/* Filas de resultados fijas abajo (Prevención de saltos de línea) */
+.excel-table tbody tr.row-resultado td,
+.excel-table tbody tr.row-not-subject td {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* --- COMPORTAMIENTO STICKY / FLOTANTE DE RESULTADOS --- */
+
+/* Altura máxima optimizada del contenedor para forzar scroll interno y asegurar el comportamiento sticky */
+#tax-template-container {
+    max-height: calc(100vh - 290px) !important; /* Deja espacio exacto para cabecera, selector y caja de notas inferior */
+    overflow-y: auto !important;
+    position: relative;
+}
+
+/* Fijación de la fila RESULTADO LIQUIDACIÓN flotando fijamente al pie (bottom: 0) */
+.excel-table tbody tr.row-resultado td,
+.excel-table tbody tr.sticky-foot-3 td {
     position: sticky !important;
     bottom: 0 !important;
-    z-index: 14 !important;
-    background: #1b4332 !important; /* Fondo verde opaco para evitar transparencias al hacer scroll */
+    z-index: 15 !important;
+    background: #1b4332 !important; /* Fondo verde opaco para evitar transparencias */
     border-top: 1.5px solid #2d3748 !important;
     border-bottom: 1.5px solid #2d3748 !important;
-    box-shadow: 0 -3px 6px rgba(0,0,0,0.4); /* Sombra decorativa para denotar que flota */
+    box-shadow: 0 -3px 8px rgba(0,0,0,0.5); /* Sombra decorativa para denotar que flota */
     text-align: left !important;
 }
 
-/* Efecto flotante al pie de página (Sticky Bottom) para las autoliquidaciones */
-.excel-table tbody tr.sticky-foot-3 td {
-    position: sticky;
-    bottom: 52px; /* Altura de las dos filas inferiores combinadas */
-    z-index: 14;
-    background: #1b4332 !important; /* Mantiene el color de fondo verde */
-    border-top: 1px solid #2d3748 !important;
-    border-bottom: 1px solid #2d3748 !important;
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.4); /* Sombra para distinguir la superposición */
-}
-.excel-table tbody tr.sticky-foot-2 td {
-    position: sticky;
-    bottom: 26px;
-    z-index: 14;
-    background: #171923 !important;
-    border-top: 1px solid #2d3748 !important;
-}
+/* Desactivar la fijación de las filas inferiores adicionales para que fluyan de manera estándar bajo el resultado */
+.excel-table tbody tr.sticky-foot-2 td,
 .excel-table tbody tr.sticky-foot-1 td {
-    position: sticky;
-    bottom: 0;
-    z-index: 14;
-    background: #171923 !important;
+    position: static !important;
 }
 
 
