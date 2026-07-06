@@ -859,6 +859,11 @@
         <button class="tab-btn active" data-section="balances">&#x1F4CA; <span class="tab-btn-text">Saldos y Movimientos</span></button>
         <button class="tab-btn" data-section="invoices">&#x1F4C4; <span class="tab-btn-text">Facturas</span></button>
         <button class="tab-btn" data-section="taxes">&#x1F3DB; <span class="tab-btn-text">Impuestos</span></button>
+        <button class="tab-btn" data-section="tax-template">📊 <span class="tab-btn-text">Modelo 303/420</span></button>
+        <button class="tab-btn" data-section="notes">&#x1F4DD; <span class="tab-btn-text">Notas</span></button>
+        <button class="tab-btn" data-section="backup">&#x1F4BE; <span class="tab-btn-text">Copia Seguridad</span></button>
+  </div>
+</nav>
         <button class="tab-btn" data-section="notes">&#x1F4DD; <span class="tab-btn-text">Notas</span></button>
         <button class="tab-btn" data-section="backup">&#x1F4BE; <span class="tab-btn-text">Copia Seguridad</span></button>
       </div>
@@ -2429,8 +2434,7 @@ function renderAll() {
     renderBalances();
     renderInvoices();
     renderTaxes();
-    // Solo ejecutamos si existe la función y el contenedor
-    if (typeof renderTaxTemplate === 'function' && document.getElementById('tax-template-container')) {
+   if (typeof renderTaxTemplate === 'function' && document.getElementById('tax-template-container')) {
         renderTaxTemplate();
     }
     renderCredentials();
@@ -3167,70 +3171,51 @@ function renderTaxTemplate() {
     const container = document.getElementById('tax-template-container');
     if (!container) return;
 
-    // Asegurar que la estructura de datos existe
+    // Inicialización de datos si no existen
     if (!data.taxCalcExcel) {
         data.taxCalcExcel = {
-            iva: { rates: { r1: 4, r2: 10, r3: 21, r4: 0, r5: 0 }, values: {} },
-            igic: { rates: { r1: 0, r2: 3, r3: 7, r4: 13, r5: 0, r6: 0 }, values: {} },
-            meta: { iva_año_anterior: 24.98, igic_año_anterior: 0 }
+            iva: { rates: { r1: 4, r2: 10, r3: 21, r4: 0, r5: 0 }, values: {}, prev: 24.98, nosujeto: 0 },
+            igic: { rates: { r1: 0, r2: 3, r3: 7, r4: 13, r5: 0, r6: 0 }, values: {}, prev: 0, nosujeto: 0 }
         };
     }
 
-    const cols = ['1T', '2T', '3T', '4T', 'AÑO 390'];
+    const qs = ['1T', '2T', '3T', '4T', 'AÑO TOTAL'];
     let html = `<div class="excel-container"><table class="excel-table">
-        <thead><tr><th style="width:300px">CONCEPTOS</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+        <thead><tr><th>CONCEPTOS (MODELO OFICIAL)</th>${qs.map(q=>`<th>${q}</th>`).join('')}</tr></thead>
         <tbody>`;
 
-    // Configuración de filas exactas del Excel
-    const sections = [
-        { 
-            title: 'CYC IVA', 
-            class: 'row-header-blue', 
-            id: 'iva',
-            rows: [
-                { id: 'b_r1', label: 'BASE EMITDAS', r: 'r1' },
-                { id: 'b_r2', label: 'BASE EMITDAS', r: 'r2' },
-                { id: 'b_r3', label: 'BASE EMITDAS', r: 'r3' },
-                { id: 'b_r4', label: 'EXTRA EMITDAS 1', r: 'r4' },
-                { id: 'b_r5', label: 'EXTRA EMITDAS 2', r: 'r5' },
-                { id: 'b_rect', label: 'BASE RECTIFICATIVAS' },
-                { id: 'b_total_emit', label: 'Suma bases', isSum: true },
-                { id: 'b_intra', label: 'BASES INTRACOMUNITARIAS recibidas' },
-                { id: 'b_total_gen', label: 'Suma bases total', isSum: true },
-                { id: 'b_invers', label: 'BASES INVERS. SUJETO PASIVO' },
-                { id: 'b_0_emit', label: 'BASE EMITDAS 0% (pisos, etc)' },
-                { id: 'b_final_bases', label: 'Suma bases total final', isSum: true },
-                { id: 'spacer', isSpacer: true },
-                { id: 'c_r1', label: 'CUOTAS IVA Emitidas', isCuota: 'b_r1', r: 'r1' },
-                { id: 'c_r2', label: 'CUOTAS IVA Emitidas', isCuota: 'b_r2', r: 'r2' },
-                { id: 'c_r3', label: 'CUOTAS IVA Emitidas', isCuota: 'b_r3', r: 'r3' },
-                { id: 'c_r4', label: 'CUOTAS IVA Emitidas', isCuota: 'b_r4', r: 'r4' },
-                { id: 'c_r5', label: 'CUOTAS IVA Emitidas', isCuota: 'b_r5', r: 'r5' },
-                { id: 'c_intra', label: 'COUTAS IVA intraconi' },
-                { id: 'c_suj_pas', label: 'COUTAS IVA Suj. PASIVO' },
-                { id: 'c_rect', label: 'COUTAS IVA Rectificativas' },
-                { id: 'c_total_emit', label: 'Suma Cuotas', isSum: true },
-                { id: 'spacer', isSpacer: true },
-                { id: 'r_base_28', label: 'BASES RECIBIDAS (casilla 28)' },
-                { id: 'r_base_0', label: 'Bases recibidas al 0%' },
-                { id: 'r_total_base', label: 'Suma Bases Recibidas', isSum: true },
-                { id: 'r_cuota_sin', label: 'CUOTAS RECIBIDAS (sin rectif)' },
-                { id: 'r_cuota_intra', label: 'CUOTAS Intracomunitarias' },
-                { id: 'r_cuota_rect', label: 'CUOTAS Rectificativas' },
-                { id: 'r_total_cuota', label: 'Suma Cuotas Recibidas', isSum: true }
-            ]
-        }
+    const config = [
+        { title: 'CYC IVA', id: 'iva', color: 'row-header-blue', rows: [
+            { id: 'b_r1', label: 'BASE EMITIDAS', rate: 'r1' }, { id: 'b_r2', label: 'BASE EMITIDAS', rate: 'r2' }, { id: 'b_r3', label: 'BASE EMITIDAS', rate: 'r3' },
+            { id: 'b_r4', label: 'EXTRA EMITIDAS 1', rate: 'r4' }, { id: 'b_r5', label: 'EXTRA EMITIDAS 2', rate: 'r5' },
+            { id: 'b_rect', label: 'BASE RECTIFICATIVAS' }, { id: 'b_total_1', label: 'Suma bases', isSum: true },
+            { id: 'b_intra', label: 'BASES INTRACOMUNITARIAS recibidas' }, { id: 'b_total_2', label: 'Suma bases total', isSum: true },
+            { id: 'b_inv', label: 'BASES INVERS. SUJETO PASIVO' }, { id: 'b_zero', label: 'BASE EMITIDAS 0% (pisos, etc)' },
+            { id: 'b_final', label: 'Suma bases total final', isSum: true },
+            { id: 'sep', isSpacer: true },
+            { id: 'c_r1', label: 'CUOTAS IVA Emitidas', isCuota: 'b_r1', rate: 'r1' }, { id: 'c_r2', label: 'CUOTAS IVA Emitidas', isCuota: 'b_r2', rate: 'r2' }, { id: 'c_r3', label: 'CUOTAS IVA Emitidas', isCuota: 'b_r3', rate: 'r3' },
+            { id: 'c_intra', label: 'CUOTAS IVA intraconi' }, { id: 'c_suj', label: 'CUOTAS IVA Suj. PASIVO' }, { id: 'c_rect', label: 'CUOTAS IVA Rectificativas' },
+            { id: 'c_total', label: 'Suma Cuotas Emitidas', isSum: true },
+            { id: 'sep2', isSpacer: true },
+            { id: 'r_b28', label: 'BASES RECIBIDAS (casilla 28)' }, { id: 'r_b0', label: 'Bases recibidas al 0%' }, { id: 'r_btot', label: 'Suma Bases Recibidas', isSum: true },
+            { id: 'r_c', label: 'CUOTAS RECIBIDAS (sin rectif)' }, { id: 'r_cintra', label: 'CUOTAS Intracomunitarias' }, { id: 'r_crect', label: 'CUOTAS Rectificativas' },
+            { id: 'r_ctot', label: 'Suma Cuotas Recibidas', isSum: true }
+        ]},
+        { title: 'CAENOR IGIC', id: 'igic', color: 'row-header-orange', rows: [
+            { id: 'b_ig0', label: 'BASE EMITIDAS 0%', rate: 'r1' }, { id: 'b_ig3', label: 'BASE EMITIDAS 3%', rate: 'r2' }, { id: 'b_ig7', label: 'BASE EMITIDAS 7%', rate: 'r3' }, { id: 'b_ig13', label: 'BASE EMITIDAS 13%', rate: 'r4' },
+            { id: 'b_rect', label: 'BASE RECTIFICATIVAS' }, { id: 'b_total', label: 'Suma bases IGIC', isSum: true },
+            { id: 'c_ig3', label: 'CUOTAS IGIC 3%', isCuota: 'b_ig3', rate: 'r2' }, { id: 'c_ig7', label: 'CUOTAS IGIC 7%', isCuota: 'b_ig7', rate: 'r3' }, { id: 'c_ig13', label: 'CUOTAS IGIC 13%', isCuota: 'b_ig13', rate: 'r4' },
+            { id: 'c_total', label: 'Suma Cuotas IGIC', isSum: true },
+            { id: 'r_c', label: 'CUOTAS RECIBIDAS IGIC' }, { id: 'r_ctot', label: 'Suma Cuotas Recibidas', isSum: true }
+        ]}
     ];
 
-    sections.forEach(sec => {
-        html += `<tr class="${sec.class}"><td colspan="6">${sec.title}</td></tr>`;
+    config.forEach(sec => {
+        html += `<tr class="${sec.color}"><td colspan="6">${sec.title}</td></tr>`;
         sec.rows.forEach(r => {
-            if (r.isSpacer) {
-                html += `<tr style="height:10px; background:rgba(255,255,255,0.05)"><td colspan="6"></td></tr>`;
-                return;
-            }
+            if (r.isSpacer) { html += `<tr style="height:8px; background:#1a202c"><td colspan="6"></td></tr>`; return; }
             let label = r.label;
-            if (r.r) label += ` <input type="number" class="cell-rate" data-section="${sec.id}" data-rate="${r.r}" value="${data.taxCalcExcel[sec.id].rates[r.r]}">%`;
+            if (r.rate) label += ` <input type="number" class="cell-rate" onchange="updateTaxRate('${sec.id}','${r.rate}',this.value)" value="${data.taxCalcExcel[sec.id].rates[r.rate]}">%`;
             
             html += `<tr><td class="row-label">${label}</td>`;
             for (let t = 0; t < 5; t++) {
@@ -3239,88 +3224,72 @@ function renderTaxTemplate() {
                     html += `<td class="cell-calc ${t===4?'cell-total':''}" id="${id}">0,00</td>`;
                 } else {
                     const val = data.taxCalcExcel[sec.id].values[`${r.id}-${t}`] || 0;
-                    html += `<td><input type="text" class="cell-input fmt-num" data-section="${sec.id}" data-row="${r.id}" data-t="${t}" value="${formatCurrency(val)}"></td>`;
+                    html += `<td><input type="text" class="cell-input fmt-num" oninput="updateTaxVal('${sec.id}','${r.id}',${t},this.value)" value="${formatCurrency(val)}"></td>`;
                 }
             }
             html += `</tr>`;
         });
-        
-        // Fila de Resultado
-        html += `<tr class="row-resultado"><td>RESULTADO (Cuotas Emit - Recib)</td>`;
-        for(let t=0; t<5; t++) html += `<td id="${sec.id}-final-res-${t}">0,00</td>`;
+        // Resultados Finales por sección
+        html += `<tr class="row-resultado"><td>RESULTADO LIQUIDACIÓN</td>`;
+        for(let t=0; t<5; t++) html += `<td id="${sec.id}-res-final-${t}">0,00</td>`;
         html += `</tr>`;
+        html += `<tr><td class="row-label">AÑO ANTERIOR / COMPENSAR</td>`;
+        for(let t=0; t<4; t++) html += `<td><input type="text" class="cell-input fmt-num" oninput="updateTaxMeta('${sec.id}','prev',this.value)" value="${t===0?formatCurrency(data.taxCalcExcel[sec.id].prev):''}"></td>`;
+        html += `<td class="cell-total">${formatCurrency(data.taxCalcExcel[sec.id].prev)}</td></tr>`;
     });
 
     html += `</tbody></table></div>`;
     container.innerHTML = html;
-    
-    // Eventos locales para esta tabla
-    container.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', (e) => {
-            const el = e.target;
-            const sec = el.dataset.section;
-            if (el.dataset.rate) {
-                data.taxCalcExcel[sec].rates[el.dataset.rate] = parseFloat(el.value) || 0;
-            } else {
-                data.taxCalcExcel[sec].values[`${el.dataset.row}-${el.dataset.t}`] = parseCurrency(el.value);
-            }
-            saveData();
-            calculateExcelTax();
-        });
-    });
-
     calculateExcelTax();
 }
 
+// Funciones globales de ayuda para evitar errores de scope
+window.updateTaxRate = (sec, rate, val) => { data.taxCalcExcel[sec].rates[rate] = parseFloat(val) || 0; saveData(); calculateExcelTax(); };
+window.updateTaxVal = (sec, row, t, val) => { data.taxCalcExcel[sec].values[`${row}-${t}`] = parseCurrency(val); saveData(); calculateExcelTax(); };
+window.updateTaxMeta = (sec, key, val) => { data.taxCalcExcel[sec][key] = parseCurrency(val); saveData(); calculateExcelTax(); };
+
 function calculateExcelTax() {
-    ['iva'].forEach(sec => {
-        const rates = data.taxCalcExcel[sec].rates;
+    ['iva', 'igic'].forEach(sec => {
         let anual = {};
+        const rates = data.taxCalcExcel[sec].rates;
 
         for (let t = 0; t < 4; t++) {
             const getV = (id) => data.taxCalcExcel[sec].values[`${id}-${t}`] || 0;
-            const setV = (id, val) => {
+            const setV = (id, val) => { 
                 const el = document.getElementById(`${sec}-${id}-${t}`);
                 if (el) el.textContent = formatCurrency(val);
                 anual[id] = (anual[id] || 0) + val;
             };
 
-            // 1. BASES EMITIDAS
-            const bEmit = getV('b_r1') + getV('b_r2') + getV('b_r3') + getV('b_r4') + getV('b_r5') + getV('b_rect');
-            setV('b_total_emit', bEmit);
-            const bGen = bEmit + getV('b_intra');
-            setV('b_total_gen', bGen);
-            const bFinal = bGen + getV('b_invers') + getV('b_0_emit');
-            setV('b_final_bases', bFinal);
+            if (sec === 'iva') {
+                const bSum1 = getV('b_r1') + getV('b_r2') + getV('b_r3') + getV('b_r4') + getV('b_r5') + getV('b_rect');
+                setV('b_total_1', bSum1);
+                const bSum2 = bSum1 + getV('b_intra');
+                setV('b_total_2', bSum2);
+                const bFinal = bSum2 + getV('b_inv') + getV('b_zero');
+                setV('b_final', bFinal);
 
-            // 2. CUOTAS EMITIDAS
-            const c1 = getV('b_r1') * (rates.r1/100); setV('c_r1', c1);
-            const c2 = getV('b_r2') * (rates.r2/100); setV('c_r2', c2);
-            const c3 = getV('b_r3') * (rates.r3/100); setV('c_r3', c3);
-            const c4 = getV('b_r4') * (rates.r4/100); setV('c_r4', c4);
-            const c5 = getV('b_r5') * (rates.r5/100); setV('c_r5', c5);
-            const cTotal = c1+c2+c3+c4+c5 + getV('c_intra') + getV('c_suj_pas') + getV('c_rect');
-            setV('c_total_emit', cTotal);
+                const c1 = getV('b_r1') * (rates.r1/100); setV('c_r1', c1);
+                const c2 = getV('b_r2') * (rates.r2/100); setV('c_r2', c2);
+                const c3 = getV('b_r3') * (rates.r3/100); setV('c_r3', c3);
+                const cTot = c1+c2+c3 + getV('c_intra') + getV('c_suj') + getV('c_rect');
+                setV('c_total', cTot);
 
-            // 3. RECIBIDAS
-            const rBase = getV('r_base_28') + getV('r_base_0'); setV('r_total_base', rBase);
-            const rCuota = getV('r_cuota_sin') + getV('r_cuota_intra') + getV('r_cuota_rect'); setV('r_total_cuota', rCuota);
-
-            // 4. RESULTADO
-            const res = cTotal - rCuota;
-            document.getElementById(`${sec}-final-res-${t}`).textContent = formatCurrency(res);
-            anual['final_res'] = (anual['final_res'] || 0) + res;
+                const rBases = getV('r_b28') + getV('r_b0'); setV('r_btot', rBases);
+                const rCuotas = getV('r_c') + getV('r_cintra') + getV('r_crect'); setV('r_ctot', rCuotas);
+                
+                const res = (cTot - rCuotas) - (t===0 ? data.taxCalcExcel.iva.prev : 0);
+                document.getElementById('iva-res-final-'+t).textContent = formatCurrency(res);
+                anual['res_final'] = (anual['res_final'] || 0) + res;
+            }
         }
-
-        // Totales Anuales
+        // Totales anuales
         Object.keys(anual).forEach(id => {
             const el = document.getElementById(`${sec}-${id}-4`);
             if (el) el.textContent = formatCurrency(anual[id]);
         });
-        document.getElementById(`${sec}-final-res-4`).textContent = formatCurrency(anual['final_res']);
     });
 }
-  
 </script>
 
 
