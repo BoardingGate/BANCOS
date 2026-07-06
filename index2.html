@@ -1059,8 +1059,8 @@
         </div>
         <button class="btn btn-ghost btn-sm" onclick="window.printSectionReport('balances')">🖨️ Imprimir Hoja Única</button>
     </div>
-    <div class="table-scroll-wrapper" id="tax-template-container">
-        <!-- El motor dinámico generará la hoja Excel aquí -->
+    <div id="tax-template-container">
+         <!-- El motor dinámico generará la hoja Excel aquí -->
     </div>
     <div style="padding: 0 4px; display: flex; flex-direction: column; gap: 4px; margin-top: 15px;">
         <span style="font-size: 11px; font-weight: 600; color: var(--accent-light); text-transform: uppercase;">📝 Observaciones y Comentarios de la Autoliquidación</span>
@@ -3262,12 +3262,10 @@ function renderTaxTemplate() {
     if (!container) return;
 
     const qs = ['1T', '2T', '3T', '4T', 'AÑO 390'];
-    let html = `<div class="excel-container">`;
-
-    // ==========================================
-    // SECCIÓN 1: IVA (AUTOLIQUIDACIÓN)
-    // ==========================================
-    html += `<table class="excel-table">
+    
+    // 1. INICIO DE CONTENEDOR DE IVA INDEPENDIENTE CON SU SCROLL PROPIO
+    let html = `<div class="table-scroll-wrapper" style="max-height: calc(48vh - 40px); margin-bottom: 25px; border: 1px solid var(--border);">
+    <table class="excel-table">
         <thead>
             <tr class="row-header-iva"><td colspan="6">IVA (AUTOLIQUIDACIÓN) - ${activeTaxCompany}</td></tr>
             <tr><th>CONCEPTOS</th>${qs.map(q=>`<th>${q}</th>`).join('')}</tr>
@@ -3275,13 +3273,12 @@ function renderTaxTemplate() {
         <tbody>`;
     
     const ivaRows = [
-        // EMITIDAS
         { id: 'b_r1', label: 'BASE EMITIDAS', rate: 'r1', class: 'bg-emitidas' },
         { id: 'b_r2', label: 'BASE EMITIDAS', rate: 'r2', class: 'bg-emitidas' },
         { id: 'b_r3', label: 'BASE EMITIDAS', rate: 'r3', class: 'bg-emitidas' },
         { id: 'b_r4', label: 'EXTRA EMITIDAS 1', rate: 'r4', class: 'bg-emitidas' },
         { id: 'b_r5', label: 'EXTRA EMITIDAS 2', rate: 'r5', class: 'bg-emitidas' },
-        { id: 'b_rect', label: 'BASE RECTIFICATIVAS', class: 'bg-emitidas color-rect' }, // En color rojo
+        { id: 'b_rect', label: 'BASE RECTIFICATIVAS', class: 'bg-emitidas color-rect' },
         { id: 'b_tot_1', label: 'Suma bases', isSum: true, class: 'row-sum-bases' },
         { id: 'b_intra', label: 'BASES INTRACOMUNITARIAS recibidas', class: 'bg-emitidas' },
         { id: 'b_tot_2', label: 'Suma bases total', isSum: true, class: 'row-sum-bases' },
@@ -3289,7 +3286,6 @@ function renderTaxTemplate() {
         { id: 'b_zero', label: 'BASE EMITIDAS 0% (sin sujeto pasivo, pisos)', class: 'bg-emitidas' },
         { id: 'b_tot_final', label: 'Suma bases total final (con Operación No Sujeta)', isSum: true, class: 'row-sum-bases' },
         { id: 'sep1', isSpacer: true },
-        // CUOTAS
         { id: 'c_r1', label: 'CUOTAS IVA Emitidas', rate: 'r1', isInput: true, class: 'bg-emitidas' },
         { id: 'c_r2', label: 'CUOTAS IVA Emitidas', rate: 'r2', isInput: true, class: 'bg-emitidas' },
         { id: 'c_r3', label: 'CUOTAS IVA Emitidas', rate: 'r3', isInput: true, class: 'bg-emitidas' },
@@ -3297,35 +3293,30 @@ function renderTaxTemplate() {
         { id: 'c_r5', label: 'CUOTAS IVA Emitidas', rate: 'r5', isInput: true, class: 'bg-emitidas' },
         { id: 'c_intra', label: 'CUOTAS IVA intraconi', isInput: true, class: 'bg-emitidas' },
         { id: 'c_suj', label: 'CUOTAS IVA Suj. PASIVO', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_rect', label: 'CUOTAS IVA Rectificativas', isInput: true, class: 'bg-emitidas color-rect' }, // En color rojo
+        { id: 'c_rect', label: 'CUOTAS IVA Rectificativas', isInput: true, class: 'bg-emitidas color-rect' },
         { id: 'c_total', label: 'Suma Cuotas Emitidas', isSum: true, class: 'row-sum-cuotas' },
         { id: 'sep2', isSpacer: true },
-        // RECIBIDAS
         { id: 'r_b28', label: 'BASES RECIBIDAS (casilla 28)', class: 'bg-recibidas' },
         { id: 'r_b0', label: 'Bases recibidas al 0%', class: 'bg-recibidas' },
         { id: 'r_btot', label: 'Suma Bases', isSum: true, class: 'row-sum-bases' },
-        { id: 'r_brect', label: 'Bases Rectificativas (casilla 40)', class: 'bg-recibidas color-rect' }, // En color rojo
+        { id: 'r_brect', label: 'Bases Rectificativas (casilla 40)', class: 'bg-recibidas color-rect' },
         { id: 'r_bintra', label: 'BASES Intracomunitarias (casilla 36)', class: 'bg-recibidas' },
         { id: 'r_btot_final', label: 'Suma Bases Final', isSum: true, class: 'row-sum-bases' },
         { id: 'sep_rec_cuotas', isSpacer: true },
         { id: 'r_c', label: 'CUOTAS RECIBIDAS (sin rectif)', isInput: true, class: 'bg-recibidas' },
         { id: 'r_cintra', label: 'CUOTAS Intracomunitarias', isInput: true, class: 'bg-recibidas' },
-        { id: 'r_crect', label: 'CUOTAS Rectificativas', isInput: true, class: 'bg-recibidas color-rect' }, // En color rojo
+        { id: 'r_crect', label: 'CUOTAS Rectificativas', isInput: true, class: 'bg-recibidas color-rect' },
         { id: 'r_ctot', label: 'Suma Cuotas Recibidas', isSum: true, class: 'row-sum-cuotas' }
     ];
 
-    // ==========================================
-    // SECCIÓN 2: IGIC (AUTOLIQUIDACIÓN)
-    // ==========================================
     const igicRows = [
-        // EMITIDAS
         { id: 'b_ig0', label: 'BASE EMITIDAS 0% (SÓLO IGIC)', rate: 'r1', class: 'bg-emitidas' },
         { id: 'b_ig3', label: 'BASE EMITIDAS 3%', rate: 'r2', class: 'bg-emitidas' },
         { id: 'b_ig7', label: 'BASE EMITIDAS 7%', rate: 'r3', class: 'bg-emitidas' },
         { id: 'b_ig13', label: 'BASE EMITIDAS 13%', rate: 'r4', class: 'bg-emitidas' },
         { id: 'b_ig_ex1', label: 'EXTRA EMITIDAS IGIC 1', rate: 'r5', class: 'bg-emitidas' },
         { id: 'b_ig_ex2', label: 'EXTRA EMITIDAS IGIC 2', rate: 'r6', class: 'bg-emitidas' },
-        { id: 'b_rect', label: 'BASE RECTIFICATIVAS', class: 'bg-emitidas color-rect' }, // En color rojo
+        { id: 'b_rect', label: 'BASE RECTIFICATIVAS', class: 'bg-emitidas color-rect' },
         { id: 'b_tot', label: 'Suma bases IGIC', isSum: true, class: 'row-sum-bases' },
         { id: 'b_intra', label: 'BASES INTRACOMUNITARIAS recibidas', class: 'bg-emitidas' },
         { id: 'b_tot_final', label: 'Suma bases total', isSum: true, class: 'row-sum-bases' },
@@ -3333,7 +3324,6 @@ function renderTaxTemplate() {
         { id: 'b_zero', label: 'BASE EMITIDAS 0% (que no son sujeto pasivo)', class: 'bg-emitidas' },
         { id: 'b_tot_gfinal', label: 'Suma bases total final (IGIC)', isSum: true, class: 'row-sum-bases' },
         { id: 'sep1', isSpacer: true },
-        // CUOTAS IGIC
         { id: 'c_ig3', label: 'CUOTAS IGIC 3%', rate: 'r2', isInput: true, class: 'bg-emitidas' },
         { id: 'c_ig7', label: 'CUOTAS IGIC 7%', rate: 'r3', isInput: true, class: 'bg-emitidas' },
         { id: 'c_ig13', label: 'CUOTAS IGIC 13%', rate: 'r4', isInput: true, class: 'bg-emitidas' },
@@ -3341,20 +3331,19 @@ function renderTaxTemplate() {
         { id: 'c_ig_ex2', label: 'CUOTAS EXTRA IGIC 2', rate: 'r6', isInput: true, class: 'bg-emitidas' },
         { id: 'c_intra', label: 'CUOTAS IGIC intraconi', isInput: true, class: 'bg-emitidas' },
         { id: 'c_suj', label: 'CUOTAS IGIC Suj. PASIVO', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_rect', label: 'CUOTAS IGIC Rectificativas', isInput: true, class: 'bg-emitidas color-rect' }, // En color rojo
+        { id: 'c_rect', label: 'CUOTAS IGIC Rectificativas', isInput: true, class: 'bg-emitidas color-rect' },
         { id: 'c_total', label: 'Suma Cuotas IGIC', isSum: true, class: 'row-sum-cuotas' },
         { id: 'sep2', isSpacer: true },
-        // RECIBIDAS IGIC
         { id: 'r_b28', label: 'BASES RECIBIDAS IGIC', class: 'bg-recibidas' },
         { id: 'r_b0', label: 'Bases recibidas al 0%', class: 'bg-recibidas' },
         { id: 'r_btot', label: 'Suma Bases Recibidas IGIC', isSum: true, class: 'row-sum-bases' },
-        { id: 'r_brect', label: 'Bases Rectificativas IGIC (Casilla 40)', class: 'bg-recibidas color-rect' }, // En color rojo
+        { id: 'r_brect', label: 'Bases Rectificativas IGIC (Casilla 40)', class: 'bg-recibidas color-rect' },
         { id: 'r_bintra', label: 'BASES Intracomunitarias IGIC (Casilla 36)', class: 'bg-recibidas' },
         { id: 'r_btot_final', label: 'Suma Bases Final IGIC', isSum: true, class: 'row-sum-bases' },
         { id: 'sep_rec_cuotas_igic', isSpacer: true },
         { id: 'r_c', label: 'CUOTAS RECIBIDAS IGIC', isInput: true, class: 'bg-recibidas' },
         { id: 'r_cintra', label: 'CUOTAS Intracomunitarias IGIC', isInput: true, class: 'bg-recibidas' },
-        { id: 'r_crect', label: 'CUOTAS Rectificativas IGIC', isInput: true, class: 'bg-recibidas color-rect' }, // En color rojo
+        { id: 'r_crect', label: 'CUOTAS Rectificativas IGIC', isInput: true, class: 'bg-recibidas color-rect' },
         { id: 'r_ctot', label: 'Suma Cuotas Recibidas IGIC', isSum: true, class: 'row-sum-cuotas' }
     ];
 
@@ -3363,7 +3352,7 @@ function renderTaxTemplate() {
             if (r.isSpacer) { return `<tr style="height:12px; background:rgba(0,0,0,0.45)"><td colspan="6"></td></tr>`; }
             let label = r.label;
             if (r.rate && !r.isCuota) {
-                label += ` <input type="number" class="cell-rate" onchange="updateTaxRate('${secId}','${r.rate}',this.value)" value="${data.taxCalcExcel[activeTaxCompany][secId].rates[r.rate]}">%`;
+                label += ` <input type="number" class="cell-rate" onchange="updateTaxRate('${secId}','${r.rate}',this.value)" value="${data.taxCalcExcel[secId].rates[r.rate]}">%`;
             }
             
             let isRectRow = r.id.includes('rect') || r.id === 'c_rect';
@@ -3375,17 +3364,18 @@ function renderTaxTemplate() {
                 if (t === 4 || r.isSum) {
                     tr += `<td class="cell-calc ${t===4?'cell-total':''}" id="${id}">0,00</td>`;
                 } else {
-                  const val = data.taxCalcExcel[activeTaxCompany][secId].values[`${r.id}-${t}`];
+                    const val = data.taxCalcExcel[activeTaxCompany][secId].values[`${r.id}-${t}`];
                     const valStr = (val === 0 || val === '' || val === undefined || val === null) ? '' : formatCurrency(val);
                     tr += `<td><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.id}" data-t="${t}" oninput="updateTaxVal('${secId}','${r.id}',${t},this.value)" value="${valStr}"></td>`;
-                       }
+                }
             }
             return tr + `</tr>`;
         }).join('');
     }
 
-html += drawGroupRows(ivaRows, 'iva');
-    // Resultados finales IVA
+    html += drawGroupRows(ivaRows, 'iva');
+    
+    // Resultados IVA
     html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IVA)</td>`;
     for(let t=0; t<5; t++) {
         html += `<td style="position:relative; padding-right:18px;">
@@ -3394,12 +3384,14 @@ html += drawGroupRows(ivaRows, 'iva');
         </td>`;
     }
     html += `</tr>`;
+    
     html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].iva.values[`prev-${t}`] || 0;
         html += `<td><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
     }
     html += `<td class="cell-total" id="iva-prev-4">0,00</td></tr>`;
+    
     html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Casilla 120 / 110)</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].iva.values[`nosujeto-${t}`] || 0;
@@ -3407,13 +3399,12 @@ html += drawGroupRows(ivaRows, 'iva');
     }
     html += `<td class="cell-total" id="iva-nosujeto-4">0,00</td></tr>`;
 
-    // Cierre de tabla IVA
-    html += `</tbody></table>`;
+    // CIERRE DE CAJA DE SCROLL DE IVA
+    html += `</tbody></table></div>`;
 
-    // ==========================================
-    // TABLA IGIC INDEPENDIENTE (SEPARADA)
-    // ==========================================
-    html += `<table class="excel-table" style="margin-top: 30px;">
+    // 2. INICIO DE CONTENEDOR DE IGIC INDEPENDIENTE CON SU SCROLL PROPIO
+    html += `<div class="table-scroll-wrapper" style="max-height: calc(48vh - 40px); border: 1px solid var(--border);">
+    <table class="excel-table">
         <thead>
             <tr class="row-header-igic"><td colspan="6">IGIC (AUTOLIQUIDACIÓN) - ${activeTaxCompany}</td></tr>
             <tr><th>CONCEPTOS</th>${qs.map(q=>`<th>${q}</th>`).join('')}</tr>
@@ -3421,7 +3412,8 @@ html += drawGroupRows(ivaRows, 'iva');
         <tbody>`;
 
     html += drawGroupRows(igicRows, 'igic');
-    // Resultados finales IGIC
+    
+    // Resultados IGIC
     html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IGIC)</td>`;
     for(let t=0; t<5; t++) {
         html += `<td style="position:relative; padding-right:18px;">
@@ -3429,12 +3421,15 @@ html += drawGroupRows(ivaRows, 'iva');
             <button type="button" class="action-btn-mini" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:7px; width:12px; height:12px; padding:0; display:inline-flex; align-items:center; justify-content:center; line-height:1;" title="Exportar este importe a la pestaña de Liquidaciones de ${activeTaxCompany}" onclick="exportResultToTaxes('igic', ${t})">📤</button>
         </td>`;
     }
-    html += `</tr>`;   html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
+    html += `</tr>`;
+    
+    html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].igic.values[`prev-${t}`] || 0;
         html += `<td><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
     }
     html += `<td class="cell-total" id="igic-prev-4">0,00</td></tr>`;
+    
     html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Bases imponibles emitidas de sujeto pasivo (promotores, chatarra))</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].igic.values[`nosujeto-${t}`] || 0;
@@ -3442,7 +3437,9 @@ html += drawGroupRows(ivaRows, 'iva');
     }
     html += `<td class="cell-total" id="igic-nosujeto-4">0,00</td></tr>`;
 
+    // CIERRE DE CAJA DE SCROLL DE IGIC
     html += `</tbody></table></div>`;
+    
     container.innerHTML = html;
     calculateExcelTax();
 }
