@@ -837,41 +837,52 @@
 .tax-notes-footer { width: 100%; min-height: 100px; background: rgba(18, 21, 43, 0.8); border: 1px solid var(--border-strong); border-radius: var(--radius); color: var(--text-primary); font-family: inherit; font-size: 12px; padding: 10px; resize: vertical; outline: none; margin-top: 15px; }
 .tax-notes-footer:focus { border-color: var(--accent); }
 
-/* Cabeceras fijas arriba */
-.excel-table thead tr.row-header-iva,
-.excel-table thead tr.row-header-igic {
+/* Cabeceras fijas arriba (Aplicado sobre celdas individuales th/td) */
+.excel-table thead tr.row-header-iva td,
+.excel-table thead tr.row-header-iva th {
     position: sticky;
     top: 0;
-    z-index: 15;
+    z-index: 16;
+    background: #1e3a8a !important;
 }
-.excel-table thead tr:nth-child(2) th {
+.excel-table thead tr.row-header-igic td,
+.excel-table thead tr.row-header-igic th {
     position: sticky;
-    top: 24px; /* Se sitúa justo debajo de la cabecera principal del impuesto */
+    top: 0;
+    z-index: 16;
+    background: #7c2d12 !important;
+}
+.excel-table thead tr:nth-child(2) th,
+.excel-table thead tr:nth-child(2) td {
+    position: sticky;
+    top: 24px; /* Queda fijado justo debajo de la franja del título */
     z-index: 15;
-    background: #1a202c;
+    background: #1a202c !important;
 }
 
-/* Filas de resultados fijas abajo (Z-index alto para flotar sobre las celdas comunes) */
-.sticky-foot-3 { 
+/* Filas de resultados fijas abajo (Aplicado sobre celdas individuales td) */
+.sticky-foot-3 td, .sticky-foot-3 th { 
     position: sticky; 
     bottom: 48px; 
     z-index: 14; 
     background: #1b4332 !important; 
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.3); /* Sombra para dar efecto de superposición */
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.4); /* Sombra para dar efecto flotante */
 }
-.sticky-foot-2 { 
+.sticky-foot-2 td, .sticky-foot-2 th { 
     position: sticky; 
     bottom: 24px; 
     z-index: 14; 
     background: #171923 !important; 
 }
-.sticky-foot-1 { 
+.sticky-foot-1 td, .sticky-foot-1 th { 
     position: sticky; 
     bottom: 0px;  
     z-index: 14; 
     background: #171923 !important; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}    
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+
 
   </style>
 </head>
