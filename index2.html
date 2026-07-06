@@ -837,6 +837,42 @@
 .tax-notes-footer { width: 100%; min-height: 100px; background: rgba(18, 21, 43, 0.8); border: 1px solid var(--border-strong); border-radius: var(--radius); color: var(--text-primary); font-family: inherit; font-size: 12px; padding: 10px; resize: vertical; outline: none; margin-top: 15px; }
 .tax-notes-footer:focus { border-color: var(--accent); }
 
+/* Cabeceras fijas arriba */
+.excel-table thead tr.row-header-iva,
+.excel-table thead tr.row-header-igic {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+}
+.excel-table thead tr:nth-child(2) th {
+    position: sticky;
+    top: 24px; /* Se sitúa justo debajo de la cabecera principal del impuesto */
+    z-index: 15;
+    background: #1a202c;
+}
+
+/* Filas de resultados fijas abajo (Z-index alto para flotar sobre las celdas comunes) */
+.sticky-foot-3 { 
+    position: sticky; 
+    bottom: 48px; 
+    z-index: 14; 
+    background: #1b4332 !important; 
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.3); /* Sombra para dar efecto de superposición */
+}
+.sticky-foot-2 { 
+    position: sticky; 
+    bottom: 24px; 
+    z-index: 14; 
+    background: #171923 !important; 
+}
+.sticky-foot-1 { 
+    position: sticky; 
+    bottom: 0px;  
+    z-index: 14; 
+    background: #171923 !important; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}    
+
   </style>
 </head>
 <body>
@@ -3309,14 +3345,15 @@ function renderTaxTemplate() {
 
     html += drawGroupRows(ivaRows, 'iva');
     // Resultados finales IVA
-    html += `<tr class="row-resultado"><td>RESULTADO LIQUIDACIÓN (IVA)</td>${[0,1,2,3,4].map(t=>`<td id="iva-res-final-${t}">0,00</td>`).join('')}</tr>`;
-    html += `<tr class="row-not-subject"><td>AÑO ANTERIOR / COMPENSAR</td>`;
+// Resultados finales IVA
+    html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IVA)</td>${[0,1,2,3,4].map(t=>`<td id="iva-res-final-${t}">0,00</td>`).join('')}</tr>`;
+    html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].iva.values[`prev-${t}`] || 0;
         html += `<td><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
     }
     html += `<td class="cell-total" id="iva-prev-4">0,00</td></tr>`;
-    html += `<tr class="row-not-subject"><td>OPERACIÓN NO SUJETAS (Casilla 120 / 110)</td>`;
+    html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Casilla 120 / 110)</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].iva.values[`nosujeto-${t}`] || 0;
         html += `<td><input type="text" class="cell-input fmt-num" data-section="iva" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('iva','nosujeto',${t},this.value)" value="${formatCurrency(val)}"></td>`;
@@ -3337,16 +3374,15 @@ function renderTaxTemplate() {
         <tbody>`;
 
     html += drawGroupRows(igicRows, 'igic');
-    // Resultados finales IGIC
-    html += `<tr class="row-resultado"><td>RESULTADO LIQUIDACIÓN (IGIC)</td>${[0,1,2,3,4].map(t=>`<td id="igic-res-final-${t}">0,00</td>`).join('')}</tr>`;
-    html += `<tr class="row-not-subject"><td>AÑO ANTERIOR / COMPENSAR</td>`;
+  // Resultados finales IGIC
+    html += `<tr class="row-resultado sticky-foot-3"><td>RESULTADO LIQUIDACIÓN (IGIC)</td>${[0,1,2,3,4].map(t=>`<td id="igic-res-final-${t}">0,00</td>`).join('')}</tr>`;
+    html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].igic.values[`prev-${t}`] || 0;
         html += `<td><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
     }
     html += `<td class="cell-total" id="igic-prev-4">0,00</td></tr>`;
-
-    html += `<tr class="row-not-subject"><td>OPERACIÓN NO SUJETAS (Bases imponibles emitidas de sujeto pasivo (promotores, chatarra))</td>`;
+    html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Bases imponibles emitidas de sujeto pasivo (promotores, chatarra))</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].igic.values[`nosujeto-${t}`] || 0;
         html += `<td><input type="text" class="cell-input fmt-num" data-section="igic" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('igic','nosujeto',${t},this.value)" value="${formatCurrency(val)}"></td>`;
