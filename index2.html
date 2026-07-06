@@ -2676,17 +2676,21 @@ if (data.masterPassword === undefined) {
   });
 
   
- document.addEventListener('focusout', e => {
+document.addEventListener('focusout', e => {
     if (e.target.classList.contains('fmt-num')) {
       const parsed = parseCurrency(e.target.value);
+      const isExcelCell = e.target.classList.contains('cell-input');
+      const isTaxAmount = e.target.classList.contains('tax-amount');
       
-      if (e.target.classList.contains('tax-amount') && (!parsed || parsed === 0)) {
+      if ((isExcelCell || isTaxAmount) && (!parsed || parsed === 0)) {
+         e.target.value = '';
+      } else if (!parsed && parsed !== 0) {
          e.target.value = '';
       } else {
          e.target.value = formatCurrency(parsed);
       }
     }
-  });
+});
 
   // Lógica unificada para el cambio de sección
   function switchSection(targetSec) {
@@ -3371,9 +3375,10 @@ function renderTaxTemplate() {
                 if (t === 4 || r.isSum) {
                     tr += `<td class="cell-calc ${t===4?'cell-total':''}" id="${id}">0,00</td>`;
                 } else {
-                    const val = data.taxCalcExcel[activeTaxCompany][secId].values[`${r.id}-${t}`] || 0;
-                    tr += `<td><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.id}" data-t="${t}" oninput="updateTaxVal('${secId}','${r.id}',${t},this.value)" value="${formatCurrency(val)}"></td>`;
-                }
+                  const val = data.taxCalcExcel[activeTaxCompany][secId].values[`${r.id}-${t}`];
+                    const valStr = (val === 0 || val === '' || val === undefined || val === null) ? '' : formatCurrency(val);
+                    tr += `<td><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.id}" data-t="${t}" oninput="updateTaxVal('${secId}','${r.id}',${t},this.value)" value="${valStr}"></td>`;
+                       }
             }
             return tr + `</tr>`;
         }).join('');
@@ -3603,6 +3608,29 @@ function calculateExcelTax() {
         if (elResAnual) elResAnual.textContent = formatCurrency(anual['res_final']);
     });
 }
+
+// Detectar tecla Enter en la tabla del Modelo 303/420 para saltar a la celda de abajo
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.classList.contains('cell-input')) {
+        e.preventDefault(); // Evitar el comportamiento por defecto de la tecla
+        const currentInput = e.target;
+        const t = parseInt(currentInput.dataset.t, 10);
+        
+        // Buscar la tabla donde nos encontramos
+        const table = currentInput.closest('.excel-table');
+        if (!table) return;
+        
+        // Obtener todos los inputs de la misma columna (t) en esta tabla
+        const inputs = Array.from(table.querySelectorAll(`.cell-input[data-t="${t}"]`));
+        const currentIndex = inputs.indexOf(currentInput);
+        
+        // Si hay una celda debajo, trasladar el foco y seleccionar el texto
+        if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
+            inputs[currentIndex + 1].focus();
+            inputs[currentIndex + 1].select();
+        }
+    }
+});  
   
 </script>
 
