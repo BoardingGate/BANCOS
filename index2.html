@@ -3621,28 +3621,50 @@ function calculateExcelTax() {
     });
 }
 
-// Detectar tecla Enter en la tabla del Modelo 303/420 para saltar a la celda de abajo
+
+// Navegación vertical rápida (Enter, Flecha Abajo y Flecha Arriba) en las tablas de impuestos
 document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && e.target.classList.contains('cell-input')) {
-        e.preventDefault(); // Evitar el comportamiento por defecto de la tecla
+    const isExcelCell = e.target.classList.contains('cell-input');
+    if (!isExcelCell) return;
+
+    if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         const currentInput = e.target;
         const t = parseInt(currentInput.dataset.t, 10);
         
-        // Buscar la tabla donde nos encontramos
         const table = currentInput.closest('.excel-table');
         if (!table) return;
         
         // Obtener todos los inputs de la misma columna (t) en esta tabla
         const inputs = Array.from(table.querySelectorAll(`.cell-input[data-t="${t}"]`));
         const currentIndex = inputs.indexOf(currentInput);
-        
-        // Si hay una celda debajo, trasladar el foco y seleccionar el texto
-        if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
-            inputs[currentIndex + 1].focus();
-            inputs[currentIndex + 1].select();
+        if (currentIndex === -1) return;
+
+        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+            e.preventDefault(); // Evitar desplazamiento de página o salto de línea
+            if (tIdxLess(currentIndex, inputs.length)) {
+                const nextInput = inputs[currentIndex + 1];
+                if (nextInput) {
+                    nextInput.focus();
+                    nextInput.select();
+                }
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault(); // Evitar desplazamiento de página
+            if (currentIndex > 0) {
+                const prevInput = inputs[currentIndex - 1];
+                if (prevInput) {
+                    prevInput.focus();
+                    prevInput.select();
+                }
+            }
         }
     }
-});  
+});
+
+// Función auxiliar de ayuda de límites
+function tIdxLess(current, max) {
+    return current < max - 1;
+}
 
 // Función para exportar el resultado calculado a la tabla de Liquidaciones del menú principal
 window.exportResultToTaxes = (sec, t) => {
