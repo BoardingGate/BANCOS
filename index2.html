@@ -830,14 +830,19 @@
 .bg-recibidas { background: rgba(16, 185, 129, 0.04) !important; }
 
 /* Coloreado de Totales y Alertas */
-.row-sum-bases { font-weight: bold; color: #63b3ed !important; }
+.row-sum-bases { font-weight: bold; color: #cbd5e1 !important; } /* Color blanco grisáceo para sumas de bases */
 .row-sum-cuotas { background: rgba(245, 158, 11, 0.2) !important; font-weight: bold; color: #fde047 !important; }
 .row-resultado { background: #1b4332 !important; color: #fff !important; font-weight: bold; font-size: 12px; }
-
+    
 /* RECTIFICATIVAS EN COLOR ROJO */
 .color-rect { color: #f87171 !important; font-weight: bold; }
 .color-rect input { color: #f87171 !important; font-weight: bold; }
 
+.cell-input { background: rgba(0,0,0,0.2); border: none; color: white; width: 100%; text-align: right; font-family: 'Inter', monospace; font-size: 11px; padding: 2px; } 
+.cell-input:focus { outline: 1px solid #6366f1; background: #2d3748; }
+.cell-calc { text-align: left; font-weight: bold; color: #63b3ed; font-family: 'Inter', monospace; font-size: 11px; } /* Justificado a la izquierda */
+.cell-total { background: #2d3748; font-weight: bold; text-align: left; color: #f6e05e; font-family: 'Inter', monospace; font-size: 11px; } /* Justificado a la izquierda (AÑO 390 incluido) */    
+    
 /* Celdas comunes */
 .cell-input { background: rgba(0,0,0,0.2); border: none; color: white; width: 100%; text-align: right; font-family: 'Inter', monospace; font-size: 11px; padding: 2px; } /* Input más grande */
 .cell-input:focus { outline: 1px solid #6366f1; background: #2d3748; }
@@ -877,13 +882,39 @@
     background: #1a202c !important;
 }
 
-/* Filas de resultados fijas abajo (Aplicado sobre celdas individuales td) */
+
+/* Filas de resultados fijas abajo (Corregido con alturas de 26px y prevención de saltos de línea) */
 /* Filas de resultados fijas abajo (Corregido con alturas de 26px y prevención de saltos de línea) */
 .excel-table tbody tr.row-resultado td,
 .excel-table tbody tr.row-not-subject td {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    text-align: left !important; /* Fuerza la justificación a la izquierda */
+}
+
+/* Efecto flotante al pie de página (Sticky Bottom) para las autoliquidaciones */
+.excel-table tbody tr.sticky-foot-3 td {
+    position: sticky;
+    bottom: 52px; /* Altura de las dos filas inferiores combinadas */
+    z-index: 14;
+    background: #1b4332 !important; /* Mantiene el color de fondo verde */
+    border-top: 1px solid #2d3748 !important;
+    border-bottom: 1px solid #2d3748 !important;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.4); /* Sombra para distinguir la superposición */
+}
+.excel-table tbody tr.sticky-foot-2 td {
+    position: sticky;
+    bottom: 26px;
+    z-index: 14;
+    background: #171923 !important;
+    border-top: 1px solid #2d3748 !important;
+}
+.excel-table tbody tr.sticky-foot-1 td {
+    position: sticky;
+    bottom: 0;
+    z-index: 14;
+    background: #171923 !important;
 }
 
 
