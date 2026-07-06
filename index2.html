@@ -830,7 +830,7 @@
 .bg-recibidas { background: rgba(16, 185, 129, 0.04) !important; }
 
 /* Coloreado de Totales y Alertas */
-.row-sum-bases { font-weight: bold; color: #cbd5e1 !important; } /* Color blanco grisáceo para sumas de bases */
+.row-sum-bases { font-weight: bold; color: #cbd5e1 !important; }    
 .row-sum-cuotas { background: rgba(245, 158, 11, 0.2) !important; font-weight: bold; color: #fde047 !important; }
 .row-resultado { background: #1b4332 !important; color: #fff !important; font-weight: bold; font-size: 12px; }
     
@@ -840,14 +840,37 @@
 
 .cell-input { background: rgba(0,0,0,0.2); border: none; color: white; width: 100%; text-align: right; font-family: 'Inter', monospace; font-size: 11px; padding: 2px; } 
 .cell-input:focus { outline: 1px solid #6366f1; background: #2d3748; }
-.cell-calc { text-align: left; font-weight: bold; color: #63b3ed; font-family: 'Inter', monospace; font-size: 11px; } /* Justificado a la izquierda */
-.cell-total { background: #2d3748; font-weight: bold; text-align: left; color: #f6e05e; font-family: 'Inter', monospace; font-size: 11px; } /* Justificado a la izquierda (AÑO 390 incluido) */    
+/* Coloreado de Totales y Alertas */
+.row-sum-bases { font-weight: bold; color: #cbd5e1 !important; }
+
+/* Forzar que todos los elementos y números de la fila "Suma bases" tomen el color blanco grisáceo */
+.row-sum-bases td,
+.row-sum-bases .cell-calc,
+.row-sum-bases .cell-total {
+    color: #cbd5e1 !important;
+    font-weight: bold !important;
+}
+
+/* Celdas comunes con acumulados justificadas a la izquierda (Aplica también a la columna AÑO 390) */
+.cell-calc { 
+    text-align: left !important; 
+    font-weight: bold; 
+    color: #63b3ed; 
+    font-family: 'Inter', monospace; 
+    font-size: 11px; 
+}
+.cell-total { 
+    background: #2d3748; 
+    font-weight: bold; 
+    text-align: left !important; 
+    color: #f6e05e; 
+    font-family: 'Inter', monospace; 
+    font-size: 11px; 
+}
     
 /* Celdas comunes */
 .cell-input { background: rgba(0,0,0,0.2); border: none; color: white; width: 100%; text-align: right; font-family: 'Inter', monospace; font-size: 11px; padding: 2px; } /* Input más grande */
 .cell-input:focus { outline: 1px solid #6366f1; background: #2d3748; }
-.cell-calc { text-align: right; font-weight: bold; color: #63b3ed; font-family: 'Inter', monospace; font-size: 11px; }
-.cell-total { background: #2d3748; font-weight: bold; text-align: right; color: #f6e05e; font-family: 'Inter', monospace; font-size: 11px; }
 .row-not-subject { background: rgba(255,255,255,0.03); font-style: italic; color: #cbd5e0; }
 .cell-rate { width: 40px; background: #2d3748; border: 1px dashed #4a5568; text-align: center; color: #f6ad55; font-weight: bold; font-size: 11px; border-radius: 3px; }
 
@@ -882,15 +905,24 @@
     background: #1a202c !important;
 }
 
-
-/* Filas de resultados fijas abajo (Corregido con alturas de 26px y prevención de saltos de línea) */
-/* Filas de resultados fijas abajo (Corregido con alturas de 26px y prevención de saltos de línea) */
+/* Filas de resultados fijas abajo (Prevención de saltos de línea) */
 .excel-table tbody tr.row-resultado td,
 .excel-table tbody tr.row-not-subject td {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    text-align: left !important; /* Fuerza la justificación a la izquierda */
+}
+
+/* Fijación de la fila RESULTADO LIQUIDACIÓN al pie del scroll (Tanto texto como celdas numéricas) */
+.excel-table tbody tr.row-resultado td {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 14 !important;
+    background: #1b4332 !important; /* Fondo verde opaco para evitar transparencias al hacer scroll */
+    border-top: 1.5px solid #2d3748 !important;
+    border-bottom: 1.5px solid #2d3748 !important;
+    box-shadow: 0 -3px 6px rgba(0,0,0,0.4); /* Sombra decorativa para denotar que flota */
+    text-align: left !important;
 }
 
 /* Efecto flotante al pie de página (Sticky Bottom) para las autoliquidaciones */
