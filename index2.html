@@ -1012,6 +1012,39 @@ tr:has(td[id*="r_btot_final"]) td:nth-child(6) {
     background-color: #5c3a21 !important;
 }
 
+/* --- REFUERZO VISUAL PARA CASILLAS DE INTRODUCCIÓN DE DATOS --- */
+/* 1. Casillas de Facturas EMITIDAS (Tono Azulado / Cobalto translúcido) */
+.bg-emitidas .cell-input {
+    background-color: rgba(30, 58, 138, 0.35) !important; /* Azul cobalto */
+    border: 1px dashed rgba(99, 102, 241, 0.35) !important;
+    color: #e2e8f0 !important;
+    border-radius: 4px;
+    padding: 3px 5px !important;
+    transition: all 0.15s ease;
+}
+.bg-emitidas .cell-input:focus {
+    background-color: rgba(30, 58, 138, 0.65) !important;
+    border: 1px solid #6366f1 !important;
+    box-shadow: 0 0 5px rgba(99, 102, 241, 0.4);
+    outline: none;
+}
+
+/* 2. Casillas de Facturas RECIBIDAS (Tono Anaranjado / Teja translúcido) */
+.bg-recibidas .cell-input {
+    background-color: rgba(120, 53, 15, 0.28) !important; /* Naranja óxido */
+    border: 1px dashed rgba(245, 158, 11, 0.35) !important;
+    color: #e2e8f0 !important;
+    border-radius: 4px;
+    padding: 3px 5px !important;
+    transition: all 0.15s ease;
+}
+.bg-recibidas .cell-input:focus {
+    background-color: rgba(120, 53, 15, 0.55) !important;
+    border: 1px solid #f59e0b !important;
+    box-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
+    outline: none;
+}    
+
   </style>
 </head>
 <body>
@@ -1303,14 +1336,8 @@ function gapiLoaded() {
 }
 
 let gdriveEnabled = localStorage.getItem('gdrive_sync_enabled') === 'true';
-
-
-
-// Sustituye getGoogleToken para que siempre abra el diálogo si se llama manualmente
-
-
-
   
+// Sustituye getGoogleToken para que siempre abra el diálogo si se llama manualmente 
 function updateCloudStatus(active) {
   const statusEl = document.getElementById('gdrive-status-icon');
   if (!statusEl) return;
