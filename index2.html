@@ -2277,11 +2277,68 @@ function generateNotesPrintHTML() {
           <div style="font-size: 11px; white-space: pre-wrap; font-family: monospace; line-height: 1.5; border: 1px solid #cbd5e1; padding: 12px; background: #fafafa; border-radius: 4px;">${esc(data.notes || '')}</div>`;
 }
 
+// Genera de forma limpia y estática la maqueta de IVA e IGIC para impresión
+function generateTaxTemplatePrintHTML() {
+  const container = document.getElementById('tax-template-container');
+  if (!container) return '';
+  
+  // Clonamos el elemento de pantalla para no alterar la interactividad del usuario
+  const clone = container.cloneNode(true);
+  
+  // Sincronizamos y transformamos las cajas de texto (inputs) en texto plano legible
+  const originalInputs = container.querySelectorAll('input');
+  const clonedInputs = clone.querySelectorAll('input');
+  
+  originalInputs.forEach((orig, idx) => {
+    if (clonedInputs[idx]) {
+      const span = document.createElement('span');
+      span.style.fontWeight = 'bold';
+      span.style.fontSize = '10px';
+      
+      // Conservamos la visualización limpia del porcentaje si es un rate selector
+      if (orig.classList.contains('cell-rate')) {
+         span.textContent = orig.value ? orig.value + '%' : '';
+         span.style.color = '#b45309';
+      } else {
+         span.textContent = orig.value || '';
+         span.style.color = '#1e293b';
+      }
+      
+      clonedInputs[idx].parentNode.replaceChild(span, clonedInputs[idx]);
+    }
+  });
+  
+  // Transformamos el campo de notas final en un bloque de texto plano para impresión
+  const originalTextarea = container.querySelector('textarea');
+  const clonedTextarea = clone.querySelector('textarea');
+  if (originalTextarea && clonedTextarea) {
+     const div = document.createElement('div');
+     div.style.whiteSpace = 'pre-wrap';
+     div.style.fontSize = '9px';
+     div.style.border = '1px solid #cbd5e1';
+     div.style.padding = '10px';
+     div.style.marginTop = '15px';
+     div.style.background = '#f8fafc';
+     div.style.color = '#334155';
+     div.textContent = originalTextarea.value || 'Sin observaciones para este trimestre.';
+     
+     clonedTextarea.parentNode.replaceChild(div, clonedTextarea);
+  }
+
+  let printHTML = `<h1>Modelo 303 / 420 - Autoliquidación Tributaria</h1>`;
+  printHTML += `<p class="meta">Empresa: <strong>${activeTaxCompany}</strong> | Generado el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')}</p>`;
+  printHTML += clone.innerHTML;
+  
+  return printHTML;
+}
+
 window.printSectionReport = function(sectionType) {
   let contentHTML = '';
   
   if (sectionType === 'notes') {
     contentHTML = generateNotesPrintHTML();
+  } else if (sectionType === 'tax-template') {
+    contentHTML = generateTaxTemplatePrintHTML(); // Redirección al reporte de autoliquidación activa
   } else {
     contentHTML = generateUnifiedPrintHTML();
   }
@@ -2316,7 +2373,6 @@ window.printSectionReport = function(sectionType) {
           }, 400);
         };
       <\/script>
-      
     </body>
     </html>
   `);
