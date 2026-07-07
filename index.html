@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   
-  <style>
+<style>
     :root {
       --bg-primary:#0d0f1a;--bg-secondary:#12152b;--bg-input:rgba(0,0,0,0.25);
       --accent:#6366f1;--accent-light:#818cf8;--accent-glow:rgba(99,102,241,0.3);
@@ -24,124 +24,122 @@
     body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;font-size:13px;line-height:1.5;transition: background 0.3s;}
     body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 20%,rgba(99,102,241,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(6,182,212,0.06) 0%,transparent 50%);pointer-events:none;z-index:0}
     
- /* CABECERO COMPACTO INTEGRADO - AHORA DESLIZANTE HORIZONTALMENTE */
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
-  background: rgba(13,15,26,0.95);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-strong);
-  box-shadow: var(--shadow);
-  gap: 12px;
-  overflow-x: auto;       /* Permite desplazamiento horizontal si no cabe */
-  white-space: nowrap;    /* Fuerza a que todo se mantenga en una sola línea */
-  scrollbar-width: thin;  /* Barra de scroll delgada para navegadores como Firefox */
-}
+    /* CABECERO COMPACTO INTEGRADO */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: rgba(13,15,26,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-strong);
+      box-shadow: var(--shadow);
+      gap: 12px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: thin;
+    }
 
-/* Estilo de la barra de desplazamiento interna del cabecero */
-.app-header::-webkit-scrollbar {
-  height: 4px;            /* Altura ultra fina para no molestar visualmente */
-}
-.app-header::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
-}
-.app-header::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
-}
+    .app-header::-webkit-scrollbar {
+      height: 4px;
+    }
+    .app-header::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+    }
+    .app-header::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;         /* Evita que se encoja o deforme al deslizar */
-}
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;         /* Evita que se encoja o deforme al deslizar */
-}
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
 
-/* VENTANA FLOTANTE DE CREDENCIALES (Estilo lateral izquierdo centrado) */
-.floating-creds {
-  position: fixed;
-  left: 0;
-  top: 55%; /* Ligeramente desplazado bajo la calculadora */
-  transform: translateY(-50%);
-  z-index: 1000;
-  background: rgba(18, 21, 43, 0.96);
-  border: 1px solid var(--border-strong);
-  border-left: none;
-  border-radius: 0 var(--radius) var(--radius) 0;
-  box-shadow: var(--shadow-lg);
-  padding: 12px;
-  width: 330px;
-  backdrop-filter: blur(10px);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.floating-creds.collapsed {
-  transform: translateY(-50%) translateX(-330px);
-}
-.floating-creds-toggle-tab {
-  position: absolute;
-  right: -18px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(18, 21, 43, 0.96);
-  border: 1px solid var(--border-strong);
-  border-left: none;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  color: var(--accent-light);
-  cursor: pointer;
-  width: 18px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 8px;
-  box-shadow: 4px 0 10px rgba(0,0,0,0.3);
-  padding: 0;
-  transition: background var(--transition);
-}
-.floating-creds-toggle-tab:hover {
-  background: var(--bg-secondary);
-  color: #fff;
-}
-.credentials-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 10px;
-}
-.credential-field-group {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  position: relative;
-}
-.credential-field-group .field-input {
-  padding-right: 22px !important;
-  font-size: 10px !important;
-  padding: 3px 5px !important;
-}
-.credential-field-group .input-pass-wrapper {
-  position: relative;
-  width: 100%;
-}
-.credential-field-group .input-pass-wrapper .field-input {
-  padding-right: 36px !important;
-}
+    /* VENTANA FLOTANTE DE CREDENCIALES */
+    .floating-creds {
+      position: fixed;
+      left: 0;
+      top: 55%;
+      transform: translateY(-50%);
+      z-index: 1000;
+      background: rgba(18, 21, 43, 0.96);
+      border: 1px solid var(--border-strong);
+      border-left: none;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      box-shadow: var(--shadow-lg);
+      padding: 12px;
+      width: 330px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .floating-creds.collapsed {
+      transform: translateY(-50%) translateX(-330px);
+    }
+    .floating-creds-toggle-tab {
+      position: absolute;
+      right: -18px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(18, 21, 43, 0.96);
+      border: 1px solid var(--border-strong);
+      border-left: none;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      color: var(--accent-light);
+      cursor: pointer;
+      width: 18px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      box-shadow: 4px 0 10px rgba(0,0,0,0.3);
+      padding: 0;
+      transition: background var(--transition);
+    }
+    .floating-creds-toggle-tab:hover {
+      background: var(--bg-secondary);
+      color: #fff;
+    }
+    .credentials-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 10px;
+    }
+    .credential-field-group {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      position: relative;
+    }
+    .credential-field-group .field-input {
+      padding-right: 22px !important;
+      font-size: 10px !important;
+      padding: 3px 5px !important;
+    }
+    .credential-field-group .input-pass-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    .credential-field-group .input-pass-wrapper .field-input {
+      padding-right: 36px !important;
+    }
 
-/* Ocultar en el reporte de impresión */
-.pdf-mode .floating-creds {
-  display: none !important;
-}    
+    .pdf-mode .floating-creds {
+      display: none !important;
+    }    
    
     .logo-icon{font-size:20px;filter:drop-shadow(0 0 6px rgba(99,102,241,0.5))}
     .app-title{font-size:15px;font-weight:700;background:linear-gradient(135deg,#6366f1,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.3px}
@@ -152,7 +150,6 @@
     .tab-btn:hover{background:rgba(255,255,255,0.04);color:var(--text-primary)}
     .tab-btn.active{background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(6,182,212,0.1));color:var(--accent-light);border:1px solid rgba(99,102,241,0.25)}
     
-    .header-right{display:flex;align-items:center;gap:12px}
     .save-indicator{font-size:11px;color:var(--text-muted);transition:color var(--transition);white-space:nowrap}
     .save-indicator.saved{color:var(--emerald)}
     
@@ -285,24 +282,22 @@
     .calc-zero{color:var(--text-muted);border-color:var(--border);border-left-color:var(--border-strong);background:transparent}
 
     /* CONTENEDOR PARA ENTRADAS CON ACCIONES */
-/* Ajuste de espacio para iconos a la izquierda */
-.input-group-wrapper .field-input {
-    padding-right: 5px !important;   /* Quitamos el espacio de la derecha */
-    padding-left: 26px !important;    /* Espacio para 1 icono a la izquierda */
-}
+    .input-group-wrapper .field-input {
+        padding-right: 5px !important;
+        padding-left: 26px !important;
+    }
 
-.input-group-wrapper .input-actual {
-    padding-right: 5px !important;   /* Quitamos el espacio de la derecha */
-    padding-left: 46px !important;    /* Espacio para 2 iconos a la izquierda */
-}
+    .input-group-wrapper .input-actual {
+        padding-right: 5px !important;
+        padding-left: 46px !important;
+    }
 
-/* Posicionar el contenedor de acciones a la izquierda */
-.input-group-actions {
-    right: auto !important;           /* Desactiva el pegado a la derecha */
-    left: 4px !important;             /* Lo pega a la izquierda */
-    top: 50%;
-    transform: translateY(-50%);
-}
+    .input-group-actions {
+        right: auto !important;
+        left: 4px !important;
+        top: 50%;
+        transform: translateY(-50%);
+    }
     .action-btn-mini {
       background: rgba(13, 15, 26, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.2);
@@ -402,69 +397,27 @@
     .modal-body{padding:14px 16px;color:var(--text-secondary);font-size:12px}
     .modal-footer{display:flex;gap:6px;justify-content:flex-end;padding:10px 16px;border-top:1px solid var(--border)}
     
-    /* ====== VENTANA FLOTANTE DE CÁLCULO ====== */
-.floating-calc {
-  position: fixed;
-  left: 0;
-  top: 10px; 
-  z-index: 1001; 
-  background: rgba(18, 21, 43, 0.96);
-  border: 1px solid var(--border-strong);
-  border-left: none;
-  border-radius: 0 var(--radius) var(--radius) 0;
-  box-shadow: var(--shadow-lg);
-  padding: 12px;
-  width: 170px;
-  backdrop-filter: blur(10px);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.floating-calc.collapsed {
-  transform: translateX(-170px); 
-}
+    /* VENTANA FLOTANTE DE CÁLCULO */
+    .floating-calc {
+      position: fixed;
+      left: 0;
+      top: 10px; 
+      z-index: 1001; 
+      background: rgba(18, 21, 43, 0.96);
+      border: 1px solid var(--border-strong);
+      border-left: none;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      box-shadow: var(--shadow-lg);
+      padding: 12px;
+      width: 170px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .floating-calc.collapsed {
+      transform: translateX(-170px); 
+    }
 
-.credentials-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 18px;
-  margin-top: 10px;
-}
-.credential-field-group {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  position: relative;
-}
-.credential-field-group .field-input {
-  padding-right: 30px !important;
-}
-.credential-field-group .input-pass-wrapper {
-  position: relative;
-  width: 100%;
-}
-.credential-field-group .input-pass-wrapper .field-input {
-  padding-right: 52px !important;
-}
-
-.floating-calc {
-  position: fixed;
-  left: 0;
-  top: 10px; 
-  z-index: 1001;
-  background: rgba(18, 21, 43, 0.96);
-  border: 1px solid var(--border-strong);
-  border-left: none;
-  border-radius: 0 var(--radius) var(--radius) 0;
-  box-shadow: var(--shadow-lg);
-  padding: 12px;
-  width: 170px;
-  backdrop-filter: blur(10px);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.floating-calc.collapsed {
-  transform: translateX(-170px); 
-}
-
-  .floating-calc-toggle-tab {
+    .floating-calc-toggle-tab {
       position: absolute;
       right: -18px;
       top: 50%;
@@ -532,29 +485,6 @@
       word-break: break-all;
     }
 
-.credentials-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 18px;
-  margin-top: 10px;
-}
-.credential-field-group {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  position: relative;
-}
-.credential-field-group .field-input {
-  padding-right: 30px !important;
-}
-.credential-field-group .input-pass-wrapper {
-  position: relative;
-  width: 100%;
-}
-.credential-field-group .input-pass-wrapper .field-input {
-  padding-right: 52px !important;
-}
-
     #btn-clear-calc {
       position: absolute !important;
       right: 6px !important;
@@ -582,7 +512,7 @@
       color: #fff !important;
     }
 
-    /* ====== BOTONES DE EXPANSIÓN Y CONTRACCIÓN DE FILAS Y COLUMNAS ====== */
+    /* BOTONES DE DOBLADO DE FILAS Y COLUMNAS */
     .action-btn-fold {
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.2);
@@ -605,59 +535,58 @@
       border-color: var(--accent-light);
     }
 
-.col-collapsed-cell {
-  min-width: 35px !important;
-  max-width: 35px !important;
-  width: 35px !important;
-  padding: 4px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  overflow: hidden !important;
-}
-.balance-cell.col-collapsed-cell {
-  background-color: rgba(0, 0, 0, 0.4) !important;
-  background-image: none !important;
-}
-.col-collapsed-cell .cell-content,
-.col-collapsed-cell .cell-toggle,
-.col-collapsed-cell .btn-add-mov,
-.col-collapsed-cell .movements-divider,
-.col-collapsed-cell .movements-list {
-  display: none !important;
-}
+    .col-collapsed-cell {
+      min-width: 35px !important;
+      max-width: 35px !important;
+      width: 35px !important;
+      padding: 4px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      overflow: hidden !important;
+    }
+    .balance-cell.col-collapsed-cell {
+      background-color: rgba(0, 0, 0, 0.4) !important;
+      background-image: none !important;
+    }
+    .col-collapsed-cell .cell-content,
+    .col-collapsed-cell .cell-toggle,
+    .col-collapsed-cell .btn-add-mov,
+    .col-collapsed-cell .movements-divider,
+    .col-collapsed-cell .movements-list {
+      display: none !important;
+    }
 
-/* 2. AÑADA ESTA NUEVA CLASE PARA LAS EMPRESAS JUSTO DEBAJO */
-.company-collapsed-cell {
-  min-width: 85px !important;
-  max-width: 85px !important;
-  width: 85px !important;
-  padding: 4px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  overflow: hidden !important;
-}
-.balance-cell.company-collapsed-cell {
-  background-color: rgba(0, 0, 0, 0.4) !important;
-  background-image: none !important;
-}
-.company-collapsed-cell .cell-content,
-.company-collapsed-cell .cell-toggle,
-.company-collapsed-cell .btn-add-mov,
-.company-collapsed-cell .movements-divider,
-.company-collapsed-cell .movements-list {
-  display: none !important;
-}
+    .company-collapsed-cell {
+      min-width: 85px !important;
+      max-width: 85px !important;
+      width: 85px !important;
+      padding: 4px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      overflow: hidden !important;
+    }
+    .balance-cell.company-collapsed-cell {
+      background-color: rgba(0, 0, 0, 0.4) !important;
+      background-image: none !important;
+    }
+    .company-collapsed-cell .cell-content,
+    .company-collapsed-cell .cell-toggle,
+    .company-collapsed-cell .btn-add-mov,
+    .company-collapsed-cell .movements-divider,
+    .company-collapsed-cell .movements-list {
+      display: none !important;
+    }
     #btn-use-result:hover {
       background: var(--teal) !important;
       color: #fff !important;
       border-color: var(--teal-light) !important;
-     }
+    }
 
-     .row-collapsed-cell {
+    .row-collapsed-cell {
       min-height: 48px !important;
       max-height: 48px !important;
       height: 48px !important;
@@ -694,7 +623,7 @@
     ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
     ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
 
-     .pdf-mode {
+    .pdf-mode {
       background: #fff !important; 
       color: #000 !important;
     }
@@ -722,8 +651,8 @@
     .pdf-mode .action-btn-fold {
       display: none !important;
     }
-    /* Estilos del selector desplegable de navegación */
-.nav-buttons-container {
+    
+    .nav-buttons-container {
       display: flex;
       gap: 3px;
     }
@@ -746,50 +675,50 @@
       }
     }
 
- /* Estilos para el resumen de saldos en celdas de empresa minimizadas */
-.collapsed-summary {
-  display: none;
-}
-.company-collapsed-cell:not(.cell-disabled):not(.row-collapsed-cell) .collapsed-summary {
-  display: flex !important;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
-  padding: 4px 2px;
-  box-sizing: border-box;
-  font-family: 'Inter', monospace;
-  font-size: 10px !important;
-  line-height: 1.1;
-  margin-top: 6px;
-}
-.sum-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  overflow: hidden;
-}
-.sum-lbl {
-  font-weight: 700;
-  font-size: 9px !important;
-}
-.sum-lbl.act { color: var(--teal-light); }
-.sum-lbl.con { color: var(--emerald); }
-.sum-val {
-  font-weight: 700 !important;
-  font-size: 10px !important;
-  text-align: right;
-  color: var(--text-primary);
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  flex-grow: 1;
-  margin-left: 2px;
-   
-}
-.sum-val.calc-negative, .sum-lbl.calc-negative { color: var(--danger) !important; }
-.sum-val.calc-zero, .sum-lbl.calc-zero { color: var(--text-muted) !important; }
-/* MEJORAS SECCIÓN IMPUESTOS (Ajuste Horizontal) */
+    /* RESUMEN DE SALDOS EN MINIMIZADO */
+    .collapsed-summary {
+      display: none;
+    }
+    .company-collapsed-cell:not(.cell-disabled):not(.row-collapsed-cell) .collapsed-summary {
+      display: flex !important;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+      padding: 4px 2px;
+      box-sizing: border-box;
+      font-family: 'Inter', monospace;
+      font-size: 10px !important;
+      line-height: 1.1;
+      margin-top: 6px;
+    }
+    .sum-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      overflow: hidden;
+    }
+    .sum-lbl {
+      font-weight: 700;
+      font-size: 9px !important;
+    }
+    .sum-lbl.act { color: var(--teal-light); }
+    .sum-lbl.con { color: var(--emerald); }
+    .sum-val {
+      font-weight: 700 !important;
+      font-size: 10px !important;
+      text-align: right;
+      color: var(--text-primary);
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      flex-grow: 1;
+      margin-left: 2px;
+    }
+    .sum-val.calc-negative, .sum-lbl.calc-negative { color: var(--danger) !important; }
+    .sum-val.calc-zero, .sum-lbl.calc-zero { color: var(--text-muted) !important; }
+
+    /* SECCIÓN IMPUESTOS (Ajuste Horizontal) */
     .tax-cell { display: flex; flex-direction: row; align-items: center; gap: 6px; padding: 2px 4px; width: 100%; }
     .tax-val-positive { color: #60a5fa !important; font-weight: 700 !important; }
     .tax-val-negative { color: #ef4444 !important; font-weight: 700 !important; }
@@ -797,400 +726,307 @@
     .tax-bank-input { background: rgba(0,0,0,0.25); border: 1px solid var(--border); color: var(--text-primary); font-size: 9px; padding: 3px 4px; border-radius: 3px; width: 80px; transition: all var(--transition); flex-shrink: 0; }
     .tax-bank-input:focus { border-color: var(--accent); outline: none; background: rgba(0,0,0,0.45); }
 
-/* ====== ESTILOS MODELO 303/420 EXCEL REFORZADO ====== */
-.excel-container { background: #0d0f1a; padding: 10px; overflow: visible; width: 100%; }    
-.excel-table { 
-    width: 100%; 
-    border-collapse: separate; 
-    border-spacing: 0; 
-    font-size: 11px; 
-    color: #e2e8f0; 
-    table-layout: fixed; 
-    margin-bottom: 10px; 
-    border-top: 1px solid #2d3748;
-    border-left: 1px solid #2d3748;
-}
-.excel-table th, .excel-table td { 
-    border-right: 1px solid #2d3748; 
-    border-bottom: 1px solid #2d3748; 
-    padding: 4px 6px; 
-    height: 26px; 
-    vertical-align: middle; 
-}    
-.excel-table th { background: #1a202c; color: #a0aec0; font-weight: 600; text-align: center; font-size: 11px; }
-.row-label { width: 340px; text-align: left; background: #171923; font-weight: 500; font-size: 11px; }
+    /* MODELO 303/420 ESTILO EXCEL */
+    .excel-container { background: #0d0f1a; padding: 10px; overflow: visible; width: 100%; }    
+    .excel-table { 
+        width: 100%; 
+        border-collapse: separate; 
+        border-spacing: 0; 
+        font-size: 11px; 
+        color: #e2e8f0; 
+        table-layout: fixed; 
+        margin-bottom: 10px; /* Reducido para evitar desperdiciar espacio */
+        border-top: 1px solid #2d3748;
+        border-left: 1px solid #2d3748;
+    }
+    .excel-table th, .excel-table td { 
+        border-right: 1px solid #2d3748; 
+        border-bottom: 1px solid #2d3748; 
+        padding: 4px 6px; 
+        height: 26px; 
+        vertical-align: middle; 
+    }    
+    .excel-table th { background: #1a202c; color: #a0aec0; font-weight: 600; text-align: center; font-size: 11px; }
+    .row-label { width: 340px; text-align: left; background: #171923; font-weight: 500; font-size: 11px; }
 
-/* Cabeceras de Impuestos */
-.row-header-iva { background: #1e3a8a !important; color: white !important; font-weight: bold; font-size: 12px; text-transform: uppercase; }
-.row-header-igic { background: #7c2d12 !important; color: white !important; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+    /* Cabeceras de Impuestos */
+    .row-header-iva { background: #1e3a8a !important; color: white !important; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+    .row-header-igic { background: #7c2d12 !important; color: white !important; font-weight: bold; font-size: 12px; text-transform: uppercase; }
 
-/* Fondos de Secciones */
-.bg-emitidas { background: rgba(99, 102, 241, 0.05) !important; }
-.bg-recibidas { background: rgba(16, 185, 129, 0.04) !important; }
+    /* Fondos de Secciones */
+    .bg-emitidas { background: rgba(99, 102, 241, 0.05) !important; }
+    .bg-recibidas { background: rgba(16, 185, 129, 0.04) !important; }
 
-/* Coloreado de Totales y Alertas */
-.row-sum-bases { font-weight: bold; color: #cbd5e1 !important; }    
-.row-sum-cuotas { background: rgba(245, 158, 11, 0.2) !important; font-weight: bold; color: #fde047 !important; }
-.row-resultado { background: #1b4332 !important; color: #fff !important; font-weight: bold; font-size: 16px; }
+    /* RECTIFICATIVAS EN COLOR ROJO */
+    .color-rect { color: #f87171 !important; font-weight: bold; }
+    .color-rect input { color: #f87171 !important; font-weight: bold; }
+
+    .cell-input { background: rgba(0,0,0,0.2); border: none; color: white; width: 100%; text-align: right; font-family: 'Inter', monospace; font-size: 11px; padding: 2px; } 
+    .cell-input:focus { outline: 1px solid #6366f1; background: #2d3748; }
+
+    /* ALINEACIÓN DE DATOS INTERMEDIOS */
+    .cell-calc, 
+    .cell-total,
+    .cell-input { 
+        text-align: right !important; 
+    }
+
+    /* Justificación de filas especiales */
+    .row-sum-bases td,
+    .row-sum-bases .cell-calc,
+    .row-sum-bases .cell-total,
+    .row-sum-cuotas td,
+    .row-sum-cuotas .cell-calc,
+    .row-sum-cuotas .cell-total,
+    .row-resultado td,
+    .row-resultado .cell-calc,
+    .row-resultado .cell-total,
+    .row-not-subject td,
+    .row-not-subject .cell-calc,
+    .row-not-subject .cell-total {
+        text-align: left !important;
+    }
     
-/* RECTIFICATIVAS EN COLOR ROJO */
-.color-rect { color: #f87171 !important; font-weight: bold; }
-.color-rect input { color: #f87171 !important; font-weight: bold; }
+    .row-not-subject { background: rgba(255,255,255,0.03); font-style: italic; color: #cbd5e0; }
+    .cell-rate { width: 40px; background: #2d3748; border: 1px dashed #4a5568; text-align: center; color: #f6ad55; font-weight: bold; font-size: 11px; border-radius: 3px; }
 
-.cell-input { background: rgba(0,0,0,0.2); border: none; color: white; width: 100%; text-align: right; font-family: 'Inter', monospace; font-size: 11px; padding: 2px; } 
-.cell-input:focus { outline: 1px solid #6366f1; background: #2d3748; }
+    /* Selector de empresa superior */
+    .tax-company-select { background: var(--bg-secondary); border: 1px solid var(--border-strong); color: white; font-size: 11px; padding: 4px 8px; border-radius: 4px; outline: none; cursor: pointer; }
+    .tax-company-select:focus { border-color: var(--accent); }
 
-/* Forzar que todos los elementos y números de la fila "Suma bases" tomen el color blanco grisáceo */
-/* --- ESTILOS DE FILAS DE SUMAS DE BASES --- */
+    /* Notas al pie de página */
+    .tax-notes-footer { 
+        width: 100%; 
+        min-height: 80px; /* Reducido para ahorrar espacio */
+        background: rgba(18, 21, 43, 0.8); 
+        border: 1px solid var(--border-strong); 
+        border-radius: var(--radius); 
+        color: var(--text-primary); 
+        font-family: inherit; 
+        font-size: 12px; 
+        padding: 10px; 
+        resize: vertical; 
+        outline: none; 
+        margin-top: 8px; /* Ajustado */
+    }
+    .tax-notes-footer:focus { border-color: var(--accent); }
 
-/* --- NUEVOS ESTILOS DE ENFOCADO VISUAL DE TOTALES (EMITIDAS VS RECIBIDAS) --- */
+    /* Cabeceras fijas arriba */
+    .excel-table thead tr.row-header-iva td,
+    .excel-table thead tr.row-header-iva th {
+        position: sticky;
+        top: 0;
+        z-index: 16;
+        background: #1e3a8a !important;
+    }
+    .excel-table thead tr.row-header-igic td,
+    .excel-table thead tr.row-header-igic th {
+        position: sticky;
+        top: 0;
+        z-index: 16;
+        background: #7c2d12 !important;
+    }
+    .excel-table thead tr:nth-child(2) th,
+    .excel-table thead tr:nth-child(2) td {
+        position: sticky;
+        top: 24px;
+        z-index: 15;
+        background: #1a202c !important;
+    }
 
-/* 1. SECCIÓN EMITIDAS: Fondo Azul Cobalto (#1e3a8a) y Letra Amarilla (#fde047) */
-tr:has(td[id*="b_tot_1"]),
-tr:has(td[id*="b_tot_2"]),
-tr:has(td[id*="b_tot_final"]):not(:has(td[id*="r_btot_final"])),
-tr:has(td[id*="b_tot_gfinal"]),
-tr:has(td[id*="c_total"]),
-tr:has(td[id*="b_tot"]):not(:has(td[id*="r_btot"])) {
-    background-color: #1a365d !important; /* Azul cobalto oscuro */
-}
+    /* Filas de resultados fijas abajo */
+    .excel-table tbody tr.row-resultado td,
+    .excel-table tbody tr.row-not-subject td {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
 
-tr:has(td[id*="b_tot_1"]) td,
-tr:has(td[id*="b_tot_2"]) td,
-tr:has(td[id*="b_tot_final"]):not(:has(td[id*="r_btot_final"])) td,
-tr:has(td[id*="b_tot_gfinal"]) td,
-tr:has(td[id*="c_total"]) td,
-tr:has(td[id*="b_tot"]):not(:has(td[id*="r_btot"])) td,
-tr:has(td[id*="b_tot_1"]) .cell-calc,
-tr:has(td[id*="b_tot_2"]) .cell-calc,
-tr:has(td[id*="b_tot_final"]):not(:has(td[id*="r_btot_final"])) .cell-calc,
-tr:has(td[id*="b_tot_gfinal"]) .cell-calc,
-tr:has(td[id*="c_total"]) .cell-calc,
-tr:has(td[id*="b_tot"]):not(:has(td[id*="r_btot"])) .cell-calc {
-    color: #fde047 !important; /* Amarillo */
-    font-weight: bold !important;
-    background-color: #1a365d !important;
-}
+    /* Alturas y contenedor de cálculo 303/420 */
+    #tax-template-container {
+        max-height: calc(100vh - 110px) !important; /* Optimizado de 160px a 110px */
+        overflow-y: auto !important;
+        position: relative;
+    }
 
-/* Excepción de etiqueta lateral para evitar superposiciones de fondos en celdas fijas */
-tr:has(td[id*="b_tot_1"]) td.row-label,
-tr:has(td[id*="b_tot_2"]) td.row-label,
-tr:has(td[id*="b_tot_final"]):not(:has(td[id*="r_btot_final"])) td.row-label,
-tr:has(td[id*="b_tot_gfinal"]) td.row-label,
-tr:has(td[id*="c_total"]) td.row-label,
-tr:has(td[id*="b_tot"]):not(:has(td[id*="r_btot"])) td.row-label {
-    background-color: #132742 !important; /* Azul más oscuro para legibilidad del concepto */
-}
+    /* Fijación de la fila RESULTADO LIQUIDACIÓN */
+    .excel-table tbody tr.row-resultado td,
+    .excel-table tbody tr.sticky-foot-3 td {
+        position: sticky !important;
+        bottom: 0 !important;
+        z-index: 15 !important;
+        background: #1b4332 !important; 
+        border-top: 1.5px solid #2d3748 !important;
+        border-bottom: 1.5px solid #2d3748 !important;
+        box-shadow: 0 -3px 8px rgba(0,0,0,0.5); 
+        text-align: left !important;
+    }
 
-/* 2. SECCIÓN RECIBIDAS: Fondo Castaño/Marrón (#5c3a21) y Letra Amarilla (#fde047) */
-tr:has(td[id*="r_btot"]),
-tr:has(td[id*="r_btot_final"]),
-tr:has(td[id*="r_ctot"]) {
-    background-color: #5c3a21 !important; /* Castaño/Marrón */
-}
+    .excel-table tbody tr.sticky-foot-2 td,
+    .excel-table tbody tr.sticky-foot-1 td {
+        position: static !important;
+    }
 
-tr:has(td[id*="r_btot"]) td,
-tr:has(td[id*="r_btot_final"]) td,
-tr:has(td[id*="r_ctot"]) td,
-tr:has(td[id*="r_btot"]) .cell-calc,
-tr:has(td[id*="r_btot_final"]) .cell-calc,
-tr:has(td[id*="r_ctot"]) .cell-calc {
-    color: #fde047 !important; /* Amarillo */
-    font-weight: bold !important;
-    background-color: #5c3a21 !important;
-}
+    /* Columnas fijas de conceptos */
+    .excel-table td.row-label {
+        background: #141722 !important;
+        color: #cbd5e0 !important;
+        border-right: 2px solid #2d3748 !important;
+    }
 
-/* Excepción de etiqueta lateral para el concepto de recibidas */
-tr:has(td[id*="r_btot"]) td.row-label,
-tr:has(td[id*="r_btot_final"]) td.row-label,
-tr:has(td[id*="r_ctot"]) td.row-label {
-    background-color: #442a18 !important; /* Castaño más oscuro */
-}
+    /* Columna AÑO 390 (6ª columna) */
+    .excel-table td:nth-child(6) {
+        background: #202430 !important;
+        color: #fde047 !important;
+    }
+    .excel-table th:nth-child(6) {
+        background: #1c1f2b !important;
+        color: #fde047 !important;
+    }
 
-/* Celdas comunes e intermedias: siempre alineadas a la derecha por defecto */
-.cell-calc, 
-.cell-total,
-.cell-input { 
-    text-align: right !important; 
-}
+    /* Excepción de totales especiales */
+    tr:has(td[id*="b_tot_final"]) td.row-label,
+    tr:has(td[id*="b_tot_gfinal"]) td.row-label,
+    tr:has(td[id*="r_btot_final"]) td.row-label,
+    tr:has(td[id*="b_tot_final"]) td:nth-child(6),
+    tr:has(td[id*="b_tot_gfinal"]) td:nth-child(6),
+    tr:has(td[id*="r_btot_final"]) td:nth-child(6) {
+        background-color: #5c3a21 !important;
+    }
 
-/* Solo las filas de acumulados globales se justifican a la izquierda (en todas sus columnas, incluyendo AÑO 390) */
-.row-sum-bases td,
-.row-sum-bases .cell-calc,
-.row-sum-bases .cell-total,
-.row-sum-cuotas td,
-.row-sum-cuotas .cell-calc,
-.row-sum-cuotas .cell-total,
-.row-resultado td,
-.row-resultado .cell-calc,
-.row-resultado .cell-total,
-.row-not-subject td,
-.row-not-subject .cell-calc,
-.row-not-subject .cell-total {
-    text-align: left !important;
-}
-    
-/* Celdas comunes */
-.cell-input { background: rgba(0,0,0,0.2); border: none; color: white; width: 100%; text-align: right; font-family: 'Inter', monospace; font-size: 11px; padding: 2px; } /* Input más grande */
-.cell-input:focus { outline: 1px solid #6366f1; background: #2d3748; }
-.row-not-subject { background: rgba(255,255,255,0.03); font-style: italic; color: #cbd5e0; }
-.cell-rate { width: 40px; background: #2d3748; border: 1px dashed #4a5568; text-align: center; color: #f6ad55; font-weight: bold; font-size: 11px; border-radius: 3px; }
+    /* REFUERZO VISUAL PARA CASILLAS DE INTRODUCCIÓN DE DATOS */
+    .bg-emitidas .cell-input {
+        background-color: rgba(30, 58, 138, 0.35) !important;
+        border: 1px dashed rgba(99, 102, 241, 0.35) !important;
+        color: #e2e8f0 !important;
+        border-radius: 4px;
+        padding: 3px 5px !important;
+        transition: all 0.15s ease;
+    }
+    .bg-emitidas .cell-input:focus {
+        background-color: rgba(30, 58, 138, 0.65) !important;
+        border: 1px solid #6366f1 !important;
+        box-shadow: 0 0 5px rgba(99, 102, 241, 0.4);
+        outline: none;
+    }
 
-/* Selector de empresa superior */
-.tax-company-select { background: var(--bg-secondary); border: 1px solid var(--border-strong); color: white; font-size: 11px; padding: 4px 8px; border-radius: 4px; outline: none; cursor: pointer; }
-.tax-company-select:focus { border-color: var(--accent); }
+    .bg-recibidas .cell-input {
+        background-color: rgba(120, 53, 15, 0.28) !important;
+        border: 1px dashed rgba(245, 158, 11, 0.35) !important;
+        color: #e2e8f0 !important;
+        border-radius: 4px;
+        padding: 3px 5px !important;
+        transition: all 0.15s ease;
+    }
+    .bg-recibidas .cell-input:focus {
+        background-color: rgba(120, 53, 15, 0.55) !important;
+        border: 1px solid #f59e0b !important;
+        box-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
+        outline: none;
+    }
 
-/* Notas al pie de página */
-.tax-notes-footer { width: 100%; min-height: 100px; background: rgba(18, 21, 43, 0.8); border: 1px solid var(--border-strong); border-radius: var(--radius); color: var(--text-primary); font-family: inherit; font-size: 12px; padding: 10px; resize: vertical; outline: none; margin-top: 8px; }
-.tax-notes-footer:focus { border-color: var(--accent); }
+    /* ==========================================================================
+       MODIFICACIONES: JERARQUÍA DE COLORES Y TAMAÑOS EN EL MODELO 303/420
+       ========================================================================== */
 
-/* Cabeceras fijas arriba (Aplicado sobre celdas individuales th/td) */
-.excel-table thead tr.row-header-iva td,
-.excel-table thead tr.row-header-iva th {
-    position: sticky;
-    top: 0;
-    z-index: 16;
-    background: #1e3a8a !important;
-}
-.excel-table thead tr.row-header-igic td,
-.excel-table thead tr.row-header-igic th {
-    position: sticky;
-    top: 0;
-    z-index: 16;
-    background: #7c2d12 !important;
-}
-.excel-table thead tr:nth-child(2) th,
-.excel-table thead tr:nth-child(2) td {
-    position: sticky;
-    top: 24px; /* Queda fijado justo debajo de la franja del título */
-    z-index: 15;
-    background: #1a202c !important;
-}
+    /* 2.1. SUB-TOTALES EMITIDAS (Letra Gris, Fondo Azul) */
+    tr:has(td[id*="b_tot_1"]),
+    tr:has(td[id*="b_tot_2"]),
+    tr:has(td[id*="igic-b_tot-"]),
+    tr:has(td[id*="igic-b_tot_final-"]) {
+        background-color: #1a365d !important;
+    }
+    tr:has(td[id*="b_tot_1"]) td,
+    tr:has(td[id*="b_tot_2"]) td,
+    tr:has(td[id*="igic-b_tot-"]) td,
+    tr:has(td[id*="igic-b_tot_final-"]) td,
+    tr:has(td[id*="b_tot_1"]) .cell-calc,
+    tr:has(td[id*="b_tot_2"]) .cell-calc,
+    tr:has(td[id*="igic-b_tot-"]) .cell-calc,
+    tr:has(td[id*="igic-b_tot_final-"]) .cell-calc {
+        color: #94a3b8 !important; /* Letra Gris */
+        font-weight: bold !important;
+        background-color: #1a365d !important;
+    }
+    tr:has(td[id*="b_tot_1"]) td.row-label,
+    tr:has(td[id*="b_tot_2"]) td.row-label,
+    tr:has(td[id*="igic-b_tot-"]) td.row-label,
+    tr:has(td[id*="igic-b_tot_final-"]) td.row-label {
+        background-color: #132742 !important;
+    }
 
-/* Filas de resultados fijas abajo (Prevención de saltos de línea) */
-.excel-table tbody tr.row-resultado td,
-.excel-table tbody tr.row-not-subject td {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
+    /* 2.2. GRANDES TOTALES EMITIDAS (Letra Amarilla, Fondo Azul) */
+    tr:has(td[id*="iva-b_tot_final"]),
+    tr:has(td[id*="igic-b_tot_gfinal"]),
+    tr:has(td[id*="c_total"]) {
+        background-color: #1a365d !important;
+    }
+    tr:has(td[id*="iva-b_tot_final"]) td,
+    tr:has(td[id*="igic-b_tot_gfinal"]) td,
+    tr:has(td[id*="c_total"]) td,
+    tr:has(td[id*="iva-b_tot_final"]) .cell-calc,
+    tr:has(td[id*="igic-b_tot_gfinal"]) .cell-calc,
+    tr:has(td[id*="c_total"]) .cell-calc {
+        color: #fde047 !important; /* Letra Amarilla */
+        font-weight: bold !important;
+        background-color: #1a365d !important;
+    }
+    tr:has(td[id*="iva-b_tot_final"]) td.row-label,
+    tr:has(td[id*="igic-b_tot_gfinal"]) td.row-label,
+    tr:has(td[id*="c_total"]) td.row-label {
+        background-color: #132742 !important;
+    }
 
-/* Fijación de la fila RESULTADO LIQUIDACIÓN al pie del scroll (Tanto texto como celdas numéricas) */
-.excel-table tbody tr.row-resultado td,
-.excel-table tbody tr.row-not-subject td {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
+    /* 2.3. SUB-TOTALES RECIBIDAS (Letra Gris, Fondo Marrón) */
+    tr:has(td[id*="r_btot"]) {
+        background-color: #5c3a21 !important;
+    }
+    tr:has(td[id*="r_btot"]) td,
+    tr:has(td[id*="r_btot"]) .cell-calc {
+        color: #94a3b8 !important; /* Letra Gris */
+        font-weight: bold !important;
+        background-color: #5c3a21 !important;
+    }
+    tr:has(td[id*="r_btot"]) td.row-label {
+        background-color: #442a18 !important;
+    }
 
-/* Ajustamos el alto para aprovechar el 100% de la pantalla ya que las notas ahora bajan con el scroll */
-#tax-template-container {
-    max-height: calc(100vh - 110px) !important; 
-    overflow-y: auto !important;
-    position: relative;
-}
+    /* 2.4. GRANDES TOTALES RECIBIDAS (Letra Amarilla, Fondo Marrón) */
+    tr:has(td[id*="r_btot_final"]),
+    tr:has(td[id*="r_ctot"]) {
+        background-color: #5c3a21 !important;
+    }
+    tr:has(td[id*="r_btot_final"]) td,
+    tr:has(td[id*="r_ctot"]) td,
+    tr:has(td[id*="r_btot_final"]) .cell-calc,
+    tr:has(td[id*="r_ctot"]) .cell-calc {
+        color: #fde047 !important; /* Letra Amarilla */
+        font-weight: bold !important;
+        background-color: #5c3a21 !important;
+    }
+    tr:has(td[id*="r_btot_final"]) td.row-label,
+    tr:has(td[id*="r_ctot"]) td.row-label {
+        background-color: #442a18 !important;
+    }
 
-/* Fijación de la fila RESULTADO LIQUIDACIÓN flotando fijamente al pie (bottom: 0) */
-.excel-table tbody tr.row-resultado td,
-.excel-table tbody tr.sticky-foot-3 td {
-    position: sticky !important;
-    bottom: 0 !important;
-    z-index: 15 !important;
-    background: #1b4332 !important; 
-    border-top: 1.5px solid #2d3748 !important;
-    border-bottom: 1.5px solid #2d3748 !important;
-    box-shadow: 0 -3px 8px rgba(0,0,0,0.5); 
-    text-align: left !important;
-}
+    /* 2.5. FILA DE RESULTADO DE LIQUIDACIÓN INCREMENTADA */
+    .row-resultado { 
+        background: #1b4332 !important; 
+        color: #fff !important; 
+        font-weight: bold; 
+        font-size: 14px !important; /* Aumentado a 14px */
+    }
 
-/* Desactivar la fijación de las filas inferiores adicionales para que fluyan de manera estándar bajo el resultado */
-.excel-table tbody tr.sticky-foot-2 td,
-.excel-table tbody tr.sticky-foot-1 td {
-    position: static !important;
-}
-
-/* Fondo gris azulado oscuro para la primera columna de conceptos */
-.excel-table td.row-label {
-    background: #141722 !important;
-    color: #cbd5e0 !important;
-    border-right: 2px solid #2d3748 !important;
-}
-
-/* Fondo gris intermedio para la columna AÑO 390 (6ª columna) */
-.excel-table td:nth-child(6) {
-    background: #202430 !important;
-    color: #fde047 !important; /* Mantiene su color amarillo distintivo */
-}
-.excel-table th:nth-child(6) {
-    background: #1c1f2b !important;
-    color: #fde047 !important;
-}
-
-/* Excepción: Asegurar que las celdas especiales marrones de totales mantengan su color marrón */
-tr:has(td[id*="b_tot_final"]) td.row-label,
-tr:has(td[id*="b_tot_gfinal"]) td.row-label,
-tr:has(td[id*="r_btot_final"]) td.row-label,
-tr:has(td[id*="b_tot_final"]) td:nth-child(6),
-tr:has(td[id*="b_tot_gfinal"]) td:nth-child(6),
-tr:has(td[id*="r_btot_final"]) td:nth-child(6) {
-    background-color: #5c3a21 !important;
-}
-
-/* 1. Casillas de Facturas EMITIDAS (Tono Azulado / Cobalto translúcido) */
-.bg-emitidas .cell-input {
-    background-color: rgba(30, 58, 138, 0.35) !important; /* Azul cobalto */
-    border: 1px dashed rgba(99, 102, 241, 0.35) !important;
-    color: #e2e8f0 !important;
-    border-radius: 4px;
-    padding: 3px 5px !important;
-    transition: all 0.15s ease;
-}
-.bg-emitidas .cell-input:focus {
-    background-color: rgba(30, 58, 138, 0.65) !important;
-    border: 1px solid #6366f1 !important;
-    box-shadow: 0 0 5px rgba(99, 102, 241, 0.4);
-    outline: none;
-}
-
-/* 2. Casillas de Facturas RECIBIDAS (Tono Anaranjado / Teja translúcido) */
-.bg-recibidas .cell-input {
-    background-color: rgba(120, 53, 15, 0.28) !important; /* Naranja óxido */
-    border: 1px dashed rgba(245, 158, 11, 0.35) !important;
-    color: #e2e8f0 !important;
-    border-radius: 4px;
-    padding: 3px 5px !important;
-    transition: all 0.15s ease;
-}
-.bg-recibidas .cell-input:focus {
-    background-color: rgba(120, 53, 15, 0.55) !important;
-    border: 1px solid #f59e0b !important;
-    box-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
-    outline: none;
-}    
-
-/* Emitidas: "Suma bases" (b_tot_1 en IVA / b_tot en IGIC) y "Suma bases total" (b_tot_2 en IVA / b_tot_final en IGIC) */
-tr:has(td[id*="iva-b_tot_1-"]) td,
-tr:has(td[id*="iva-b_tot_1-"]) .cell-calc,
-tr:has(td[id*="iva-b_tot_2-"]) td,
-tr:has(td[id*="iva-b_tot_2-"]) .cell-calc,
-tr:has(td[id*="igic-b_tot-"]) td,
-tr:has(td[id*="igic-b_tot-"]) .cell-calc,
-tr:has(td[id*="igic-b_tot_final-"]) td,
-tr:has(td[id*="igic-b_tot_final-"]) .cell-calc {
-    color: #94a3b8 !important; /* Gris suave */
-}
-
-/* Recibidas: "Suma bases" (r_btot en IVA e IGIC) */
-tr:has(td[id*="r_btot-"]) td,
-tr:has(td[id*="r_btot-"]) .cell-calc {
-    color: #94a3b8 !important; /* Gris suave */
-}    
-
-.row-resultado td,
-.row-resultado span,
-.row-resultado .cell-total {
-    font-size: 16px !important;
-    font-weight: 800 !important;
-}    
-
-/* ==========================================================================
-   1. SUB-TOTALES EMITIDAS (Letra Gris, Fondo Azul)
-   Aplica a: "Suma bases", "Suma bases total" (IVA) e "Suma bases IGIC" / "Suma bases total" (IGIC)
-   ========================================================================== */
-tr:has(td[id*="b_tot_1"]),
-tr:has(td[id*="b_tot_2"]),
-tr:has(td[id*="igic-b_tot-"]),
-tr:has(td[id*="igic-b_tot_final-"]) {
-    background-color: #1a365d !important;
-}
-tr:has(td[id*="b_tot_1"]) td,
-tr:has(td[id*="b_tot_2"]) td,
-tr:has(td[id*="igic-b_tot-"]) td,
-tr:has(td[id*="igic-b_tot_final-"]) td,
-tr:has(td[id*="b_tot_1"]) .cell-calc,
-tr:has(td[id*="b_tot_2"]) .cell-calc,
-tr:has(td[id*="igic-b_tot-"]) .cell-calc,
-tr:has(td[id*="igic-b_tot_final-"]) .cell-calc {
-    color: #94a3b8 !important; /* Letra Gris */
-    font-weight: bold !important;
-    background-color: #1a365d !important;
-}
-tr:has(td[id*="b_tot_1"]) td.row-label,
-tr:has(td[id*="b_tot_2"]) td.row-label,
-tr:has(td[id*="igic-b_tot-"]) td.row-label,
-tr:has(td[id*="igic-b_tot_final-"]) td.row-label {
-    background-color: #132742 !important; /* Fondo lateral más oscuro */
-}
-
-/* ==========================================================================
-   2. GRANDES TOTALES EMITIDAS (Letra Amarilla, Fondo Azul)
-   (Pisa a los subtotales por orden de aparición en la cascada CSS)
-   ========================================================================== */
-tr:has(td[id*="iva-b_tot_final"]),
-tr:has(td[id*="igic-b_tot_gfinal"]),
-tr:has(td[id*="c_total"]) {
-    background-color: #1a365d !important;
-}
-tr:has(td[id*="iva-b_tot_final"]) td,
-tr:has(td[id*="igic-b_tot_gfinal"]) td,
-tr:has(td[id*="c_total"]) td,
-tr:has(td[id*="iva-b_tot_final"]) .cell-calc,
-tr:has(td[id*="igic-b_tot_gfinal"]) .cell-calc,
-tr:has(td[id*="c_total"]) .cell-calc {
-    color: #fde047 !important; /* Letra Amarilla */
-    font-weight: bold !important;
-    background-color: #1a365d !important;
-}
-tr:has(td[id*="iva-b_tot_final"]) td.row-label,
-tr:has(td[id*="igic-b_tot_gfinal"]) td.row-label,
-tr:has(td[id*="c_total"]) td.row-label {
-    background-color: #132742 !important;
-}
-
-/* ==========================================================================
-   3. SUB-TOTALES RECIBIDAS (Letra Gris, Fondo Marrón)
-   Aplica a: "Suma bases" (Recibidas)
-   ========================================================================== */
-tr:has(td[id*="r_btot"]) {
-    background-color: #5c3a21 !important;
-}
-tr:has(td[id*="r_btot"]) td,
-tr:has(td[id*="r_btot"]) .cell-calc {
-    color: #94a3b8 !important; /* Letra Gris */
-    font-weight: bold !important;
-    background-color: #5c3a21 !important;
-}
-tr:has(td[id*="r_btot"]) td.row-label {
-    background-color: #442a18 !important;
-}
-
-/* ==========================================================================
-   4. GRANDES TOTALES RECIBIDAS (Letra Amarilla, Fondo Marrón)
-   (Pisa a los subtotales por orden de aparición en la cascada CSS)
-   ========================================================================== */
-tr:has(td[id*="r_btot_final"]),
-tr:has(td[id*="r_ctot"]) {
-    background-color: #5c3a21 !important;
-}
-tr:has(td[id*="r_btot_final"]) td,
-tr:has(td[id*="r_ctot"]) td,
-tr:has(td[id*="r_btot_final"]) .cell-calc,
-tr:has(td[id*="r_ctot"]) .cell-calc {
-    color: #fde047 !important; /* Letra Amarilla */
-    font-weight: bold !important;
-    background-color: #5c3a21 !important;
-}
-tr:has(td[id*="r_btot_final"]) td.row-label,
-tr:has(td[id*="r_ctot"]) td.row-label {
-    background-color: #442a18 !important;
-}
-    
-
+    .row-resultado td,
+    .row-resultado span,
+    .row-resultado .cell-total {
+        font-size: 14px !important;
+        font-weight: 800 !important;
+    }
   </style>
 </head>
 <body>
 
-<!-- VENTANA FLOTANTE DE CÁLCULO MATEMÁTICO -->
 <div id="floating-calc-widget" class="floating-calc collapsed">
   <button type="button" id="floating-calc-tab" class="floating-calc-toggle-tab" title="Calculadora rápida">&#x25B6;</button>
   <div class="floating-calc-header">
@@ -1199,8 +1035,7 @@ tr:has(td[id*="r_ctot"]) td.row-label {
   <div style="position: relative; width: 100%; margin-bottom: 6px;">
     <input type="text" id="floating-calc-input" class="floating-calc-input" placeholder="Operación (ej. 30-2)..." spellcheck="false" />
     <button type="button" id="btn-clear-calc" title="Borrar operación">&#x2715;</button>
-  </div>
-  
+  </div>  
  
   <div class="floating-calc-result" style="display: flex; align-items: center; justify-content: space-between;">
   <div style="display: flex; align-items: center; gap: 4px;">
@@ -1211,7 +1046,7 @@ tr:has(td[id*="r_ctot"]) td.row-label {
   </div>
 </div>
 
-<!-- VENTANA FLOTANTE DE CREDENCIALES -->
+
 <div id="floating-creds-widget" class="floating-creds collapsed">
   <button type="button" id="floating-creds-tab" class="floating-creds-toggle-tab" title="Accesos directos">&#x25B6;</button>
   <div style="font-size: 10px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; user-select: none;">
