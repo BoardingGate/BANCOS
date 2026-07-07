@@ -807,7 +807,7 @@
     font-size: 11px; 
     color: #e2e8f0; 
     table-layout: fixed; 
-    margin-bottom: 25px; 
+    margin-bottom: 10px; 
     border-top: 1px solid #2d3748;
     border-left: 1px solid #2d3748;
 }
@@ -910,7 +910,7 @@ tr:has(td[id*="r_btot_final"]) .cell-total {
 .tax-company-select:focus { border-color: var(--accent); }
 
 /* Notas al pie de página */
-.tax-notes-footer { width: 100%; min-height: 100px; background: rgba(18, 21, 43, 0.8); border: 1px solid var(--border-strong); border-radius: var(--radius); color: var(--text-primary); font-family: inherit; font-size: 12px; padding: 10px; resize: vertical; outline: none; margin-top: 15px; }
+.tax-notes-footer { width: 100%; min-height: 100px; background: rgba(18, 21, 43, 0.8); border: 1px solid var(--border-strong); border-radius: var(--radius); color: var(--text-primary); font-family: inherit; font-size: 12px; padding: 10px; resize: vertical; outline: none; margin-top: 8px; }
 .tax-notes-footer:focus { border-color: var(--accent); }
 
 /* Cabeceras fijas arriba (Aplicado sobre celdas individuales th/td) */
@@ -959,7 +959,7 @@ tr:has(td[id*="r_btot_final"]) .cell-total {
 
 /* Ajustamos el alto para aprovechar el 100% de la pantalla ya que las notas ahora bajan con el scroll */
 #tax-template-container {
-    max-height: calc(100vh - 160px) !important; 
+    max-height: calc(100vh - 110px) !important; 
     overflow-y: auto !important;
     position: relative;
 }
@@ -3673,9 +3673,9 @@ function renderTaxTemplate() {
 
     // Inyectar el bloque de observaciones al final de la cola del scrollable
     html += `
-    <div style="padding: 16px 4px; display: flex; flex-direction: column; gap: 6px; margin-top: 25px; border-top: 1px solid var(--border-strong);">
+    <div style="padding: 8px 4px; display: flex; flex-direction: column; gap: 4px; margin-top: 10px; border-top: 1px solid var(--border-strong);">
         <span style="font-size: 11px; font-weight: 600; color: var(--accent-light); text-transform: uppercase;">📝 Observaciones y Comentarios de la Autoliquidación</span>
-        <textarea id="tax-calc-footer-notes" class="tax-notes-footer" placeholder="Escriba aquí anotaciones generales o aclaraciones sobre el trimestre..." oninput="updateTaxFooterNotes(this.value)" style="min-height: 120px; height: 140px;"></textarea>
+        <textarea id="tax-calc-footer-notes" class="tax-notes-footer" placeholder="Escriba aquí anotaciones generales o aclaraciones sobre el trimestre..." oninput="updateTaxFooterNotes(this.value)" style="min-height: 80px; height: 100px;"></textarea>
     </div>`;
     
     container.innerHTML = html;
