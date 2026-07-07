@@ -799,7 +799,6 @@
 
 /* ====== ESTILOS MODELO 303/420 EXCEL REFORZADO ====== */
 .excel-container { background: #0d0f1a; padding: 10px; overflow: visible; width: 100%; }    
-/* Reemplace estas dos reglas por estas versiones: */
 .excel-table { 
     width: 100%; 
     border-collapse: separate; 
@@ -832,7 +831,7 @@
 /* Coloreado de Totales y Alertas */
 .row-sum-bases { font-weight: bold; color: #cbd5e1 !important; }    
 .row-sum-cuotas { background: rgba(245, 158, 11, 0.2) !important; font-weight: bold; color: #fde047 !important; }
-.row-resultado { background: #1b4332 !important; color: #fff !important; font-weight: bold; font-size: 12px; }
+.row-resultado { background: #1b4332 !important; color: #fff !important; font-weight: bold; font-size: 15px; }
     
 /* RECTIFICATIVAS EN COLOR ROJO */
 .color-rect { color: #f87171 !important; font-weight: bold; }
@@ -1067,6 +1066,31 @@ tr:has(td[id*="r_btot_final"]) td:nth-child(6) {
     border: 1px solid #f59e0b !important;
     box-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
     outline: none;
+}    
+
+/* Emitidas: "Suma bases" (b_tot_1 en IVA / b_tot en IGIC) y "Suma bases total" (b_tot_2 en IVA / b_tot_final en IGIC) */
+tr:has(td[id*="iva-b_tot_1-"]) td,
+tr:has(td[id*="iva-b_tot_1-"]) .cell-calc,
+tr:has(td[id*="iva-b_tot_2-"]) td,
+tr:has(td[id*="iva-b_tot_2-"]) .cell-calc,
+tr:has(td[id*="igic-b_tot-"]) td,
+tr:has(td[id*="igic-b_tot-"]) .cell-calc,
+tr:has(td[id*="igic-b_tot_final-"]) td,
+tr:has(td[id*="igic-b_tot_final-"]) .cell-calc {
+    color: #94a3b8 !important; /* Gris suave */
+}
+
+/* Recibidas: "Suma bases" (r_btot en IVA e IGIC) */
+tr:has(td[id*="r_btot-"]) td,
+tr:has(td[id*="r_btot-"]) .cell-calc {
+    color: #94a3b8 !important; /* Gris suave */
+}    
+
+.row-resultado td,
+.row-resultado span,
+.row-resultado .cell-total {
+    font-size: 15px !important;
+    font-weight: 800 !important;
 }    
 
   </style>
