@@ -3495,7 +3495,7 @@ function renderTaxTemplate() {
     let html = `<div class="excel-container">
     <table class="excel-table">
         <thead>
-            <tr class="row-header-iva"><td colspan="6">IVA (AUTOLIQUIDACIÓN) - ${activeTaxCompany}</td></tr>
+            <tr class="row-header-iva"><td colspan="6">IVA  EMPRESA: - ${activeTaxCompany}</td></tr>
             <tr><th>CONCEPTOS</th>${qs.map(q=>`<th>${q}</th>`).join('')}</tr>
         </thead>
         <tbody>`;
@@ -3538,18 +3538,18 @@ function renderTaxTemplate() {
     ];
 
     const igicRows = [
-        { id: 'b_ig0', label: 'BASE EMITIDAS 0% (SÓLO IGIC)', rate: 'r1', class: 'bg-emitidas' },
-        { id: 'b_ig3', label: 'BASE EMITIDAS 3%', rate: 'r2', class: 'bg-emitidas' },
-        { id: 'b_ig7', label: 'BASE EMITIDAS 7%', rate: 'r3', class: 'bg-emitidas' },
-        { id: 'b_ig13', label: 'BASE EMITIDAS 13%', rate: 'r4', class: 'bg-emitidas' },
+        { id: 'b_ig0', label: 'BASE EMITIDAS 0%', rate: 'r1', class: 'bg-emitidas' },
+        { id: 'b_ig3', label: 'BASE EMITIDAS', rate: 'r2', class: 'bg-emitidas' },
+        { id: 'b_ig7', label: 'BASE EMITIDAS', rate: 'r3', class: 'bg-emitidas' },
+        { id: 'b_ig13', label: 'BASE EMITIDAS', rate: 'r4', class: 'bg-emitidas' },
         { id: 'b_ig_ex1', label: 'BASE EMITIDAS', rate: 'r5', class: 'bg-emitidas' },
         { id: 'b_ig_ex2', label: 'BASE EMITIDAS', rate: 'r6', class: 'bg-emitidas' },
         { id: 'b_rect', label: 'BASE RECTIFICATIVAS', class: 'bg-emitidas color-rect' },
         { id: 'b_tot', label: 'Suma bases IGIC', isSum: true, class: 'row-sum-bases' },
         { id: 'b_intra', label: 'BASES INTRACOMU.recibidas', class: 'bg-emitidas' },
         { id: 'b_tot_final', label: 'Suma bases total', isSum: true, class: 'row-sum-bases' },
-        { id: 'b_invers', label: 'BASES INVERS. SUJETO PASIVO (EXTRACTO)', class: 'bg-emitidas' },
-        { id: 'b_zero', label: 'BASE EMITIDAS 0% (que no son sujeto pasivo)', class: 'bg-emitidas' },
+        { id: 'b_invers', label: 'BASES INV.S.PASIVO (EXTRACTO)', class: 'bg-emitidas' },
+        { id: 'b_zero', label: 'BASE EMITIDAS 0% (que no son s.pasivo)', class: 'bg-emitidas' },
         { id: 'b_tot_gfinal', label: 'Suma bases total final (IGIC)', isSum: true, class: 'row-sum-bases' },
         { id: 'sep1', isSpacer: true },
         { id: 'c_ig3', label: 'CUOTAS IGIC', rate: 'r2', isInput: true, class: 'bg-emitidas' },
@@ -3637,7 +3637,7 @@ function renderTaxTemplate() {
 
     html += `<table class="excel-table" style="margin-top: 40px;">
         <thead>
-            <tr class="row-header-igic"><td colspan="6">IGIC (AUTOLIQUIDACIÓN) - ${activeTaxCompany}</td></tr>
+            <tr class="row-header-igic"><td colspan="6">IGIC  EMPRESA: - ${activeTaxCompany}</td></tr>
             <tr><th>CONCEPTOS</th>${qs.map(q=>`<th>${q}</th>`).join('')}</tr>
         </thead>
         <tbody>`;
