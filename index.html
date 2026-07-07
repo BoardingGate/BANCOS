@@ -3512,7 +3512,7 @@ function renderTaxTemplate() {
         { id: 'b_tot_2', label: 'Suma bases total', isSum: true, class: 'row-sum-bases' },
         { id: 'b_invers', label: 'BASES INVERS.SUJETO PASIVO', class: 'bg-emitidas' },
         { id: 'b_zero', label: 'BASE EMITIDAS 0% (sin sujeto pasivo, pisos)', class: 'bg-emitidas' },
-        { id: 'b_tot_final', label: 'Suma bases total final (con Operación No Sujeta)----', isSum: true, class: 'row-sum-bases' },
+        { id: 'b_tot_final', label: 'Suma BASES total final (con Oper. No Sujeta)■■■■■■■■■■■►', isSum: true, class: 'row-sum-bases' },
         { id: 'sep1', isSpacer: true },
         { id: 'c_r1', label: 'CUOTAS IVA Emitidas', rate: 'r1', isInput: true, class: 'bg-emitidas' },
         { id: 'c_r2', label: 'CUOTAS IVA Emitidas', rate: 'r2', isInput: true, class: 'bg-emitidas' },
@@ -3522,19 +3522,19 @@ function renderTaxTemplate() {
         { id: 'c_intra', label: 'CUOTAS IVA intracom', isInput: true, class: 'bg-emitidas' },
         { id: 'c_suj', label: 'CUOTAS IVA Suj.PASIVO', isInput: true, class: 'bg-emitidas' },
         { id: 'c_rect', label: 'CUOTAS IVA Rectificativa', isInput: true, class: 'bg-emitidas color-rect' },
-        { id: 'c_total', label: 'Suma Cuotas EMITIDAS------------------', isSum: true, class: 'row-sum-cuotas' },
+        { id: 'c_total', label: 'Suma Cuotas EMITIDAS ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-cuotas' },
         { id: 'sep2', isSpacer: true },
         { id: 'r_b28', label: 'BASES RECIBIDAS (casilla 28)', class: 'bg-recibidas' },
         { id: 'r_b0', label: 'Bases recibidas al 0%', class: 'bg-recibidas' },
         { id: 'r_btot', label: 'Suma Bases', isSum: true, class: 'row-sum-bases' },
         { id: 'r_brect', label: 'Bases Rectificativas(casilla 40)', class: 'bg-recibidas color-rect' },
         { id: 'r_bintra', label: 'BASES Intracomuni.(casilla 36)', class: 'bg-recibidas' },
-        { id: 'r_btot_final', label: 'Suma BASES TOTAL FINAL-------------------', isSum: true, class: 'row-sum-bases' },
+        { id: 'r_btot_final', label: 'Suma BASES TOTAL FINA ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-bases' },
         { id: 'sep_rec_cuotas', isSpacer: true },
         { id: 'r_c', label: 'CUOTAS RECIBIDAS (sin rectif)', isInput: true, class: 'bg-recibidas' },
         { id: 'r_cintra', label: 'CUOTAS Intracomuni.', isInput: true, class: 'bg-recibidas' },
         { id: 'r_crect', label: 'CUOTAS Rectificativas', isInput: true, class: 'bg-recibidas color-rect' },
-        { id: 'r_ctot', label: 'Suma CUOTAS RECIBIDAS-------------------', isSum: true, class: 'row-sum-cuotas' }
+        { id: 'r_ctot', label: 'Suma CUOTAS RECIBIDAS ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-cuotas' }
     ];
 
     const igicRows = [
@@ -3550,7 +3550,7 @@ function renderTaxTemplate() {
         { id: 'b_tot_final', label: 'Suma bases total', isSum: true, class: 'row-sum-bases' },
         { id: 'b_invers', label: 'BASES INV.S.PASIVO (EXTRACTO)', class: 'bg-emitidas' },
         { id: 'b_zero', label: 'BASE EMITIDAS 0% (que no son s.pasivo)', class: 'bg-emitidas' },
-        { id: 'b_tot_gfinal', label: 'Suma BASES TOTAL final (IGIC)-----------', isSum: true, class: 'row-sum-bases' },
+        { id: 'b_tot_gfinal', label: 'Suma BASES TOTAL final (IGIC) ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-bases' },
         { id: 'sep1', isSpacer: true },
         { id: 'c_ig3', label: 'CUOTAS IGIC', rate: 'r2', isInput: true, class: 'bg-emitidas' },
         { id: 'c_ig7', label: 'CUOTAS IGIC', rate: 'r3', isInput: true, class: 'bg-emitidas' },
@@ -3560,19 +3560,19 @@ function renderTaxTemplate() {
         { id: 'c_intra', label: 'CUOTAS IGIC intraconi', isInput: true, class: 'bg-emitidas' },
         { id: 'c_suj', label: 'CUOTAS IGIC Suj. PASIVO', isInput: true, class: 'bg-emitidas' },
         { id: 'c_rect', label: 'CUOTAS IGIC Rectificativas', isInput: true, class: 'bg-emitidas color-rect' },
-        { id: 'c_total', label: 'Suma CUOTAS IGIC-------------------', isSum: true, class: 'row-sum-cuotas' },
+        { id: 'c_total', label: 'Suma CUOTAS IGIC ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-cuotas' },
         { id: 'sep2', isSpacer: true },
         { id: 'r_b28', label: 'BASES RECIBIDAS IGIC', class: 'bg-recibidas' },
         { id: 'r_b0', label: 'Bases recibidas al 0%', class: 'bg-recibidas' },
         { id: 'r_btot', label: 'Suma Bases Recibidas', isSum: true, class: 'row-sum-bases' },
         { id: 'r_brect', label: 'Bases Rectificativas (Casilla 40)', class: 'bg-recibidas color-rect' },
         { id: 'r_bintra', label: 'BASES Intracomunitarias (Casilla 36)', class: 'bg-recibidas' },
-        { id: 'r_btot_final', label: 'Suma BASES Total Final------------------', isSum: true, class: 'row-sum-bases' },
+        { id: 'r_btot_final', label: 'Suma BASES Total Final ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-bases' },
         { id: 'sep_rec_cuotas_igic', isSpacer: true },
         { id: 'r_c', label: 'CUOTAS RECIBIDAS', isInput: true, class: 'bg-recibidas' },
         { id: 'r_cintra', label: 'CUOTAS Intracomunitarias', isInput: true, class: 'bg-recibidas' },
         { id: 'r_crect', label: 'CUOTAS Rectificativas', isInput: true, class: 'bg-recibidas color-rect' },
-        { id: 'r_ctot', label: 'Suma CUOTAS RECIBIDAS-------------------', isSum: true, class: 'row-sum-cuotas' }
+        { id: 'r_ctot', label: 'Suma CUOTAS RECIBIDAS ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-cuotas' }
     ];
 
     function drawGroupRows(rows, secId) {
@@ -3606,7 +3606,7 @@ function renderTaxTemplate() {
     html += drawGroupRows(ivaRows, 'iva');
     
     // Resultados IVA
-    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IVA-------------------</td>`;
+    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IVA ■■■■■■■■■■■■■■■■►</td>`;
     for(let t=0; t<5; t++) {
         html += `<td style="position:relative; padding-right:18px;">
             <span id="iva-res-final-${t}">0,00</span>
@@ -3645,7 +3645,7 @@ function renderTaxTemplate() {
     html += drawGroupRows(igicRows, 'igic');
     
     // Resultados IGIC
-    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IGIC------------------</td>`;
+    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IGIC■■■■■■■■■■■■■■■■►</td>`;
     for(let t=0; t<5; t++) {
         html += `<td style="position:relative; padding-right:18px;">
             <span id="igic-res-final-${t}">0,00</span>
