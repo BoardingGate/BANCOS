@@ -844,37 +844,69 @@
 /* Forzar que todos los elementos y números de la fila "Suma bases" tomen el color blanco grisáceo */
 /* --- ESTILOS DE FILAS DE SUMAS DE BASES --- */
 
-/* 1. Sumas de bases estándar (Blanco grisáceo en texto y números) */
-.row-sum-bases td,
-.row-sum-bases .cell-calc,
-.row-sum-bases .cell-total {
-    color: #cbd5e1 !important;
-    font-weight: bold !important;
-}
+/* --- NUEVOS ESTILOS DE ENFOCADO VISUAL DE TOTALES (EMITIDAS VS RECIBIDAS) --- */
 
-/* 2. Filas Especiales: Suma bases total final y Suma bases final recibidas/IGIC (Letra Azul, Negrita, Fondo Marrón) */
-tr:has(td[id*="iva-b_tot_final"]), /* Apunta únicamente a la fila de IVA, excluyendo la de IGIC */
+/* 1. SECCIÓN EMITIDAS: Fondo Azul Cobalto (#1e3a8a) y Letra Amarilla (#fde047) */
+tr:has(td[id*="b_tot_1"]),
+tr:has(td[id*="b_tot_2"]),
+tr:has(td[id*="b_tot_final"]):not(:has(td[id*="r_btot_final"])),
 tr:has(td[id*="b_tot_gfinal"]),
-tr:has(td[id*="r_btot_final"]) {
-    background-color: #5c3a21 !important; /* Fondo marrón */
+tr:has(td[id*="c_total"]),
+tr:has(td[id*="b_tot"]):not(:has(td[id*="r_btot"])) {
+    background-color: #1a365d !important; /* Azul cobalto oscuro */
 }
 
-tr:has(td[id*="iva-b_tot_final"]) td,
+tr:has(td[id*="b_tot_1"]) td,
+tr:has(td[id*="b_tot_2"]) td,
+tr:has(td[id*="b_tot_final"]):not(:has(td[id*="r_btot_final"])) td,
 tr:has(td[id*="b_tot_gfinal"]) td,
-tr:has(td[id*="r_btot_final"]) td,
-tr:has(td[id*="iva-b_tot_final"]) .cell-calc,
+tr:has(td[id*="c_total"]) td,
+tr:has(td[id*="b_tot"]):not(:has(td[id*="r_btot"])) td,
+tr:has(td[id*="b_tot_1"]) .cell-calc,
+tr:has(td[id*="b_tot_2"]) .cell-calc,
+tr:has(td[id*="b_tot_final"]):not(:has(td[id*="r_btot_final"])) .cell-calc,
 tr:has(td[id*="b_tot_gfinal"]) .cell-calc,
-tr:has(td[id*="r_btot_final"]) .cell-calc,
-tr:has(td[id*="iva-b_tot_final"]) .cell-total,
-tr:has(td[id*="b_tot_gfinal"]) .cell-total,
-tr:has(td[id*="r_btot_final"]) .cell-total {
-    color: #60a5fa !important; /* Azul claro de alta visibilidad */
+tr:has(td[id*="c_total"]) .cell-calc,
+tr:has(td[id*="b_tot"]):not(:has(td[id*="r_btot"])) .cell-calc {
+    color: #fde047 !important; /* Amarillo */
     font-weight: bold !important;
-    background-color: #5c3a21 !important; /* Asegura fondo marrón en todas las celdas */
+    background-color: #1a365d !important;
 }
 
-/* Celdas comunes con acumulados justificadas a la izquierda (Aplica también a la columna AÑO 390) */
-/* --- ALINEACIÓN DE DATOS INTERMEDIOS Y ACUMULADOS --- */
+/* Excepción de etiqueta lateral para evitar superposiciones de fondos en celdas fijas */
+tr:has(td[id*="b_tot_1"]) td.row-label,
+tr:has(td[id*="b_tot_2"]) td.row-label,
+tr:has(td[id*="b_tot_final"]):not(:has(td[id*="r_btot_final"])) td.row-label,
+tr:has(td[id*="b_tot_gfinal"]) td.row-label,
+tr:has(td[id*="c_total"]) td.row-label,
+tr:has(td[id*="b_tot"]):not(:has(td[id*="r_btot"])) td.row-label {
+    background-color: #132742 !important; /* Azul más oscuro para legibilidad del concepto */
+}
+
+/* 2. SECCIÓN RECIBIDAS: Fondo Castaño/Marrón (#5c3a21) y Letra Amarilla (#fde047) */
+tr:has(td[id*="r_btot"]),
+tr:has(td[id*="r_btot_final"]),
+tr:has(td[id*="r_ctot"]) {
+    background-color: #5c3a21 !important; /* Castaño/Marrón */
+}
+
+tr:has(td[id*="r_btot"]) td,
+tr:has(td[id*="r_btot_final"]) td,
+tr:has(td[id*="r_ctot"]) td,
+tr:has(td[id*="r_btot"]) .cell-calc,
+tr:has(td[id*="r_btot_final"]) .cell-calc,
+tr:has(td[id*="r_ctot"]) .cell-calc {
+    color: #fde047 !important; /* Amarillo */
+    font-weight: bold !important;
+    background-color: #5c3a21 !important;
+}
+
+/* Excepción de etiqueta lateral para el concepto de recibidas */
+tr:has(td[id*="r_btot"]) td.row-label,
+tr:has(td[id*="r_btot_final"]) td.row-label,
+tr:has(td[id*="r_ctot"]) td.row-label {
+    background-color: #442a18 !important; /* Castaño más oscuro */
+}
 
 /* Celdas comunes e intermedias: siempre alineadas a la derecha por defecto */
 .cell-calc, 
@@ -952,11 +984,6 @@ tr:has(td[id*="r_btot_final"]) .cell-total {
     overflow: hidden;
 }
 
-/* --- COMPORTAMIENTO STICKY / FLOTANTE DE RESULTADOS --- */
-
-/* Altura máxima optimizada del contenedor para forzar scroll interno y asegurar el comportamiento sticky */
-/* --- COMPORTAMIENTO STICKY / FLOTANTE DE RESULTADOS Y ALTURAS --- */
-
 /* Ajustamos el alto para aprovechar el 100% de la pantalla ya que las notas ahora bajan con el scroll */
 #tax-template-container {
     max-height: calc(100vh - 110px) !important; 
@@ -982,8 +1009,6 @@ tr:has(td[id*="r_btot_final"]) .cell-total {
 .excel-table tbody tr.sticky-foot-1 td {
     position: static !important;
 }
-
-/* --- COLOREADO DE CONCEPTOS Y COLUMNA AÑO 390 --- */
 
 /* Fondo gris azulado oscuro para la primera columna de conceptos */
 .excel-table td.row-label {
@@ -1012,7 +1037,6 @@ tr:has(td[id*="r_btot_final"]) td:nth-child(6) {
     background-color: #5c3a21 !important;
 }
 
-/* --- REFUERZO VISUAL PARA CASILLAS DE INTRODUCCIÓN DE DATOS --- */
 /* 1. Casillas de Facturas EMITIDAS (Tono Azulado / Cobalto translúcido) */
 .bg-emitidas .cell-input {
     background-color: rgba(30, 58, 138, 0.35) !important; /* Azul cobalto */
