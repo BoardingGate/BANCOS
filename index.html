@@ -1339,6 +1339,190 @@ function updateCloudStatus(active) {
   }
 }
 
+// --- MODAL DE APUNTES CONTABLES DE REGULARIZACIÓN Y PAGO ---
+function showAccountingEntriesModal(sec, t, emitido, soportado, prevCompensar, result) {
+    // Eliminar cualquier instancia previa del modal
+    const oldModal = document.getElementById('accounting-entries-modal');
+    if (oldModal) oldModal.remove();
+
+    const isIva = (sec === 'iva');
+    const accRepercutido = isIva ? '477' : '4777';
+    const accSoportado = isIva ? '472' : '4727';
+    const accAcreedor = isIva ? '4750' : '475.2';
+    const accDeudor = isIva ? '4700' : '470.2';
+    const labelTax = isIva ? 'IVA' : 'IGIC';
+    const quarterLabel = ['1T', '2T', '3T', '4T'][t] || 'Periodo';
+
+    let regularizacionRows = '';
+    let pagoRows = '';
+
+    if (result > 0) {
+        // RESULTADO A PAGAR (Acreedor)
+        regularizacionRows = `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:6px 4px; text-align:left;">${formatCurrency(emitido)} (${accRepercutido}) H.P. ${labelTax} Repercutido</td>
+                <td style="padding:6px 4px; text-align:right; color:var(--text-muted);">&mdash;</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:6px 4px; text-align:left; color:var(--text-muted);">&mdash;</td>
+                <td style="padding:6px 4px; text-align:right;">${formatCurrency(soportado)} (${accSoportado}) H.P. ${labelTax} Soportado</td>
+            </tr>
+        `;
+        if (prevCompensar > 0) {
+            regularizacionRows += `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <td style="padding:6px 4px; text-align:left; color:var(--text-muted);">&mdash;</td>
+                    <td style="padding:6px 4px; text-align:right;">${formatCurrency(prevCompensar)} (${accDeudor}) H.P. Deudora por ${labelTax} (Compensar ant.)</td>
+                </tr>
+            `;
+        }
+        regularizacionRows += `
+            <tr>
+                <td style="padding:6px 4px; text-align:left; color:var(--text-muted);">&mdash;</td>
+                <td style="padding:6px 4px; text-align:right; font-weight:bold; color:var(--amber);">${formatCurrency(result)} (${accAcreedor}) H.P. Acreedora por ${labelTax}</td>
+            </tr>
+        `;
+
+        pagoRows = `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:6px 4px; text-align:left; font-weight:bold; color:var(--amber);">${formatCurrency(result)} (${accAcreedor}) H.P. Acreedora por ${labelTax}</td>
+                <td style="padding:6px 4px; text-align:right; color:var(--text-muted);">&mdash;</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 4px; text-align:left; color:var(--text-muted);">&mdash;</td>
+                <td style="padding:6px 4px; text-align:right; font-weight:bold; color:var(--emerald);">${formatCurrency(result)} (572) Bancos c/c</td>
+            </tr>
+        `;
+    } else if (result < 0) {
+        // RESULTADO A COMPENSAR (Deudor)
+        const compVal = Math.abs(result);
+        regularizacionRows = `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:6px 4px; text-align:left;">${formatCurrency(emitido)} (${accRepercutido}) H.P. ${labelTax} Repercutido</td>
+                <td style="padding:6px 4px; text-align:right; color:var(--text-muted);">&mdash;</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:6px 4px; text-align:left; font-weight:bold; color:var(--teal-light);">${formatCurrency(compVal)} (${accDeudor}) H.P. Deudora por ${labelTax} (A Compensar)</td>
+                <td style="padding:6px 4px; text-align:right; color:var(--text-muted);">&mdash;</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:6px 4px; text-align:left; color:var(--text-muted);">&mdash;</td>
+                <td style="padding:6px 4px; text-align:right;">${formatCurrency(soportado)} (${accSoportado}) H.P. ${labelTax} Soportado</td>
+            </tr>
+        `;
+        if (prevCompensar > 0) {
+            regularizacionRows += `
+                <tr>
+                    <td style="padding:6px 4px; text-align:left; color:var(--text-muted);">&mdash;</td>
+                    <td style="padding:6px 4px; text-align:right;">${formatCurrency(prevCompensar)} (${accDeudor}) H.P. Deudora por ${labelTax} (Compensar ant.)</td>
+                </tr>
+            `;
+        }
+        pagoRows = `
+            <tr>
+                <td colspan="2" style="padding:10px; text-align:center; color:var(--text-secondary); font-style:italic; background:rgba(0,0,0,0.25); border-radius:4px;">
+                    No hay asiento de pago (resultado negativo a compensar en futuros periodos).
+                </td>
+            </tr>
+        `;
+    } else {
+        // RESULTADO CERO
+        regularizacionRows = `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:6px 4px; text-align:left;">${formatCurrency(emitido)} (${accRepercutido}) H.P. ${labelTax} Repercutido</td>
+                <td style="padding:6px 4px; text-align:right; color:var(--text-muted);">&mdash;</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                <td style="padding:6px 4px; text-align:left; color:var(--text-muted);">&mdash;</td>
+                <td style="padding:6px 4px; text-align:right;">${formatCurrency(soportado)} (${accSoportado}) H.P. ${labelTax} Soportado</td>
+            </tr>
+        `;
+        if (prevCompensar > 0) {
+            regularizacionRows += `
+                <tr>
+                    <td style="padding:6px 4px; text-align:left; color:var(--text-muted);">&mdash;</td>
+                    <td style="padding:6px 4px; text-align:right;">${formatCurrency(prevCompensar)} (${accDeudor}) H.P. Deudora por ${labelTax} (Compensar ant.)</td>
+                </tr>
+            `;
+        }
+        pagoRows = `
+            <tr>
+                <td colspan="2" style="padding:10px; text-align:center; color:var(--text-secondary); font-style:italic; background:rgba(0,0,0,0.25); border-radius:4px;">
+                    No se requiere asiento de pago (resultado igual a cero).
+                </td>
+            </tr>
+        `;
+    }
+
+    const modalHtml = `
+      <div class="modal" style="max-width: 540px; width: 95%;">
+        <div class="modal-header">
+          <h3 style="display: flex; align-items: center; gap: 6px; font-weight:700;">
+            📊 Apuntes Contables (${labelTax} - ${quarterLabel})
+          </h3>
+          <button type="button" class="btn-delete-row" id="acc-modal-close-x" style="opacity:1; color: var(--text-secondary); font-size: 14px; cursor:pointer;">&#x2715;</button>
+        </div>
+        <div class="modal-body" style="font-family:'Inter', monospace; font-size:11px; max-height: 75vh; overflow-y: auto;">
+          <p style="margin-bottom:12px; color:var(--text-secondary);">
+            Empresa: <strong style="color:#fff;">${activeTaxCompany}</strong> | Periodo: <strong style="color:var(--accent-light);">${quarterLabel}</strong>
+          </p>
+          
+          <!-- Regularización -->
+          <div style="margin-bottom: 16px;">
+            <div style="font-weight: bold; color: var(--teal-light); font-size: 10px; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px dashed var(--border-strong); padding-bottom: 2px; letter-spacing:0.5px;">
+              Regularización:
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:11px; color:#e2e8f0;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border-strong); color:var(--text-secondary); font-weight:bold;">
+                  <th style="text-align:left; padding:4px 0; width:60%;">DEBE</th>
+                  <th style="text-align:right; padding:4px 0; width:40%;">HABER</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${regularizacionRows}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pago -->
+          <div>
+            <div style="font-weight: bold; color: var(--amber); font-size: 10px; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px dashed var(--border-strong); padding-bottom: 2px; letter-spacing:0.5px;">
+              Pago:
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:11px; color:#e2e8f0;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border-strong); color:var(--text-secondary); font-weight:bold;">
+                  <th style="text-align:left; padding:4px 0; width:60%;">DEBE</th>
+                  <th style="text-align:right; padding:4px 0; width:40%;">HABER</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pagoRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:8px 16px;">
+          <button class="btn btn-primary btn-sm" id="acc-modal-close-btn">Cerrar</button>
+        </div>
+      </div>
+    `;
+
+    const modalOverlay = document.createElement('div');
+    modalOverlay.id = 'accounting-entries-modal';
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.innerHTML = modalHtml;
+    document.body.appendChild(modalOverlay);
+
+    const closeFn = () => modalOverlay.remove();
+    document.getElementById('acc-modal-close-x').addEventListener('click', closeFn);
+    document.getElementById('acc-modal-close-btn').addEventListener('click', closeFn);
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) closeFn();
+    });
+}  
+
 // 2. Autenticación y obtención de Token
 function getGoogleToken(callback) {
   tokenClient.callback = async (resp) => {
@@ -3962,7 +4146,7 @@ window.exportResultToTaxes = (sec, t) => {
         return;
     }
 
-    // 2. Obtener el valor calculado en el DOM
+    // 2. Obtener el valor de la celda de resultado final en el DOM
     const cellId = `${sec}-res-final-${t}`;
     const cellEl = document.getElementById(cellId);
     if (!cellEl) return;
@@ -3974,9 +4158,9 @@ window.exportResultToTaxes = (sec, t) => {
     const targetKey = `${sec}-${companyIndex}`;
     data.taxValues[targetKey] = parsedVal;
 
-    // 4. Guardar cambios y actualizar la vista
+    // 4. Guardar cambios y actualizar la vista de impuestos
     saveData();
-    renderTaxes(); // Regenerar la pestaña "Impuestos" original con el nuevo dato
+    renderTaxes(); 
 
     // Mostrar aviso temporal de copiado con éxito
     const indicator = document.getElementById('save-indicator');
@@ -3989,7 +4173,29 @@ window.exportResultToTaxes = (sec, t) => {
             indicator.innerHTML = prevText;
         }, 2000);
     }
-};  
+
+    // 5. Calcular los valores específicos del trimestre t para el asiento contable (solo trimestres 0 a 3)
+    if (t < 4) {
+        const getV = (section, id, quarter) => {
+            if (!data.taxCalcExcel[activeTaxCompany] || !data.taxCalcExcel[activeTaxCompany][section]) return 0;
+            return data.taxCalcExcel[activeTaxCompany][section].values[`${id}-${quarter}`] || 0;
+        };
+
+        let emitido = 0;
+        if (sec === 'iva') {
+            emitido = getV('iva', 'c_r1', t) + getV('iva', 'c_r2', t) + getV('iva', 'c_r3', t) + getV('iva', 'c_r4', t) + getV('iva', 'c_r5', t) + getV('iva', 'c_intra', t) + getV('iva', 'c_suj', t) + getV('iva', 'c_rect', t);
+        } else {
+            emitido = getV('igic', 'c_ig3', t) + getV('igic', 'c_ig7', t) + getV('igic', 'c_ig13', t) + getV('igic', 'c_ig_ex1', t) + getV('igic', 'c_ig_ex2', t) + getV('igic', 'c_intra', t) + getV('igic', 'c_suj', t) + getV('igic', 'c_rect', t);
+        }
+
+        const soportado = getV(sec, 'r_c', t) + getV(sec, 'r_cintra', t) + getV(sec, 'r_crect', t);
+        const prevCompensar = getV(sec, 'prev', t);
+        const result = emitido - soportado - prevCompensar;
+
+        // Mostrar el modal contable en pantalla
+        showAccountingEntriesModal(sec, t, emitido, soportado, prevCompensar, result);
+    }
+};
   
 </script>
 
