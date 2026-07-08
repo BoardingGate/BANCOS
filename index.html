@@ -1574,6 +1574,19 @@ document.addEventListener('focusin', e => {
     pushUndo();
   }
 });
+
+
+// --- ACTUALIZACIÓN DE DIFERENCIA PUNTEADO/ACTUAL ---
+function updateDiffPunteado(bi, ci) {
+  const el = document.getElementById('diff-punteado-' + bi + '-' + ci);
+  if (!el) return;
+  const key = bi + '-' + ci;
+  const bal = data.balances[key] || {};
+  const pNum = parseFloat(bal.saldoPunteado) || 0;
+  const aNum = parseFloat(bal.saldoActual) || 0;
+  const diffVal = pNum - aNum;
+  el.textContent = '[' + (formatCurrency(diffVal) || '0,00') + ']';
+}  
   
 // ─── PERSISTENCIA EN TIEMPO REAL ──────────────────────────
 function saveData() {
@@ -2596,7 +2609,7 @@ let cellClasses = 'grid-cell balance-cell';
         + '<div class="balance-field"><label class="field-label label-obs">Observaciones</label>'
         + '<input type="text" class="field-input" data-bi="'+bi+'" data-ci="'+ci+'" data-field="observaciones" value="'+esc(bal.observaciones||'')+'" placeholder="..."/></div>'
         + '</div>'
-        + '<div class="movements-divider">Movimientos Pendientes</div>'
+        + '<div class="movements-divider">Movimientos Pendientes <span id="diff-punteado-' + bi + '-' + ci + '" style="font-weight: bold; color: var(--accent-light); margin-left: 4px;">' + diffText + '</span></div>'        
         + '<div class="movements-list" id="movs-'+bi+'-'+ci+'">'+movItems+'</div>'
         + '<button class="btn-add-mov" data-bi="'+bi+'" data-ci="'+ci+'">\uFF0B Añadir Mov.</button>'
         + '</div></div>';
@@ -2999,16 +3012,18 @@ document.addEventListener('focusout', e => {
         data.balances[key][el.dataset.field] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
         saveData();
 
-        if (el.dataset.field==='saldoActual') {
-              const now = new Date();
+if (el.dataset.field==='saldoActual') {
+          const now = new Date();
           const d = String(now.getDate()).padStart(2, '0');
           const m = String(now.getMonth() + 1).padStart(2, '0');
           if (!data.lastUpdateDates) data.lastUpdateDates = {};
           data.lastUpdateDates[key] = d + '-' + m;
         
           updateConciliado(bi,ci);
+          updateDiffPunteado(bi,ci);
           updateAllTotals();
         } else if (el.dataset.field==='saldoPunteado') {
+          updateDiffPunteado(bi,ci);
           updateAllTotals();
         }
       }
