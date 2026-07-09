@@ -750,8 +750,8 @@
     .row-label { width: 340px; text-align: left; background: #171923; font-weight: 500; font-size: 11px; }
 
     /* Cabeceras de Impuestos */
-    .row-header-iva { background: #1e3a8a !important; color: white !important; font-weight: bold; font-size: 12px; text-transform: uppercase; }
-    .row-header-igic { background: #7c2d12 !important; color: white !important; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+    .row-header-iva { background: #1e3a8a !important; color: white !important; font-weight: bold; font-size: 14px; text-transform: uppercase; }
+    .row-header-igic { background: #7c2d12 !important; color: white !important; font-weight: bold; font-size: 14px; text-transform: uppercase; }
 
     /* Fondos de Secciones */
     .bg-emitidas { background: rgba(99, 102, 241, 0.05) !important; }
@@ -1934,24 +1934,30 @@ function formatCurrency(n) {
   if (n === '' || n === null || n === undefined) return '';
   const v = parseFloat(n);
   if (isNaN(v)) return '';
-  return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+  return new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 }
 
 function parseCurrency(str) {
   if (str === null || str === undefined || str === '') return '';
   str = String(str).trim();
   
+  // Limpiar espacios en blanco y símbolos de moneda
+  str = str.replace(/[\s€]/g, '');
+  
   let hasComma = str.includes(',');
   let hasDot = str.includes('.');
   
   if (hasDot && !hasComma) {
     let parts = str.split('.');
+    // Si la parte derecha tiene 1 o 2 dígitos, asumimos que el punto actúa como decimal
     if (parts.length === 2 && parts[1].length <= 2) {
       return parseFloat(str); 
     } else {
+      // De lo contrario, los puntos actúan como separadores de millar
       return parseFloat(str.replace(/\./g, '')); 
     }
   } else if (hasComma) {
+    // Caso estándar de España: puntos de millar y coma decimal
     return parseFloat(str.replace(/\./g, '').replace(',', '.'));
   }
   
@@ -3164,28 +3170,28 @@ if (data.masterPassword === undefined) {
 
   
 document.addEventListener('focusout', e => {
-    if (e.target.classList.contains('fmt-num')) {
-      const parsed = parseCurrency(e.target.value);
-      const isExcelCell = e.target.classList.contains('cell-input');
-      const isTaxAmount = e.target.classList.contains('tax-amount');
-      
-      if ((isExcelCell || isTaxAmount) && (!parsed || parsed === 0)) {
-         e.target.value = '';
-      } else if (!parsed && parsed !== 0) {
-         e.target.value = '';
-      } else {
-         e.target.value = formatCurrency(parsed);
-      }
-
-      // Cambiar a fuente roja y negrita de forma reactiva si el dato es negativo
-      if (parsed < 0) {
-         e.target.style.setProperty('color', '#ef4444', 'important');
-         e.target.style.setProperty('font-weight', 'bold', 'important');
-      } else {
-         e.target.style.removeProperty('color');
-         e.target.style.removeProperty('font-weight');
-      }
+  if (e.target.classList.contains('fmt-num')) {
+    const parsed = parseCurrency(e.target.value);
+    const isExcelCell = e.target.classList.contains('cell-input');
+    const isTaxAmount = e.target.classList.contains('tax-amount');
+    
+    if ((isExcelCell || isTaxAmount) && (!parsed || parsed === 0)) {
+       e.target.value = '';
+    } else if (!parsed && parsed !== 0) {
+       e.target.value = '';
+    } else {
+       e.target.value = formatCurrency(parsed);
     }
+
+    // Aplicar estilo de color reactivo para valores negativos
+    if (parsed < 0) {
+       e.target.style.setProperty('color', '#ef4444', 'important');
+       e.target.style.setProperty('font-weight', 'bold', 'important');
+    } else {
+       e.target.style.removeProperty('color');
+       e.target.style.removeProperty('font-weight');
+    }
+  }
 });
 
   // Lógica unificada para el cambio de sección
@@ -3767,7 +3773,7 @@ function renderTaxTemplate() {
         { id: 'intra', label: 'Adquisiciones Intracomunitarias', class: 'bg-emitidas', baseId: 'b_intra', cuotaId: 'c_intra' },
         // SUB-TOTAL Bases Emitidas Total 2
         { id: 'tot_2', label: 'Suma bases total', isSum: true, class: 'row-sum-bases', baseId: 'b_tot_2', cuotaId: null },
-        { id: 'invers', label: 'Inversión Sujeto Pasivo', class: 'bg-emitidas', baseId: 'b_invers', cuotaId: 'c_suj' },
+        { id: 'invers', label: 'Inversión No sujetas Localización', class: 'bg-emitidas', baseId: 'b_invers', cuotaId: 'c_suj' },
         { id: 'zero', label: 'Emitidas al 0% (sin sujeto pasivo)', class: 'bg-emitidas', baseId: 'b_zero', cuotaId: null },
         // TOTAL GENERAL EMITIDAS
         { id: 'tot_emit', label: 'TOTALES EMITIDAS ■■■■■■►', isSum: true, class: 'row-sum-cuotas', baseId: 'b_tot_final', cuotaId: 'c_total' },
@@ -3795,7 +3801,7 @@ function renderTaxTemplate() {
         { id: 'intra', label: 'Intracomunitarias', class: 'bg-emitidas', baseId: 'b_intra', cuotaId: 'c_intra' },
         // SUB-TOTAL IGIC Bases Emitidas Total 2
         { id: 'tot_2', label: 'Suma bases total', isSum: true, class: 'row-sum-bases', baseId: 'b_tot_final', cuotaId: null },
-        { id: 'invers', label: 'Inversión Sujeto Pasivo', class: 'bg-emitidas', baseId: 'b_invers', cuotaId: 'c_suj' },
+        { id: 'invers', label: 'No sujetas reglas localizacion', class: 'bg-emitidas', baseId: 'b_invers', cuotaId: 'c_suj' },
         { id: 'zero', label: 'Emitidas al 0% (no sujeto pasivo)', class: 'bg-emitidas', baseId: 'b_zero', cuotaId: null },
         // TOTAL GENERAL EMITIDAS IGIC
         { id: 'tot_emit', label: 'TOTALES EMITIDAS ■■■■■■►', isSum: true, class: 'row-sum-cuotas', baseId: 'b_tot_gfinal', cuotaId: 'c_total' },
