@@ -875,25 +875,6 @@
         border-right: 2px solid #2d3748 !important;
     }
 
-/* Columnas AÑO 390 (Columnas 10 y 11) */
-    .excel-table td:nth-child(10), .excel-table td:nth-child(11) {
-        background: #202430 !important;
-        color: #fde047 !important;
-    }
-    .excel-table th:nth-child(10), .excel-table th:nth-child(11) {
-        background: #1c1f2b !important;
-        color: #fde047 !important;
-    }
-
-    /* Excepción de totales especiales */
-    tr:has(td[id*="b_tot_final"]) td.row-label,
-    tr:has(td[id*="b_tot_gfinal"]) td.row-label,
-    tr:has(td[id*="r_btot_final"]) td.row-label,
-    tr:has(td[id*="b_tot_final"]) td:nth-child(10), tr:has(td[id*="b_tot_final"]) td:nth-child(11),
-    tr:has(td[id*="b_tot_gfinal"]) td:nth-child(10), tr:has(td[id*="b_tot_gfinal"]) td:nth-child(11),
-    tr:has(td[id*="r_btot_final"]) td:nth-child(10), tr:has(td[id*="r_btot_final"]) td:nth-child(11) {
-        background-color: #5c3a21 !important;
-    }
 
     /* REFUERZO VISUAL PARA CASILLAS DE INTRODUCCIÓN DE DATOS */
     .bg-emitidas .cell-input {
@@ -926,6 +907,16 @@
         outline: none;
     }
 
+/* Columnas AÑO 390 (Columnas 10 y 11 por defecto) */
+    .excel-table td:nth-child(10), .excel-table td:nth-child(11) {
+        background: #202430 !important;
+        color: #fde047 !important;
+    }
+    .excel-table th:nth-child(10), .excel-table th:nth-child(11) {
+        background: #1c1f2b !important;
+        color: #fde047 !important;
+    }
+
     /* ==========================================================================
        MODIFICACIONES: JERARQUÍA DE COLORES Y TAMAÑOS EN EL MODELO 303/420
        ========================================================================== */
@@ -940,11 +931,7 @@
     tr:has(td[id*="b_tot_1"]) td,
     tr:has(td[id*="b_tot_2"]) td,
     tr:has(td[id*="igic-b_tot-"]) td,
-    tr:has(td[id*="igic-b_tot_final-"]) td,
-    tr:has(td[id*="b_tot_1"]) .cell-calc,
-    tr:has(td[id*="b_tot_2"]) .cell-calc,
-    tr:has(td[id*="igic-b_tot-"]) .cell-calc,
-    tr:has(td[id*="igic-b_tot_final-"]) .cell-calc {
+    tr:has(td[id*="igic-b_tot_final-"]) td {
         color: #94a3b8 !important; /* Letra Gris */
         font-weight: bold !important;
         background-color: #1a365d !important;
@@ -964,10 +951,7 @@
     }
     tr:has(td[id*="iva-b_tot_final"]) td,
     tr:has(td[id*="igic-b_tot_gfinal"]) td,
-    tr:has(td[id*="c_total"]) td,
-    tr:has(td[id*="iva-b_tot_final"]) .cell-calc,
-    tr:has(td[id*="igic-b_tot_gfinal"]) .cell-calc,
-    tr:has(td[id*="c_total"]) .cell-calc {
+    tr:has(td[id*="c_total"]) td {
         color: #fde047 !important; /* Letra Amarilla */
         font-weight: bold !important;
         background-color: #1a365d !important;
@@ -982,8 +966,7 @@
     tr:has(td[id*="r_btot"]) {
         background-color: #5c3a21 !important;
     }
-    tr:has(td[id*="r_btot"]) td,
-    tr:has(td[id*="r_btot"]) .cell-calc {
+    tr:has(td[id*="r_btot"]) td {
         color: #94a3b8 !important; /* Letra Gris */
         font-weight: bold !important;
         background-color: #5c3a21 !important;
@@ -998,9 +981,7 @@
         background-color: #5c3a21 !important;
     }
     tr:has(td[id*="r_btot_final"]) td,
-    tr:has(td[id*="r_ctot"]) td,
-    tr:has(td[id*="r_btot_final"]) .cell-calc,
-    tr:has(td[id*="r_ctot"]) .cell-calc {
+    tr:has(td[id*="r_ctot"]) td {
         color: #fde047 !important; /* Letra Amarilla */
         font-weight: bold !important;
         background-color: #5c3a21 !important;
@@ -1009,6 +990,8 @@
     tr:has(td[id*="r_ctot"]) td.row-label {
         background-color: #442a18 !important;
     }
+
+  
 
     /* 2.5. FILA DE RESULTADO DE LIQUIDACIÓN INCREMENTADA */
     .row-resultado { 
