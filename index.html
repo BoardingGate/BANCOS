@@ -2430,7 +2430,6 @@ function generateUnifiedPrintHTML(selectedCompanies = null, selectedTaxCompanies
   });
   html += `</tbody></table>`;
 
-  // ─── SECCIÓN 2: DOBLE COLUMNA PARA FACTURAS E IMPUESTOS (SIDE-BY-SIDE) ───
 // ─── SECCIÓN 2: FACTURAS RECURRENTES ───
   html += `<div style="width: 100%; margin-top: 12px;">
     <h2 style="font-size: 9px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Facturas Recurrentes</h2>
@@ -2475,42 +2474,41 @@ function generateUnifiedPrintHTML(selectedCompanies = null, selectedTaxCompanies
           <th>Concepto</th>`;
   data.taxCompanies.forEach(co => {
     if (selectedTaxCompanies && !selectedTaxCompanies.includes(co)) return;
-    html += `<th>\${esc(co)}</th>`;
+    html += `<th>${esc(co)}</th>`;
   });
   html += `</tr></thead><tbody>`;
 
   TAX_ROWS.forEach((row, ri) => {
     const isObs = TAX_KEYS[ri] === 'obs';
     html += `<tr>
-      <td class="bold">\${row}</td>`;
+      <td class="bold">${row}</td>`;
     data.taxCompanies.forEach((co, ci) => {
       if (selectedTaxCompanies && !selectedTaxCompanies.includes(co)) return;
       const k = TAX_KEYS[ri] + '-' + ci;
       const v = data.taxValues[k] || '';
       
       if (isObs) {
-         html += `<td>\${esc(v)}</td>`;
+         html += `<td>${esc(v)}</td>`;
       } else {
          const presented = data.taxPresented && data.taxPresented[k];
          const bank = (data.taxBanks && data.taxBanks[k]) || '';
          const numV = parseFloat(v) || 0;
          
          const valStr = (numV === 0) ? '' : formatCurrency(v);
-         
-          let colorStyle = '';
+         let colorStyle = '';
          if (numV > 0) colorStyle = 'color: #2563eb; font-weight: bold;'; // Azul para positivo
          else if (numV < 0) colorStyle = 'color: #dc2626; font-weight: bold;'; // Rojo para negativo
          
          const bgStyle = presented ? 'background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;' : '';
          const checkMark = presented ? '<span style="color: #16a34a; font-size: 10px;">☑</span>' : '<span style="color: #cbd5e1; font-size: 10px;">☐</span>';
-         const bankTag = bank ? `<span style="font-size: 6.5px; color: #475569; background: #ffffff; border: 1px solid #cbd5e1; padding: 1px 3px; border-radius: 2px; white-space: nowrap;">\${esc(bank)}</span>` : '';
+         const bankTag = bank ? `<span style="font-size: 6.5px; color: #475569; background: #ffffff; border: 1px solid #cbd5e1; padding: 1px 3px; border-radius: 2px; white-space: nowrap;">${esc(bank)}</span>` : '';
 
-         html += `<td style="\${bgStyle}">
+         html += `<td style="${bgStyle}">
             <div style="display: flex; justify-content: space-between; align-items: center; min-height: 12px;">
-               <span style="\${colorStyle}">\${valStr}</span>
+               <span style="${colorStyle}">${valStr}</span>
                <div style="display: flex; align-items: center; gap: 4px;">
-                 \${bankTag}
-                 \${checkMark}
+                 ${bankTag}
+                 ${checkMark}
                </div>
             </div>
          </td>`;
@@ -2520,7 +2518,6 @@ function generateUnifiedPrintHTML(selectedCompanies = null, selectedTaxCompanies
   });
 
   html += `</tbody></table></div>`;
-
   return html;
 }
 
