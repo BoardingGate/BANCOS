@@ -2273,8 +2273,75 @@ const reportStyles = `
     color: #065f46 !important;
   }
 `;
+// --- MODAL DE SELECCIÓN DE EMPRESAS PARA IMPRESIÓN ---
+function showPrintFilterModal(onConfirm) {
+  const oldModal = document.getElementById('print-filter-modal');
+  if (oldModal) oldModal.remove();
 
-function generateUnifiedPrintHTML() {
+  let companiesHtml = data.companies.map((c, idx) => `
+    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; cursor: pointer; user-select: none;">
+      <input type="checkbox" class="print-company-checkbox" value="${esc(c)}" checked style="accent-color: var(--accent); cursor: pointer;" />
+      <span style="font-size: 11px; color: var(--text-primary);">${esc(c)}</span>
+    </label>
+  `).join('');
+
+  let taxCompaniesHtml = data.taxCompanies.map((c, idx) => `
+    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; cursor: pointer; user-select: none;">
+      <input type="checkbox" class="print-tax-company-checkbox" value="${esc(c)}" checked style="accent-color: var(--accent); cursor: pointer;" />
+      <span style="font-size: 11px; color: var(--text-primary);">${esc(c)}</span>
+    </label>
+  `).join('');
+
+  const modalHtml = `
+    <div class="modal" style="max-width: 400px; width: 95%;">
+      <div class="modal-header">
+        <h3 style="display: flex; align-items: center; gap: 6px; font-weight:700;">
+          🖨️ Selección para Reporte
+        </h3>
+        <button type="button" class="btn-delete-row" id="print-filter-close-x" style="opacity:1; color: var(--text-secondary); font-size: 14px; cursor:pointer;">&#x2715;</button>
+      </div>
+      <div class="modal-body" style="max-height: 55vh; overflow-y: auto;">
+        <div style="margin-bottom: 16px;">
+          <div style="font-weight: bold; color: var(--accent-light); font-size: 10px; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px dashed var(--border-strong); padding-bottom: 2px; letter-spacing: 0.5px;">
+            Saldos y Movimientos (Empresas)
+          </div>
+          ${companiesHtml || '<p style="color: var(--text-muted); font-size: 11px;">No hay empresas configuradas</p>'}
+        </div>
+        <div>
+          <div style="font-weight: bold; color: var(--teal-light); font-size: 10px; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px dashed var(--border-strong); padding-bottom: 2px; letter-spacing: 0.5px;">
+            Liquidación de Impuestos (Empresas)
+          </div>
+          ${taxCompaniesHtml || '<p style="color: var(--text-muted); font-size: 11px;">No hay empresas de impuestos configuradas</p>'}
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:10px 16px;">
+        <button class="btn btn-ghost btn-sm" id="print-filter-cancel-btn">Cancelar</button>
+        <button class="btn btn-primary btn-sm" id="print-filter-confirm-btn">Imprimir</button>
+      </div>
+    </div>
+  `;
+
+  const modalOverlay = document.createElement('div');
+  modalOverlay.id = 'print-filter-modal';
+  modalOverlay.className = 'modal-overlay';
+  modalOverlay.innerHTML = modalHtml;
+  document.body.appendChild(modalOverlay);
+
+  const closeFn = () => modalOverlay.remove();
+  document.getElementById('print-filter-close-x').addEventListener('click', closeFn);
+  document.getElementById('print-filter-cancel-btn').addEventListener('click', closeFn);
+  document.getElementById('print-filter-confirm-btn').addEventListener('click', () => {
+    const selectedCompanies = Array.from(modalOverlay.querySelectorAll('.print-company-checkbox:checked')).map(el => el.value);
+    const selectedTaxCompanies = Array.from(modalOverlay.querySelectorAll('.print-tax-company-checkbox:checked')).map(el => el.value);
+    onConfirm(selectedCompanies, selectedTaxCompanies);
+    closeFn();
+  });
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) closeFn();
+  });
+}
+
+function generateUnifiedPrintHTML(selectedCompanies = null, selectedTaxCompanies = null) {
   const nb = data.banks.length;
   const nc = data.companies.length;
 
@@ -2308,9 +2375,11 @@ function generateUnifiedPrintHTML() {
   html += `</tr></thead><tbody>`;
 
   data.companies.forEach((company, ci) => {
+    if (selectedCompanies && !selectedCompanies.includes(company)) return;
     const bgColor = transposedRowColors[ci % transposedRowColors.length];
     html += `<tr style="background-color: ${bgColor};">`;
     html += `<td class="print-company-col" style="border-left: 3px solid #6366f1;">${esc(company)}</td>`;
+
 
       data.banks.forEach((_, bi) => {
       const key = bi + '-' + ci;
@@ -2397,8 +2466,7 @@ function generateUnifiedPrintHTML() {
   });
 
   html += `</tbody></table></div>`;
-
-  // ─── SECCIÓN 3: LIQUIDACIÓN DE IMPUESTOS (DEBAJO) ───
+// ─── SECCIÓN 3: LIQUIDACIÓN DE IMPUESTOS (DEBAJO) ───
   html += `<div style="width: 100%; margin-top: 12px;">
     <h2 style="font-size: 9px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Liquidación de Impuestos</h2>
     <table class="print-matrix-table">
@@ -2406,44 +2474,43 @@ function generateUnifiedPrintHTML() {
         <tr>
           <th>Concepto</th>`;
   data.taxCompanies.forEach(co => {
-    html += `<th>${esc(co)}</th>`;
+    if (selectedTaxCompanies && !selectedTaxCompanies.includes(co)) return;
+    html += `<th>\${esc(co)}</th>`;
   });
   html += `</tr></thead><tbody>`;
 
   TAX_ROWS.forEach((row, ri) => {
     const isObs = TAX_KEYS[ri] === 'obs';
     html += `<tr>
-      <td class="bold">${row}</td>`;
-    data.taxCompanies.forEach((_, ci) => {
+      <td class="bold">\${row}</td>`;
+    data.taxCompanies.forEach((co, ci) => {
+      if (selectedTaxCompanies && !selectedTaxCompanies.includes(co)) return;
       const k = TAX_KEYS[ri] + '-' + ci;
       const v = data.taxValues[k] || '';
       
       if (isObs) {
-         html += `<td>${esc(v)}</td>`;
+         html += `<td>\${esc(v)}</td>`;
       } else {
          const presented = data.taxPresented && data.taxPresented[k];
          const bank = (data.taxBanks && data.taxBanks[k]) || '';
          const numV = parseFloat(v) || 0;
          
-         // Lógica idéntica a la vista web: Si es 0 se queda totalmente en blanco
          const valStr = (numV === 0) ? '' : formatCurrency(v);
          
-         // Lógica de colores para impresión
-         let colorStyle = '';
+          let colorStyle = '';
          if (numV > 0) colorStyle = 'color: #2563eb; font-weight: bold;'; // Azul para positivo
          else if (numV < 0) colorStyle = 'color: #dc2626; font-weight: bold;'; // Rojo para negativo
          
-         // Fondo gris forzado para impresión usando "print-color-adjust"
          const bgStyle = presented ? 'background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;' : '';
          const checkMark = presented ? '<span style="color: #16a34a; font-size: 10px;">☑</span>' : '<span style="color: #cbd5e1; font-size: 10px;">☐</span>';
-         const bankTag = bank ? `<span style="font-size: 6.5px; color: #475569; background: #ffffff; border: 1px solid #cbd5e1; padding: 1px 3px; border-radius: 2px; white-space: nowrap;">${esc(bank)}</span>` : '';
+         const bankTag = bank ? `<span style="font-size: 6.5px; color: #475569; background: #ffffff; border: 1px solid #cbd5e1; padding: 1px 3px; border-radius: 2px; white-space: nowrap;">\${esc(bank)}</span>` : '';
 
-         html += `<td style="${bgStyle}">
+         html += `<td style="\${bgStyle}">
             <div style="display: flex; justify-content: space-between; align-items: center; min-height: 12px;">
-               <span style="${colorStyle}">${valStr}</span>
+               <span style="\${colorStyle}">\${valStr}</span>
                <div style="display: flex; align-items: center; gap: 4px;">
-                 ${bankTag}
-                 ${checkMark}
+                 \${bankTag}
+                 \${checkMark}
                </div>
             </div>
          </td>`;
@@ -2517,16 +2584,25 @@ function generateTaxTemplatePrintHTML() {
   
   return printHTML;
 }
-
 window.printSectionReport = function(sectionType) {
+  if (sectionType === 'balances') {
+    showPrintFilterModal((selectedCompanies, selectedTaxCompanies) => {
+      executePrint('balances', selectedCompanies, selectedTaxCompanies);
+    });
+  } else {
+    executePrint(sectionType);
+  }
+};
+
+function executePrint(sectionType, selectedCompanies = null, selectedTaxCompanies = null) {
   let contentHTML = '';
   
   if (sectionType === 'notes') {
     contentHTML = generateNotesPrintHTML();
   } else if (sectionType === 'tax-template') {
-    contentHTML = generateTaxTemplatePrintHTML(); // Redirección al reporte de autoliquidación activa
+    contentHTML = generateTaxTemplatePrintHTML();
   } else {
-    contentHTML = generateUnifiedPrintHTML();
+    contentHTML = generateUnifiedPrintHTML(selectedCompanies, selectedTaxCompanies);
   }
 
   const iframe = document.createElement('iframe');
@@ -2563,7 +2639,8 @@ window.printSectionReport = function(sectionType) {
     </html>
   `);
   doc.close();
-};
+}
+
 
 // ─── NAVEGACIÓN RÁPIDA (SCROLL) ───────────────────────────
 window.navScroll = function(direction) {
