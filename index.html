@@ -3756,187 +3756,191 @@ function renderTaxTemplate() {
 
     const qs = ['1T', '2T', '3T', '4T', 'AÑO 390'];
     
-    // 1. INICIO DE CONTENEDOR DE IVA INDEPENDIENTE CON SU SCROLL PROPIO
-    let html = `<div class="excel-container">
-    <table class="excel-table">
-        <thead>
-            <tr class="row-header-iva"><td colspan="6">IVA  EMPRESA: - ${activeTaxCompany}</td></tr>
-            <tr><th>CONCEPTOS</th>${qs.map(q=>`<th>${q}</th>`).join('')}</tr>
-        </thead>
-        <tbody>`;
-    
+    // 1. ESQUEMAS DE FILAS COMBINANDO BASES Y CUOTAS EN HORIZONTAL
     const ivaRows = [
-        { id: 'b_r1', label: 'Base Emitidas', rate: 'r1', class: 'bg-emitidas' },
-        { id: 'b_r2', label: 'Base Emitidas', rate: 'r2', class: 'bg-emitidas' },
-        { id: 'b_r3', label: 'Base Emitidas', rate: 'r3', class: 'bg-emitidas' },
-        { id: 'b_r4', label: 'Base Emitidas', rate: 'r4', class: 'bg-emitidas' },
-        { id: 'b_r5', label: 'Base Emitidas', rate: 'r5', class: 'bg-emitidas' },
-        { id: 'b_rect', label: 'Base RECTIFICATIVAS', class: 'bg-emitidas color-rect' },
-        { id: 'b_tot_1', label: 'Suma bases', isSum: true, class: 'row-sum-bases' },
-        { id: 'b_intra', label: 'Bases INTRACOM.Recibida', class: 'bg-emitidas' },
-        { id: 'b_tot_2', label: 'Suma bases total', isSum: true, class: 'row-sum-bases' },
-        { id: 'b_invers', label: 'Bases Inv.SUJETO PASIVO', class: 'bg-emitidas' },
-        { id: 'b_zero', label: 'Base emitidas 0% (sin s. pasivo, pisos)', class: 'bg-emitidas' },
-        { id: 'b_tot_final', label: 'BASES EMITIDAS (con Oper. No Sujeta) ■■■■■■►', isSum: true, class: 'row-sum-bases' },
+        { id: 'r1', label: 'Emitidas 4%', rate: 'r1', class: 'bg-emitidas', baseId: 'b_r1', cuotaId: 'c_r1' },
+        { id: 'r2', label: 'Emitidas 10%', rate: 'r2', class: 'bg-emitidas', baseId: 'b_r2', cuotaId: 'c_r2' },
+        { id: 'r3', label: 'Emitidas 21%', rate: 'r3', class: 'bg-emitidas', baseId: 'b_r3', cuotaId: 'c_r3' },
+        { id: 'r4', label: 'Emitidas 0%', rate: 'r4', class: 'bg-emitidas', baseId: 'b_r4', cuotaId: 'c_r4' },
+        { id: 'r5', label: 'Emitidas Especial', rate: 'r5', class: 'bg-emitidas', baseId: 'b_r5', cuotaId: 'c_r5' },
+        { id: 'rect', label: 'Emitidas Rectificativas', class: 'bg-emitidas color-rect', baseId: 'b_rect', cuotaId: 'c_rect' },
+        { id: 'intra', label: 'Adquisiciones Intracomunitarias', class: 'bg-emitidas', baseId: 'b_intra', cuotaId: 'c_intra' },
+        { id: 'invers', label: 'Inversión Sujeto Pasivo', class: 'bg-emitidas', baseId: 'b_invers', cuotaId: 'c_suj' },
+        { id: 'zero', label: 'Emitidas al 0% (sin sujeto pasivo)', class: 'bg-emitidas', baseId: 'b_zero', cuotaId: null },
+        { id: 'tot_emit', label: 'TOTALES EMITIDAS ■■■■■■►', isSum: true, class: 'row-sum-cuotas', baseId: 'b_tot_final', cuotaId: 'c_total' },
         { id: 'sep1', isSpacer: true },
-        { id: 'c_r1', label: 'Cuota IVA Emitida', rate: 'r1', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_r2', label: 'Cuota IVA Emitida', rate: 'r2', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_r3', label: 'Cuota IVA Emitida', rate: 'r3', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_r4', label: 'Cuota IVA Emitida', rate: 'r4', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_r5', label: 'Cuota IVA Emitida', rate: 'r5', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_intra', label: 'Cuota IVA INTRACOM.', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_suj', label: 'Cuota IVA Suj.PASIVO', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_rect', label: 'Cuota IVA RECTIFICAF.', isInput: true, class: 'bg-emitidas color-rect' },
-        { id: 'c_total', label: 'CUOTAS EMITIDAS ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-cuotas' },
-        { id: 'sep2', isSpacer: true },
-        { id: 'r_b28', label: 'Bases recibidas (cas. 28)', class: 'bg-recibidas' },
-        { id: 'r_b0', label: 'Bases recibidas al 0%', class: 'bg-recibidas' },
-        { id: 'r_btot', label: 'Suma Bases', isSum: true, class: 'row-sum-bases' },
-        { id: 'r_brect', label: 'Bases Rectificativas(cas. 40)', class: 'bg-recibidas color-rect' },
-        { id: 'r_bintra', label: 'Bases Intracomuni.(cas. 36)', class: 'bg-recibidas' },
-        { id: 'r_btot_final', label: 'BASES RECIBIDAS ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-bases' },
-        { id: 'sep_rec_cuotas', isSpacer: true },
-        { id: 'r_c', label: 'Cuotas Recibidas (sin rectif)', isInput: true, class: 'bg-recibidas' },
-        { id: 'r_cintra', label: 'Cuotas INTRACOMUNI.', isInput: true, class: 'bg-recibidas' },
-        { id: 'r_crect', label: 'Cuotas RECTIFICATIVAS', isInput: true, class: 'bg-recibidas color-rect' },
-        { id: 'r_ctot', label: 'CUOTAS RECIBIDAS ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-cuotas' }
+        { id: 'rec', label: 'Recibidas Corrientes', class: 'bg-recibidas', baseId: 'r_b28', cuotaId: 'r_c' },
+        { id: 'rec_zero', label: 'Recibidas al 0%', class: 'bg-recibidas', baseId: 'r_b0', cuotaId: null },
+        { id: 'rec_rect', label: 'Recibidas Rectificativas', class: 'bg-recibidas color-rect', baseId: 'r_brect', cuotaId: 'r_crect' },
+        { id: 'rec_intra', label: 'Recibidas Intracomunitarias', class: 'bg-recibidas', baseId: 'r_bintra', cuotaId: 'r_cintra' },
+        { id: 'tot_rec', label: 'TOTALES RECIBIDAS ■■■■■■►', isSum: true, class: 'row-sum-cuotas', baseId: 'r_btot_final', cuotaId: 'r_ctot' }
     ];
 
     const igicRows = [
-        { id: 'b_ig0', label: 'Base Emitidas 0%', rate: 'r1', class: 'bg-emitidas' },
-        { id: 'b_ig3', label: 'Base IGIC Emitidas', rate: 'r2', class: 'bg-emitidas' },
-        { id: 'b_ig7', label: 'Base IGIC Emitidas', rate: 'r3', class: 'bg-emitidas' },
-        { id: 'b_ig13', label: 'Base IGIC Emitidas', rate: 'r4', class: 'bg-emitidas' },
-        { id: 'b_ig_ex1', label: 'Base IGIC Emitidas', rate: 'r5', class: 'bg-emitidas' },
-        { id: 'b_ig_ex2', label: 'Base IGIC Emitidas', rate: 'r6', class: 'bg-emitidas' },
-        { id: 'b_rect', label: 'Base RECTIFICATIVAS', class: 'bg-emitidas color-rect' },
-        { id: 'b_tot', label: 'Suma bases', isSum: true, class: 'row-sum-bases' },
-        { id: 'b_intra', label: 'Base IGIC INTRACOMU.recibidas', class: 'bg-emitidas' },
-        { id: 'b_tot_final', label: 'Suma bases total', isSum: true, class: 'row-sum-bases' },
-        { id: 'b_invers', label: 'Base IGIC INV.S.PASIVO (Extracto)', class: 'bg-emitidas' },
-        { id: 'b_zero', label: 'Base emitidas al 0% (que no son s.pasivo)', class: 'bg-emitidas' },
-        { id: 'b_tot_gfinal', label: 'BASES EMITIDAS ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-bases' },
+        { id: 'ig0', label: 'Emitidas 0%', rate: 'r1', class: 'bg-emitidas', baseId: 'b_ig0', cuotaId: null },
+        { id: 'ig3', label: 'Emitidas 3%', rate: 'r2', class: 'bg-emitidas', baseId: 'b_ig3', cuotaId: 'c_ig3' },
+        { id: 'ig7', label: 'Emitidas 7%', rate: 'r3', class: 'bg-emitidas', baseId: 'b_ig7', cuotaId: 'c_ig7' },
+        { id: 'ig13', label: 'Emitidas 13%', rate: 'r4', class: 'bg-emitidas', baseId: 'b_ig13', cuotaId: 'c_ig13' },
+        { id: 'ig_ex1', label: 'Emitidas Especial 1', rate: 'r5', class: 'bg-emitidas', baseId: 'b_ig_ex1', cuotaId: 'c_ig_ex1' },
+        { id: 'ig_ex2', label: 'Emitidas Especial 2', rate: 'r6', class: 'bg-emitidas', baseId: 'b_ig_ex2', cuotaId: 'c_ig_ex2' },
+        { id: 'rect', label: 'Emitidas Rectificativas', class: 'bg-emitidas color-rect', baseId: 'b_rect', cuotaId: 'c_rect' },
+        { id: 'intra', label: 'Intracomunitarias', class: 'bg-emitidas', baseId: 'b_intra', cuotaId: 'c_intra' },
+        { id: 'invers', label: 'Inversión Sujeto Pasivo', class: 'bg-emitidas', baseId: 'b_invers', cuotaId: 'c_suj' },
+        { id: 'zero', label: 'Emitidas al 0% (no sujeto pasivo)', class: 'bg-emitidas', baseId: 'b_zero', cuotaId: null },
+        { id: 'tot_emit', label: 'TOTALES EMITIDAS ■■■■■■►', isSum: true, class: 'row-sum-cuotas', baseId: 'b_tot_gfinal', cuotaId: 'c_total' },
         { id: 'sep1', isSpacer: true },
-        { id: 'c_ig3', label: 'Cuota IGIC Emitida', rate: 'r2', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_ig7', label: 'Cuota IGIC Emitida', rate: 'r3', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_ig13', label: 'Cuota IGIC Emitida', rate: 'r4', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_ig_ex1', label: 'Cuota IGIC Emitida', rate: 'r5', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_ig_ex2', label: 'Cuota IGIC Emitida', rate: 'r6', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_intra', label: 'Cuota IGIC intraconi', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_suj', label: 'Cuota IGIC Suj. PASIVO', isInput: true, class: 'bg-emitidas' },
-        { id: 'c_rect', label: 'Cuota IGIC RECTIFICATIV.', isInput: true, class: 'bg-emitidas color-rect' },
-        { id: 'c_total', label: 'CUOTAS EMITIDAS ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-cuotas' },
-        { id: 'sep2', isSpacer: true },
-        { id: 'r_b28', label: 'Bases IGIC Recibidas', class: 'bg-recibidas' },
-        { id: 'r_b0', label: 'Base IGIC recibidas al 0%', class: 'bg-recibidas' },
-        { id: 'r_btot', label: 'Suma Bases Recibidas', isSum: true, class: 'row-sum-bases' },
-        { id: 'r_brect', label: 'Base IGIC RECTIFICATIVAS (Cas. 40)', class: 'bg-recibidas color-rect' },
-        { id: 'r_bintra', label: 'Base IGIC INTRACOMUNITARIAS (Cas. 36)', class: 'bg-recibidas' },
-        { id: 'r_btot_final', label: 'BASES RECIBIDAS ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-bases' },
-        { id: 'sep_rec_cuotas_igic', isSpacer: true },
-        { id: 'r_c', label: 'Cuotas IGIC Recibidas', isInput: true, class: 'bg-recibidas' },
-        { id: 'r_cintra', label: 'Cuotas IGIC INTRACOMUNITARIAS', isInput: true, class: 'bg-recibidas' },
-        { id: 'r_crect', label: 'Cuotas IGIC RECTIFICATIVAS', isInput: true, class: 'bg-recibidas color-rect' },
-        { id: 'r_ctot', label: 'CUOTAS RECIBIDAS ■■■■■■■■■■■■■■■■►', isSum: true, class: 'row-sum-cuotas' }
+        { id: 'rec', label: 'Recibidas Corrientes', class: 'bg-recibidas', baseId: 'r_b28', cuotaId: 'r_c' },
+        { id: 'rec_zero', label: 'Recibidas al 0%', class: 'bg-recibidas', baseId: 'r_b0', cuotaId: null },
+        { id: 'rec_rect', label: 'Recibidas Rectificativas', class: 'bg-recibidas color-rect', baseId: 'r_brect', cuotaId: 'r_crect' },
+        { id: 'rec_intra', label: 'Recibidas Intracomunitarias', class: 'bg-recibidas', baseId: 'r_bintra', cuotaId: 'r_cintra' },
+        { id: 'tot_rec', label: 'TOTALES RECIBIDAS ■■■■■■►', isSum: true, class: 'row-sum-cuotas', baseId: 'r_btot_final', cuotaId: 'r_ctot' }
     ];
 
-    function drawGroupRows(rows, secId) {
+    function drawHorizontalGroupRows(rows, secId) {
         return rows.map(r => {
-            if (r.isSpacer) { return `<tr style="height:12px; background:rgba(0,0,0,0.45)"><td colspan="6"></td></tr>`; }
-            let label = r.label;
-            if (r.rate && !r.isCuota) {
-                label += ` <input type="number" class="cell-rate" onchange="updateTaxRate('${secId}','${r.rate}',this.value)" value="${data.taxCalcExcel[secId].rates[r.rate]}">%`;
+            if (r.isSpacer) { 
+                return `<tr style="height:12px; background:rgba(0,0,0,0.45)"><td colspan="11"></td></tr>`; 
             }
             
-            let isRectRow = r.id.includes('rect') || r.id === 'c_rect';
-            let cellStyleClass = `${r.class || ''} ${isRectRow ? 'color-rect' : ''}`;
-            
-            let tr = `<tr class="${cellStyleClass}"><td class="row-label">${label}</td>`;
-          for (let t = 0; t < 5; t++) {
-                const id = `${secId}-${r.id}-${t}`;
-                if (t === 4 || r.isSum) {
-                    tr += `<td class="cell-calc ${t===4?'cell-total':''}" id="${id}">0,00</td>`;
+            let label = r.label;
+            if (r.rate) {
+                label = `${r.label.split(' ')[0]} <input type="number" class="cell-rate" onchange="updateTaxRate('${secId}','${r.rate}',this.value)" value="${data.taxCalcExcel[secId].rates[r.rate]}">%`;
+            }
+
+            let tr = `<tr class="${r.class || ''}"><td class="row-label">${label}</td>`;
+
+            for (let t = 0; t < 5; t++) {
+                // Celda de Base
+                if (!r.baseId) {
+                    tr += `<td style="background: rgba(0,0,0,0.3)"></td>`;
+                } else if (t === 4 || r.isSum) {
+                    tr += `<td class="cell-calc ${t===4?'cell-total':''}" id="${secId}-${r.baseId}-${t}">0,00</td>`;
                 } else {
-                    const val = data.taxCalcExcel[activeTaxCompany][secId].values[`${r.id}-${t}`];
+                    const val = data.taxCalcExcel[activeTaxCompany][secId].values[`${r.baseId}-${t}`];
                     const valStr = (val === 0 || val === '' || val === undefined || val === null) ? '' : formatCurrency(val);
-                    const isNeg = (parseFloat(val) < 0);
-                    const negStyle = isNeg ? 'color: #ef4444 !important; font-weight: bold !important;' : '';
-                    tr += `<td><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.id}" data-t="${t}" oninput="updateTaxVal('${secId}','${r.id}',${t},this.value)" value="${valStr}" style="${negStyle}"></td>`;
+                    const negStyle = (parseFloat(val) < 0) ? 'color: #ef4444 !important; font-weight: bold !important;' : '';
+                    tr += `<td><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.baseId}" data-t="${t}" data-type="base" oninput="updateTaxVal('${secId}','${r.baseId}',${t},this.value)" value="${valStr}" style="${negStyle}"></td>`;
+                }
+
+                // Celda de Cuota
+                if (!r.cuotaId) {
+                    tr += `<td style="background: rgba(0,0,0,0.3)"></td>`;
+                } else if (t === 4 || r.isSum) {
+                    tr += `<td class="cell-calc ${t===4?'cell-total':''}" id="${secId}-${r.cuotaId}-${t}">0,00</td>`;
+                } else {
+                    const val = data.taxCalcExcel[activeTaxCompany][secId].values[`${r.cuotaId}-${t}`];
+                    const valStr = (val === 0 || val === '' || val === undefined || val === null) ? '' : formatCurrency(val);
+                    const negStyle = (parseFloat(val) < 0) ? 'color: #ef4444 !important; font-weight: bold !important;' : '';
+                    tr += `<td><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.cuotaId}" data-t="${t}" data-type="cuota" oninput="updateTaxVal('${secId}','${r.cuotaId}',${t},this.value)" value="${valStr}" style="${negStyle}"></td>`;
                 }
             }
             return tr + `</tr>`;
         }).join('');
     }
 
-    html += drawGroupRows(ivaRows, 'iva');
+    // 2. CONSTRUCCIÓN DE LA TABLA DE IVA
+    let html = `<div class="excel-container">
+    <table class="excel-table">
+        <thead>
+            <tr class="row-header-iva"><th colspan="11">IVA EMPRESA: - ${activeTaxCompany}</th></tr>
+            <tr>
+                <th rowspan="2">CONCEPTOS</th>
+                <th colspan="2">1T</th>
+                <th colspan="2">2T</th>
+                <th colspan="2">3T</th>
+                <th colspan="2">4T</th>
+                <th colspan="2">AÑO 390</th>
+            </tr>
+            <tr>
+                <th>Base</th><th>Cuota</th>
+                <th>Base</th><th>Cuota</th>
+                <th>Base</th><th>Cuota</th>
+                <th>Base</th><th>Cuota</th>
+                <th>Base</th><th>Cuota</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    html += drawHorizontalGroupRows(ivaRows, 'iva');
     
-    // Resultados IVA
-    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IVA ■■■■■■■■■■■■■■■■►</td>`;
+    // Resultados Liquidación IVA (Con unificación de celdas)
+    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IVA ■■■■■■►</td>`;
     for(let t=0; t<5; t++) {
-        html += `<td style="position:relative; padding-right:18px;">
-            <span id="iva-res-final-${t}">0,00</span>
-            <button type="button" class="action-btn-mini" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:7px; width:12px; height:12px; padding:0; display:inline-flex; align-items:center; justify-content:center; line-height:1;" title="Exportar este importe a la pestaña de Liquidaciones de ${activeTaxCompany}" onclick="exportResultToTaxes('iva', ${t})">📤</button>
+        html += `<td colspan="2" style="position:relative; padding-right:18px; text-align: right !important;">
+            <span id="iva-res-final-${t}" style="font-weight: 800;">0,00</span>
+            <button type="button" class="action-btn-mini" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:7px; width:12px; height:12px; padding:0; display:inline-flex; align-items:center; justify-content:center; line-height:1;" title="Exportar a Liquidaciones" onclick="exportResultToTaxes('iva', ${t})">📤</button>
         </td>`;
     }
     html += `</tr>`;
     
+    // Compensar e Infrasujeto (Con unificación de celdas)
     html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].iva.values[`prev-${t}`] || 0;
-        html += `<td><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
+        html += `<td colspan="2"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
     }
-    html += `<td class="cell-total" id="iva-prev-4">0,00</td></tr>`;
+    html += `<td colspan="2" class="cell-total" id="iva-prev-4" style="text-align: right !important;">0,00</td></tr>`;
     
     html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Casilla 120 / 110)</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].iva.values[`nosujeto-${t}`] || 0;
-        html += `<td><input type="text" class="cell-input fmt-num" data-section="iva" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('iva','nosujeto',${t},this.value)" value="${formatCurrency(val)}"></td>`;
+        html += `<td colspan="2"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('iva','nosujeto',${t},this.value)" value="${formatCurrency(val)}"></td>`;
     }
-    html += `<td class="cell-total" id="iva-nosujeto-4">0,00</td></tr>`;
+    html += `<td colspan="2" class="cell-total" id="iva-nosujeto-4" style="text-align: right !important;">0,00</td></tr>`;
 
-    // CIERRE DE CAJA DE SCROLL DE IVA
     html += `</tbody></table></div>`;
 
-    // 2. INICIO DE CONTENEDOR DE IGIC INDEPENDIENTE CON SU SCROLL PROPIO
-    html += `</tbody></table>`;
-
+    // 3. CONSTRUCCIÓN DE LA TABLA DE IGIC
     html += `<table class="excel-table" style="margin-top: 40px;">
         <thead>
-            <tr class="row-header-igic"><td colspan="6">IGIC  EMPRESA: - ${activeTaxCompany}</td></tr>
-            <tr><th>CONCEPTOS</th>${qs.map(q=>`<th>${q}</th>`).join('')}</tr>
+            <tr class="row-header-igic"><th colspan="11">IGIC EMPRESA: - ${activeTaxCompany}</th></tr>
+            <tr>
+                <th rowspan="2">CONCEPTOS</th>
+                <th colspan="2">1T</th>
+                <th colspan="2">2T</th>
+                <th colspan="2">3T</th>
+                <th colspan="2">4T</th>
+                <th colspan="2">AÑO 390</th>
+            </tr>
+            <tr>
+                <th>Base</th><th>Cuota</th>
+                <th>Base</th><th>Cuota</th>
+                <th>Base</th><th>Cuota</th>
+                <th>Base</th><th>Cuota</th>
+                <th>Base</th><th>Cuota</th>
+            </tr>
         </thead>
         <tbody>`;
 
-    html += drawGroupRows(igicRows, 'igic');
+    html += drawHorizontalGroupRows(igicRows, 'igic');
     
-    // Resultados IGIC
-    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IGIC ■■■■■■■■■■■■■■■■►</td>`;
+    // Resultados Liquidación IGIC (Con unificación de celdas)
+    html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IGIC ■■■■■■►</td>`;
     for(let t=0; t<5; t++) {
-        html += `<td style="position:relative; padding-right:18px;">
-            <span id="igic-res-final-${t}">0,00</span>
-            <button type="button" class="action-btn-mini" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:7px; width:12px; height:12px; padding:0; display:inline-flex; align-items:center; justify-content:center; line-height:1;" title="Exportar este importe a la pestaña de Liquidaciones de ${activeTaxCompany}" onclick="exportResultToTaxes('igic', ${t})">📤</button>
+        html += `<td colspan="2" style="position:relative; padding-right:18px; text-align: right !important;">
+            <span id="igic-res-final-${t}" style="font-weight: 800;">0,00</span>
+            <button type="button" class="action-btn-mini" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:7px; width:12px; height:12px; padding:0; display:inline-flex; align-items:center; justify-content:center; line-height:1;" title="Exportar a Liquidaciones" onclick="exportResultToTaxes('igic', ${t})">📤</button>
         </td>`;
     }
     html += `</tr>`;
     
+    // Compensar e Inversión IGIC (Con unificación de celdas)
     html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].igic.values[`prev-${t}`] || 0;
-        html += `<td><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
+        html += `<td colspan="2"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
     }
-    html += `<td class="cell-total" id="igic-prev-4">0,00</td></tr>`;
+    html += `<td colspan="2" class="cell-total" id="igic-prev-4" style="text-align: right !important;">0,00</td></tr>`;
     
-    html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Bases imponibles emitidas de sujeto pasivo (promotores, chatarra))</td>`;
+    html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Bases emitidas de sujeto pasivo)</td>`;
     for(let t=0; t<4; t++) {
         const val = data.taxCalcExcel[activeTaxCompany].igic.values[`nosujeto-${t}`] || 0;
-        html += `<td><input type="text" class="cell-input fmt-num" data-section="igic" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('igic','nosujeto',${t},this.value)" value="${formatCurrency(val)}"></td>`;
+        html += `<td colspan="2"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('igic','nosujeto',${t},this.value)" value="${formatCurrency(val)}"></td>`;
     }
-    html += `<td class="cell-total" id="igic-nosujeto-4">0,00</td></tr>`;
+    html += `<td colspan="2" class="cell-total" id="igic-nosujeto-4" style="text-align: right !important;">0,00</td></tr>`;
 
-    // CIERRE DE CAJA DE SCROLL DE IGIC
     html += `</tbody></table></div>`;
 
-    // Inyectar el bloque de observaciones al final de la cola del scrollable
     html += `
     <div style="padding: 8px 4px; display: flex; flex-direction: column; gap: 4px; margin-top: 10px; border-top: 1px solid var(--border-strong);">
         <span style="font-size: 11px; font-weight: 600; color: var(--accent-light); text-transform: uppercase;">📝 Observaciones y Comentarios de la Autoliquidación</span>
@@ -3945,7 +3949,6 @@ function renderTaxTemplate() {
     
     container.innerHTML = html;
 
-    // Reactivar la asignación de valor a las observaciones después de inyectarse en el DOM
     const notesArea = document.getElementById('tax-calc-footer-notes');
     if (notesArea) {
         notesArea.value = data.taxCalcExcel[activeTaxCompany].generalNotes || '';
@@ -4166,38 +4169,54 @@ function calculateExcelTax() {
 
 
 // Navegación vertical rápida (Enter, Flecha Abajo y Flecha Arriba) en las tablas de impuestos
+// Navegación secuencial horizontal e inteligente vertical en las tablas de impuestos
 document.addEventListener('keydown', e => {
     const isExcelCell = e.target.classList.contains('cell-input');
     if (!isExcelCell) return;
 
-    if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    const keysToCapture = ['Enter', 'ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'];
+    if (keysToCapture.includes(e.key)) {
         const currentInput = e.target;
-        const t = parseInt(currentInput.dataset.t, 10);
-        
         const table = currentInput.closest('.excel-table');
         if (!table) return;
-        
-        // Obtener todos los inputs de la misma columna (t) en esta tabla
-        const inputs = Array.from(table.querySelectorAll(`.cell-input[data-t="${t}"]`));
+
+        // Lista de todos los inputs activos de datos (omitiendo calculados y bloqueados)
+        const inputs = Array.from(table.querySelectorAll('input.cell-input:not([readonly])'));
         const currentIndex = inputs.indexOf(currentInput);
         if (currentIndex === -1) return;
 
-        if (e.key === 'Enter' || e.key === 'ArrowDown') {
-            e.preventDefault(); // Evitar desplazamiento de página o salto de línea
-            if (tIdxLess(currentIndex, inputs.length)) {
-                const nextInput = inputs[currentIndex + 1];
-                if (nextInput) {
-                    nextInput.focus();
-                    nextInput.select();
-                }
+        if (e.key === 'Enter' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            // Salto horizontal continuo (pasa al siguiente elemento; si es fin de fila va al inicio de la de abajo)
+            if (currentIndex < inputs.length - 1) {
+                inputs[currentIndex + 1].focus();
+                inputs[currentIndex + 1].select();
             }
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault(); // Evitar desplazamiento de página
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            // Retroceso horizontal
             if (currentIndex > 0) {
-                const prevInput = inputs[currentIndex - 1];
-                if (prevInput) {
-                    prevInput.focus();
-                    prevInput.select();
+                inputs[currentIndex - 1].focus();
+                inputs[currentIndex - 1].select();
+            }
+        } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            // Desplazamiento vertical buscando el mismo trimestre (data-t) y la misma naturaleza (data-type: base/cuota)
+            const currentT = currentInput.dataset.t;
+            const currentType = currentInput.dataset.type;
+            const currentRow = currentInput.closest('tr');
+            const siblingRows = Array.from(table.querySelectorAll('tbody tr'));
+            const currentRowIndex = siblingRows.indexOf(currentRow);
+
+            if (currentRowIndex !== -1) {
+                const nextRowIndex = e.key === 'ArrowDown' ? currentRowIndex + 1 : currentRowIndex - 1;
+                if (nextRowIndex >= 0 && nextRowIndex < siblingRows.length) {
+                    const targetRow = siblingRows[nextRowIndex];
+                    const targetInput = targetRow.querySelector(`input.cell-input[data-t="${currentT}"][data-type="${currentType}"]`);
+                    if (targetInput) {
+                        targetInput.focus();
+                        targetInput.select();
+                    }
                 }
             }
         }
