@@ -1934,7 +1934,7 @@ function formatCurrency(n) {
   if (n === '' || n === null || n === undefined) return '';
   const v = parseFloat(n);
   if (isNaN(v)) return '';
-  return new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+  return new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 }
 
 function parseCurrency(str) {
