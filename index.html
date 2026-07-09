@@ -875,7 +875,7 @@
         border-right: 2px solid #2d3748 !important;
     }
 
-/* Columnas AÑO 390 (Columnas 10 y 11) */
+/* Columnas AÑO 390 (Columnas 10 y 11 por defecto) */
     .excel-table td:nth-child(10), .excel-table td:nth-child(11) {
         background: #202430 !important;
         color: #fde047 !important;
@@ -883,47 +883,6 @@
     .excel-table th:nth-child(10), .excel-table th:nth-child(11) {
         background: #1c1f2b !important;
         color: #fde047 !important;
-    }
-
-    /* Excepción de totales especiales */
-    tr:has(td[id*="b_tot_final"]) td.row-label,
-    tr:has(td[id*="b_tot_gfinal"]) td.row-label,
-    tr:has(td[id*="r_btot_final"]) td.row-label,
-    tr:has(td[id*="b_tot_final"]) td:nth-child(10), tr:has(td[id*="b_tot_final"]) td:nth-child(11),
-    tr:has(td[id*="b_tot_gfinal"]) td:nth-child(10), tr:has(td[id*="b_tot_gfinal"]) td:nth-child(11),
-    tr:has(td[id*="r_btot_final"]) td:nth-child(10), tr:has(td[id*="r_btot_final"]) td:nth-child(11) {
-        background-color: #5c3a21 !important;
-    }
-
-    /* REFUERZO VISUAL PARA CASILLAS DE INTRODUCCIÓN DE DATOS */
-    .bg-emitidas .cell-input {
-        background-color: rgba(30, 58, 138, 0.35) !important;
-        border: 1px dashed rgba(99, 102, 241, 0.35) !important;
-        color: #e2e8f0 !important;
-        border-radius: 4px;
-        padding: 3px 5px !important;
-        transition: all 0.15s ease;
-    }
-    .bg-emitidas .cell-input:focus {
-        background-color: rgba(30, 58, 138, 0.65) !important;
-        border: 1px solid #6366f1 !important;
-        box-shadow: 0 0 5px rgba(99, 102, 241, 0.4);
-        outline: none;
-    }
-
-    .bg-recibidas .cell-input {
-        background-color: rgba(120, 53, 15, 0.28) !important;
-        border: 1px dashed rgba(245, 158, 11, 0.35) !important;
-        color: #e2e8f0 !important;
-        border-radius: 4px;
-        padding: 3px 5px !important;
-        transition: all 0.15s ease;
-    }
-    .bg-recibidas .cell-input:focus {
-        background-color: rgba(120, 53, 15, 0.55) !important;
-        border: 1px solid #f59e0b !important;
-        box-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
-        outline: none;
     }
 
     /* ==========================================================================
@@ -940,11 +899,7 @@
     tr:has(td[id*="b_tot_1"]) td,
     tr:has(td[id*="b_tot_2"]) td,
     tr:has(td[id*="igic-b_tot-"]) td,
-    tr:has(td[id*="igic-b_tot_final-"]) td,
-    tr:has(td[id*="b_tot_1"]) .cell-calc,
-    tr:has(td[id*="b_tot_2"]) .cell-calc,
-    tr:has(td[id*="igic-b_tot-"]) .cell-calc,
-    tr:has(td[id*="igic-b_tot_final-"]) .cell-calc {
+    tr:has(td[id*="igic-b_tot_final-"]) td {
         color: #94a3b8 !important; /* Letra Gris */
         font-weight: bold !important;
         background-color: #1a365d !important;
@@ -964,13 +919,10 @@
     }
     tr:has(td[id*="iva-b_tot_final"]) td,
     tr:has(td[id*="igic-b_tot_gfinal"]) td,
-    tr:has(td[id*="c_total"]) td,
-    tr:has(td[id*="iva-b_tot_final"]) .cell-calc,
-    tr:has(td[id*="igic-b_tot_gfinal"]) .cell-calc,
-    tr:has(td[id*="c_total"]) .cell-calc {
+    tr:has(td[id*="c_total"]) td {
         color: #fde047 !important; /* Letra Amarilla */
-        font-weight: bold !important;
         background-color: #1a365d !important;
+        font-weight: bold !important;
     }
     tr:has(td[id*="iva-b_tot_final"]) td.row-label,
     tr:has(td[id*="igic-b_tot_gfinal"]) td.row-label,
@@ -982,8 +934,7 @@
     tr:has(td[id*="r_btot"]) {
         background-color: #5c3a21 !important;
     }
-    tr:has(td[id*="r_btot"]) td,
-    tr:has(td[id*="r_btot"]) .cell-calc {
+    tr:has(td[id*="r_btot"]) td {
         color: #94a3b8 !important; /* Letra Gris */
         font-weight: bold !important;
         background-color: #5c3a21 !important;
@@ -998,9 +949,7 @@
         background-color: #5c3a21 !important;
     }
     tr:has(td[id*="r_btot_final"]) td,
-    tr:has(td[id*="r_ctot"]) td,
-    tr:has(td[id*="r_btot_final"]) .cell-calc,
-    tr:has(td[id*="r_ctot"]) .cell-calc {
+    tr:has(td[id*="r_ctot"]) td {
         color: #fde047 !important; /* Letra Amarilla */
         font-weight: bold !important;
         background-color: #5c3a21 !important;
@@ -1008,6 +957,40 @@
     tr:has(td[id*="r_btot_final"]) td.row-label,
     tr:has(td[id*="r_ctot"]) td.row-label {
         background-color: #442a18 !important;
+    }
+
+    /* ==========================================================================
+       FORZADO DE ESPECIFICIDAD PARA COLUMNAS 10 Y 11 EN FILAS ESPECIALES
+       ========================================================================== */
+
+    /* Emitidas Sub-totales (Fuerzan Fondo Azul) */
+    .excel-table tr:has(td[id*="b_tot_1"]) td:nth-child(10), .excel-table tr:has(td[id*="b_tot_1"]) td:nth-child(11),
+    .excel-table tr:has(td[id*="b_tot_2"]) td:nth-child(10), .excel-table tr:has(td[id*="b_tot_2"]) td:nth-child(11),
+    .excel-table tr:has(td[id*="igic-b_tot-"]) td:nth-child(10), .excel-table tr:has(td[id*="igic-b_tot-"]) td:nth-child(11),
+    .excel-table tr:has(td[id*="igic-b_tot_final-"]) td:nth-child(10), .excel-table tr:has(td[id*="igic-b_tot_final-"]) td:nth-child(11) {
+        background-color: #1a365d !important;
+        color: #94a3b8 !important;
+    }
+
+    /* Emitidas Grandes Totales (Fuerzan Fondo Azul) */
+    .excel-table tr:has(td[id*="iva-b_tot_final"]) td:nth-child(10), .excel-table tr:has(td[id*="iva-b_tot_final"]) td:nth-child(11),
+    .excel-table tr:has(td[id*="igic-b_tot_gfinal"]) td:nth-child(10), .excel-table tr:has(td[id*="igic-b_tot_gfinal"]) td:nth-child(11),
+    .excel-table tr:has(td[id*="c_total"]) td:nth-child(10), .excel-table tr:has(td[id*="c_total"]) td:nth-child(11) {
+        background-color: #1a365d !important;
+        color: #fde047 !important;
+    }
+
+    /* Recibidas Sub-totales (Fuerzan Fondo Marrón) */
+    .excel-table tr:has(td[id*="r_btot"]) td:nth-child(10), .excel-table tr:has(td[id*="r_btot"]) td:nth-child(11) {
+        background-color: #5c3a21 !important;
+        color: #94a3b8 !important;
+    }
+
+    /* Recibidas Grandes Totales (Fuerzan Fondo Marrón) */
+    .excel-table tr:has(td[id*="r_btot_final"]) td:nth-child(10), .excel-table tr:has(td[id*="r_btot_final"]) td:nth-child(11),
+    .excel-table tr:has(td[id*="r_ctot"]) td:nth-child(10), .excel-table tr:has(td[id*="r_ctot"]) td:nth-child(11) {
+        background-color: #5c3a21 !important;
+        color: #fde047 !important;
     }
 
     /* 2.5. FILA DE RESULTADO DE LIQUIDACIÓN INCREMENTADA */
