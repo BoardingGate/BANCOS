@@ -3412,6 +3412,11 @@ if (e.target.classList.contains('btn-add-mov')) {
       data.movements[key].push({importe:'',observacion:fechaActual,conciliado:false});
       saveData(); renderBalances(); 
     }
+    if (e.target.classList.contains('btn-del-mov')) {
+      const bi=+e.target.dataset.bi, ci=+e.target.dataset.ci, mi=+e.target.dataset.mi, key=bi+'-'+ci;
+      data.movements[key].splice(mi,1);
+      saveData(); renderBalances();
+    }
   });
 
   document.getElementById('grid-balances').addEventListener('change', e => {
