@@ -1019,7 +1019,6 @@
     transition: all var(--transition);
     width: 100%;
 }  
-
   /* CELDA ACTUALIZADA HOY (COLOR OPACO/ATENUADO) */
     .balance-cell.cell-updated-today {
       opacity: 0.45;
@@ -1028,7 +1027,6 @@
     .balance-cell.cell-updated-today:hover {
       opacity: 0.95;
     }
-  
   </style>
 </head>
 <body>
@@ -2796,18 +2794,18 @@ data.companies.forEach((_, ci) => {
         + '</div></div>'
       ).join('');
 
-let cellClasses = 'grid-cell balance-cell';
+
       if (isDisabled) cellClasses += ' cell-disabled';
       if (isColCollapsed) cellClasses += ' company-collapsed-cell'; 
       if (isRowCollapsed) cellClasses += ' row-collapsed-cell';
 
-  // 1. Valores básicos
+      // 1. Valores básicos
       const fActual = hasActual ? (formatCurrency(bal.saldoActual) || '0,00') : '\u2014';
       const fConciliado = concText;
       const actualNum = parseFloat(bal.saldoActual) || 0;
       const isDiff = hasActual && (Math.abs(actualNum - cv) > 0.009);
 
-      // 2. Lógica de Fecha UNIFICADA
+// 2. Lógica de Fecha UNIFICADA
       const uDate = (data.lastUpdateDates && data.lastUpdateDates[key]) || '';
       let dateHtmlLabel = ''; // Para el título "Saldo Punteado"
       let dateRowMin = '';    // Para la casilla minimizada
@@ -2838,7 +2836,6 @@ let cellClasses = 'grid-cell balance-cell';
       
       summaryHTML += dateRowMin + '</div>';
 
-      // 4. Clases CSS de la Celda (incluye atenuación si está revisada hoy)
       let cellClasses = 'grid-cell balance-cell';
       if (isDisabled) cellClasses += ' cell-disabled';
       if (isColCollapsed) cellClasses += ' company-collapsed-cell'; 
