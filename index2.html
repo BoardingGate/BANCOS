@@ -1,4 +1,4 @@
-<!DOCTYPE html>        
+<!DOCTYPE html>         
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
@@ -1019,6 +1019,14 @@
     transition: all var(--transition);
     width: 100%;
 }  
+  /* CELDA ACTUALIZADA HOY (COLOR OPACO/ATENUADO) */
+    .balance-cell.cell-updated-today {
+      opacity: 0.45;
+      transition: opacity var(--transition);
+    }
+    .balance-cell.cell-updated-today:hover {
+      opacity: 0.95;
+    }
   </style>
 </head>
 <body>
@@ -2648,14 +2656,14 @@ function renderBalances() {
   
   // Construcción dinámica de columnas según estado de contracción de empresas y de la primera columna de bancos
   let bankColWidth = data.collapsedBankColumn ? '35px' : '240px';
- let colSpecs = [bankColWidth];
-data.companies.forEach((_, ci) => {
-  if (data.collapsedCompanies[ci] === true) {
-    colSpecs.push('85px'); // Ancho incrementado aquí también
-  } else {
-    colSpecs.push('minmax(170px,1fr)');
-  }
-});
+  let colSpecs = [bankColWidth];
+  data.companies.forEach((_, ci) => {
+    if (data.collapsedCompanies[ci] === true) {
+      colSpecs.push('85px');
+    } else {
+      colSpecs.push('minmax(170px,1fr)');
+    }
+  });
   g.style.gridTemplateColumns = colSpecs.join(' ');
   
   let html = '';
@@ -2668,9 +2676,8 @@ data.companies.forEach((_, ci) => {
     'rgba(131, 24, 67, 0.15)', 'rgba(20, 83, 45, 0.15)', 'rgba(112, 26, 117, 0.15)', 'rgba(59, 7, 100, 0.15)'
   ];
 
-  // Evaluar estado de las columnas para calcular el botón unificado (+) / (-)
   const anyColExpanded = data.companies.some((_, ci) => !data.collapsedCompanies[ci]);
-  const toggleColsSymbol = anyColExpanded ? '&#x2212;' : '&#xFF0B;'; // Signo de menos (−) vs Signo de más (＋)
+  const toggleColsSymbol = anyColExpanded ? '&#x2212;' : '&#xFF0B;';
   const toggleColsTitle = anyColExpanded ? 'Contraer todas las columnas' : 'Expandir todas las columnas';
 
   if (data.collapsedBankColumn) {
@@ -2679,7 +2686,7 @@ data.companies.forEach((_, ci) => {
       + '<button class="action-btn-fold btn-toggle-all-cols" title="' + toggleColsTitle + '" style="font-weight: bold; font-size: 10px;">' + toggleColsSymbol + '</button>'
       + '<button class="action-btn-fold btn-undo" title="Deshacer último cambio" style="color: var(--amber); font-weight: bold;">&#x21B6;</button>'
       + '</div>';
-} else {
+  } else {
     html += '<div class="grid-cell header-corner" style="background-color: #0d0f1a; border-bottom: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2); display: flex; justify-content: space-between; align-items: center; padding: 4px 6px !important;">'
       + '<div class="nav-controls">'
       + '<button class="nav-btn" onclick="navScroll(\'left\')" title="Izquierda">&#x25C0;</button>'
@@ -2705,8 +2712,8 @@ data.companies.forEach((_, ci) => {
         + '<span style="font-size: 11px; writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-weight: 700; letter-spacing: 0.5px;">'+esc(c)+'</span>'
         + '<div style="font-size: 8px; margin-top: 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: rgba(255,255,255,0.85); width: 100%; text-align: center; overflow: hidden; pointer-events: none;">'
         + '  <div id="col-total-act-collapsed-'+ci+'" style="max-width: 70px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
-+ '  <div id="col-total-con-collapsed-'+ci+'" style="color: var(--emerald); max-width: 70px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
-       + '</div>'
+        + '  <div id="col-total-con-collapsed-'+ci+'" style="color: var(--emerald); max-width: 70px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 700;">0</div>'
+        + '</div>'
         + '</div>';
     } else {
       html += '<div class="grid-cell header-company" style="background-color: '+companyColors[ci % companyColors.length]+'; border-bottom: 2px solid rgba(255,255,255,0.2);"><div class="header-editable-wrapper">'
@@ -2786,11 +2793,6 @@ data.companies.forEach((_, ci) => {
         + '</div></div>'
       ).join('');
 
-let cellClasses = 'grid-cell balance-cell';
-      if (isDisabled) cellClasses += ' cell-disabled';
-      if (isColCollapsed) cellClasses += ' company-collapsed-cell'; 
-      if (isRowCollapsed) cellClasses += ' row-collapsed-cell';
-
       // 1. Valores básicos
       const fActual = hasActual ? (formatCurrency(bal.saldoActual) || '0,00') : '\u2014';
       const fConciliado = concText;
@@ -2799,18 +2801,17 @@ let cellClasses = 'grid-cell balance-cell';
 
       // 2. Lógica de Fecha UNIFICADA
       const uDate = (data.lastUpdateDates && data.lastUpdateDates[key]) || '';
-      let dateHtmlLabel = ''; // Para el título "Saldo Punteado"
-      let dateRowMin = '';    // Para la casilla minimizada
-      
+      let dateHtmlLabel = '';
+      let dateRowMin = '';
+      let isUpdatedToday = false;
+
       if (uDate) {
         const now = new Date();
         const today = String(now.getDate()).padStart(2, '0') + '-' + String(now.getMonth() + 1).padStart(2, '0');
-        const color = (uDate === today) ? 'var(--amber)' : 'var(--text-muted)';
+        isUpdatedToday = (uDate === today);
+        const color = isUpdatedToday ? 'var(--amber)' : 'var(--text-muted)';
         
-        // Título de la celda abierta (siempre gris)
         dateHtmlLabel = '<span style="font-size:8px; color:var(--text-muted); font-weight:normal; margin-left:4px;">' + uDate + '</span>';
-        
-        // Nueva fila para la celda minimizada (Color dinámico: amarillo o gris)
         dateRowMin = '<div class="sum-row" style="justify-content:center; margin-top:2px;">' +
                      '<span style="color:' + color + '; font-size:8px; font-weight:600;">(' + uDate + ')</span>' +
                      '</div>';
@@ -2826,7 +2827,14 @@ let cellClasses = 'grid-cell balance-cell';
       
       summaryHTML += dateRowMin + '</div>';
 
-     // Calcular diferencia entre saldo punteado y saldo actual
+      // 4. Clases CSS (Atenuación si está revisada hoy)
+      let cellClasses = 'grid-cell balance-cell';
+      if (isDisabled) cellClasses += ' cell-disabled';
+      if (isColCollapsed) cellClasses += ' company-collapsed-cell'; 
+      if (isRowCollapsed) cellClasses += ' row-collapsed-cell';
+      if (isUpdatedToday && !isDisabled && !isColCollapsed && !isRowCollapsed) cellClasses += ' cell-updated-today';
+
+      // Calcular diferencia entre saldo punteado y saldo actual
       const pNum = parseFloat(bal.saldoPunteado) || 0;
       const aNum = parseFloat(bal.saldoActual) || 0;
       const diffVal = pNum - aNum;
@@ -2869,7 +2877,6 @@ let cellClasses = 'grid-cell balance-cell';
   g.innerHTML = html;
   updateAllTotals();
 }
-
 // ─── RENDERIZADO FACTURAS ──────────────────────────────────
 function renderInvoices() {
   document.getElementById('invoices-body').innerHTML = data.invoices.map((inv,i) => {
@@ -3399,10 +3406,17 @@ if (el.dataset.field==='saldoActual') {
       });
     }
 
-    if (e.target.classList.contains('btn-add-mov')) {
+if (e.target.classList.contains('btn-add-mov')) {
       const bi=+e.target.dataset.bi, ci=+e.target.dataset.ci, key=bi+'-'+ci;
       if (!data.movements[key]) data.movements[key]=[];
-      data.movements[key].push({importe:'',observacion:'',conciliado:false});
+      
+      // Obtener la fecha actual en formato DD-MM
+      const now = new Date();
+      const d = String(now.getDate()).padStart(2, '0');
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const fechaActual = `${d}-${m}`;
+
+      data.movements[key].push({importe:'',observacion:fechaActual,conciliado:false});
       saveData(); renderBalances(); 
     }
     if (e.target.classList.contains('btn-del-mov')) {
