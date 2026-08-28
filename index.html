@@ -23,7 +23,7 @@
     html{scroll-behavior:smooth}
     body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;font-size:13px;line-height:1.5;transition: background 0.3s;}
     body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 20%,rgba(99,102,241,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(6,182,212,0.06) 0%,transparent 50%);pointer-events:none;z-index:0}
-    
+  
     /* CABECERO COMPACTO INTEGRADO */
     .app-header {
       position: sticky;
@@ -68,6 +68,21 @@
       flex-shrink: 0;
     }
 
+    .pending-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      background-color: #2563eb;
+      color: #ffffff;
+      border-radius: 50%;
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+  
     /* VENTANA FLOTANTE DE CREDENCIALES */
     .floating-creds {
       position: fixed;
@@ -2815,7 +2830,11 @@ function renderBalances() {
         dateRowMin = '<div class="sum-row" style="justify-content:center; margin-top:2px;">' +
                      '<span style="color:' + color + '; font-size:8px; font-weight:600;">(' + uDate + ')</span>' +
                      '</div>';
-      }
+      }// Contar apuntes pendientes de conciliar
+      const pendingCount = movs.filter(m => !m.conciliado).length;
+      const pendingBadgeHtml = pendingCount > 0 
+        ? '<div class="sum-row" style="justify-content:center; margin-top:3px;"><span class="pending-badge" title="' + pendingCount + ' apunte(s) pendiente(s)">' + pendingCount + '</span></div>' 
+        : '';
 
       // 3. Construcción del resumen (Vista minimizada)
       let summaryHTML = '<div class="collapsed-summary">'
@@ -2825,7 +2844,7 @@ function renderBalances() {
         summaryHTML += '<div class="sum-row" title="Saldo Conciliado"><span class="sum-lbl con ' + concClass + '">C:</span><span class="sum-val ' + concClass + '">' + esc(fConciliado) + '</span></div>';
       }
       
-      summaryHTML += dateRowMin + '</div>';
+      summaryHTML += dateRowMin + pendingBadgeHtml + '</div>';
 
       // 4. Clases CSS (Atenuación si está revisada hoy)
       let cellClasses = 'grid-cell balance-cell';
