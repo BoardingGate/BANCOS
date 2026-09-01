@@ -356,6 +356,12 @@
     .btn-del-mov:hover{background:rgba(239,68,68,0.12);color:#ef4444}
     .btn-add-mov{background:rgba(99,102,241,0.08);border:1px dashed rgba(99,102,241,0.25);color:var(--accent-light);cursor:pointer;font-size:9px;padding:4px 6px;border-radius:5px;transition:all var(--transition);font-family:inherit;width:100%;margin-top:6px}
     .btn-add-mov:hover{background:rgba(99,102,241,0.14);border-style:solid}
+    .movement-item{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;padding:4px;transition:all var(--transition)}
+    .movement-item.dragging{opacity:0.35;border:1px dashed var(--accent)}
+    .movement-item.drag-over{border-top:2px solid var(--accent-light)}
+    .mov-drag-handle{cursor:grab;color:var(--text-muted);font-size:10px;user-select:none;display:inline-flex;align-items:center;padding:0 2px;line-height:1}
+    .mov-drag-handle:active{cursor:grabbing}
+    .mov-drag-handle:hover{color:var(--accent-light)}
 
     /* TABLAS TRADICIONALES */
     .data-table{width:100%;border-collapse:collapse;font-size:11px; table-layout: auto}
@@ -2796,10 +2802,10 @@ function renderBalances() {
       
       const movs = data.movements[key] || [];
       let movItems = movs.map((m,mi) =>
-        '<div class="movement-item'+(m.conciliado?' mov-conciliado':'')+'" data-mi="'+mi+'">'
+        '<div class="movement-item'+(m.conciliado?' mov-conciliado':'')+'" draggable="true" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'">'
         + '<div class="mov-row1">'
-        + '<input type="text" class="mov-importe fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'" data-field="importe" value="'+esc(formatCurrency(m.importe))+'" placeholder="Importe"/>'
-        + '<label class="mov-check-label" title="Conciliado">'
+        + '<span class="mov-drag-handle" title="Arrastrar para reordenar">&#x2630;</span>'
+        + '<input type="text" class="mov-importe fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'" data-field="importe" value="'+esc(formatCurrency(m.importe))+'" placeholder="Importe"/>'        + '<label class="mov-check-label" title="Conciliado">'
         + '<input type="checkbox" class="mov-conciliado-check" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'"'+(m.conciliado?' checked':'')+'/>'
         + '<span class="check-text">Conc.</span></label>'
         + '<button class="btn-del-mov" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'" title="Eliminar">\u2715</button>'
@@ -3461,6 +3467,68 @@ if (e.target.classList.contains('btn-add-mov')) {
       const bi=el.dataset.bi, ci=el.dataset.ci, key=bi+'-'+ci;
       data.disabledCells[key] = !el.checked;
       saveData(); 
+      renderBalances();
+    }
+  });
+
+  // ARRASTRAR Y REORDENAR MOVIMIENTOS PENDIENTES (DRAG & DROP)
+  let draggedMov = null;
+
+  document.getElementById('grid-balances').addEventListener('dragstart', e => {
+    const item = e.target.closest('.movement-item');
+    if (!item) return;
+    draggedMov = {
+      bi: +item.dataset.bi,
+      ci: +item.dataset.ci,
+      mi: +item.dataset.mi
+    };
+    item.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', JSON.stringify(draggedMov));
+  });
+
+  document.getElementById('grid-balances').addEventListener('dragover', e => {
+    const targetItem = e.target.closest('.movement-item');
+    if (!targetItem || !draggedMov) return;
+    
+    // Solo permitir reordenar dentro de la misma celda
+    if (+targetItem.dataset.bi === draggedMov.bi && +targetItem.dataset.ci === draggedMov.ci) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      targetItem.classList.add('drag-over');
+    }
+  });
+
+  document.getElementById('grid-balances').addEventListener('dragleave', e => {
+    const targetItem = e.target.closest('.movement-item');
+    if (targetItem) targetItem.classList.remove('drag-over');
+  });
+
+  document.getElementById('grid-balances').addEventListener('dragend', e => {
+    document.querySelectorAll('.movement-item').forEach(el => {
+      el.classList.remove('dragging', 'drag-over');
+    });
+    draggedMov = null;
+  });
+
+  document.getElementById('grid-balances').addEventListener('drop', e => {
+    const targetItem = e.target.closest('.movement-item');
+    if (!targetItem || !draggedMov) return;
+    
+    const targetBi = +targetItem.dataset.bi;
+    const targetCi = +targetItem.dataset.ci;
+    const targetMi = +targetItem.dataset.mi;
+
+    if (targetBi === draggedMov.bi && targetCi === draggedMov.ci && targetMi !== draggedMov.mi) {
+      e.preventDefault();
+      pushUndo();
+      
+      const key = targetBi + '-' + targetCi;
+      const movs = data.movements[key];
+      const [movedItem] = movs.splice(draggedMov.mi, 1);
+      movs.splice(targetMi, 0, movedItem);
+      
+      saveData();
       renderBalances();
     }
   });
