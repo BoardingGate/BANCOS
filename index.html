@@ -1048,6 +1048,29 @@
     .balance-cell.cell-updated-today:hover {
       opacity: 0.95;
     }
+
+  /* TRIMESTRE BLOQUEADO Y CANDADO EN MODELO 303/420 */
+    .quarter-locked-cell {
+      opacity: 0.70 !important;
+    }
+    .quarter-locked-cell input {
+      pointer-events: none !important;
+      user-select: none !important;
+      cursor: not-allowed !important;
+    }
+    .btn-quarter-lock {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+      margin-left: 5px;
+      vertical-align: middle;
+      transition: transform 0.15s ease;
+    }
+    .btn-quarter-lock:hover {
+      transform: scale(1.2);
+    }
   </style>
 </head>
 <body>
@@ -3806,21 +3829,36 @@ function initTaxCalcData() {
                 iva: { 
                     rates: { r1: 4, r2: 10, r3: 21, r4: 0, r5: 0 }, 
                     values: { 'prev-0': 24.98 },
-                    notes: ''
+                    notes: '',
+                    lockedQuarters: {}
                 },
                 igic: { 
                     rates: { r1: 0, r2: 3, r3: 7, r4: 13, r5: 0, r6: 0 }, 
                     values: {},
-                    notes: ''
+                    notes: '',
+                    lockedQuarters: {}
                 }
             };
         }
+        if (!data.taxCalcExcel[co].iva.lockedQuarters) data.taxCalcExcel[co].iva.lockedQuarters = {};
+        if (!data.taxCalcExcel[co].igic.lockedQuarters) data.taxCalcExcel[co].igic.lockedQuarters = {};
     });
 
     if (!activeTaxCompany && data.companies.length > 0) {
         activeTaxCompany = data.companies[0];
     }
 }
+
+window.toggleQuarterLock = (sec, t) => {
+    initTaxCalcData();
+    if (!data.taxCalcExcel[activeTaxCompany][sec].lockedQuarters) {
+        data.taxCalcExcel[activeTaxCompany][sec].lockedQuarters = {};
+    }
+    const current = !!data.taxCalcExcel[activeTaxCompany][sec].lockedQuarters[t];
+    data.taxCalcExcel[activeTaxCompany][sec].lockedQuarters[t] = !current;
+    saveData();
+    renderTaxTemplate();
+};
 
 window.changeActiveTaxCompany = (companyName) => {
     activeTaxCompany = companyName;
@@ -3852,23 +3890,18 @@ function renderTaxTemplate() {
         { id: 'r4', label: 'Emitidas 0%', rate: 'r4', class: 'bg-emitidas', baseId: 'b_r4', cuotaId: 'c_r4' },
         { id: 'r5', label: 'Emitidas Especial', rate: 'r5', class: 'bg-emitidas', baseId: 'b_r5', cuotaId: 'c_r5' },
         { id: 'rect', label: 'Emitidas Rectificativas', class: 'bg-emitidas color-rect', baseId: 'b_rect', cuotaId: 'c_rect' },
-        // SUB-TOTAL Bases Emitidas 1
         { id: 'tot_1', label: 'Suma bases', isSum: true, class: 'row-sum-bases', baseId: 'b_tot_1', cuotaId: null },
         { id: 'intra', label: 'Adquisiciones Intracomunitarias', class: 'bg-emitidas', baseId: 'b_intra', cuotaId: 'c_intra' },
-        // SUB-TOTAL Bases Emitidas Total 2
         { id: 'tot_2', label: 'Suma bases total', isSum: true, class: 'row-sum-bases', baseId: 'b_tot_2', cuotaId: null },
         { id: 'invers', label: 'Inversión No sujetas Localización', class: 'bg-emitidas', baseId: 'b_invers', cuotaId: 'c_suj' },
         { id: 'zero', label: 'Emitidas al 0% (sin sujeto pasivo)', class: 'bg-emitidas', baseId: 'b_zero', cuotaId: null },
-        // TOTAL GENERAL EMITIDAS
         { id: 'tot_emit', label: 'TOTALES EMITIDAS ■■■■■■►', isSum: true, class: 'row-sum-cuotas', baseId: 'b_tot_final', cuotaId: 'c_total' },
         { id: 'sep1', isSpacer: true },
         { id: 'rec', label: 'Recibidas Corrientes', class: 'bg-recibidas', baseId: 'r_b28', cuotaId: 'r_c' },
         { id: 'rec_zero', label: 'Recibidas al 0%', class: 'bg-recibidas', baseId: 'r_b0', cuotaId: null },
-        // SUB-TOTAL Bases Recibidas
         { id: 'tot_rec_1', label: 'Suma bases recibidas', isSum: true, class: 'row-sum-bases', baseId: 'r_btot', cuotaId: null },
         { id: 'rec_rect', label: 'Recibidas Rectificativas', class: 'bg-recibidas color-rect', baseId: 'r_brect', cuotaId: 'r_crect' },
         { id: 'rec_intra', label: 'Recibidas Intracomunitarias', class: 'bg-recibidas', baseId: 'r_bintra', cuotaId: 'r_cintra' },
-        // TOTAL GENERAL RECIBIDAS
         { id: 'tot_rec', label: 'TOTALES RECIBIDAS ■■■■■■►', isSum: true, class: 'row-sum-cuotas', baseId: 'r_btot_final', cuotaId: 'r_ctot' }
     ];
 
@@ -3880,27 +3913,23 @@ function renderTaxTemplate() {
         { id: 'ig_ex1', label: 'Emitidas Especial 1', rate: 'r5', class: 'bg-emitidas', baseId: 'b_ig_ex1', cuotaId: 'c_ig_ex1' },
         { id: 'ig_ex2', label: 'Emitidas Especial 2', rate: 'r6', class: 'bg-emitidas', baseId: 'b_ig_ex2', cuotaId: 'c_ig_ex2' },
         { id: 'rect', label: 'Emitidas Rectificativas', class: 'bg-emitidas color-rect', baseId: 'b_rect', cuotaId: 'c_rect' },
-        // SUB-TOTAL IGIC Bases Emitidas 1
         { id: 'tot_1', label: 'Suma bases', isSum: true, class: 'row-sum-bases', baseId: 'b_tot', cuotaId: null },
         { id: 'intra', label: 'Intracomunitarias', class: 'bg-emitidas', baseId: 'b_intra', cuotaId: 'c_intra' },
-        // SUB-TOTAL IGIC Bases Emitidas Total 2
         { id: 'tot_2', label: 'Suma bases total', isSum: true, class: 'row-sum-bases', baseId: 'b_tot_final', cuotaId: null },
         { id: 'invers', label: 'No sujetas reglas localizacion', class: 'bg-emitidas', baseId: 'b_invers', cuotaId: 'c_suj' },
         { id: 'zero', label: 'Emitidas al 0% (no sujeto pasivo)', class: 'bg-emitidas', baseId: 'b_zero', cuotaId: null },
-        // TOTAL GENERAL EMITIDAS IGIC
         { id: 'tot_emit', label: 'TOTALES EMITIDAS ■■■■■■►', isSum: true, class: 'row-sum-cuotas', baseId: 'b_tot_gfinal', cuotaId: 'c_total' },
         { id: 'sep1', isSpacer: true },
         { id: 'rec', label: 'Recibidas Corrientes', class: 'bg-recibidas', baseId: 'r_b28', cuotaId: 'r_c' },
         { id: 'rec_zero', label: 'Recibidas al 0%', class: 'bg-recibidas', baseId: 'r_b0', cuotaId: null },
-        // SUB-TOTAL IGIC Recibidas
         { id: 'tot_rec_1', label: 'Suma bases recibidas', isSum: true, class: 'row-sum-bases', baseId: 'r_btot', cuotaId: null },
         { id: 'rec_rect', label: 'Recibidas Rectificativas', class: 'bg-recibidas color-rect', baseId: 'r_brect', cuotaId: 'r_crect' },
         { id: 'rec_intra', label: 'Recibidas Intracomunitarias', class: 'bg-recibidas', baseId: 'r_bintra', cuotaId: 'r_cintra' },
-        // TOTAL GENERAL RECIBIDAS IGIC
         { id: 'tot_rec', label: 'TOTALES RECIBIDAS ■■■■■■►', isSum: true, class: 'row-sum-cuotas', baseId: 'r_btot_final', cuotaId: 'r_ctot' }
     ];
 
     function drawHorizontalGroupRows(rows, secId) {
+        const lockedMap = data.taxCalcExcel[activeTaxCompany][secId].lockedQuarters || {};
         return rows.map(r => {
             if (r.isSpacer) { 
                 return `<tr style="height:12px; background:rgba(0,0,0,0.45)"><td colspan="11"></td></tr>`; 
@@ -3914,36 +3943,48 @@ function renderTaxTemplate() {
             let tr = `<tr class="${r.class || ''}"><td class="row-label">${label}</td>`;
 
             for (let t = 0; t < 5; t++) {
-                // Estilo para destacar separación entre trimestres
+                const isLocked = t < 4 && !!lockedMap[t];
+                const lockClass = isLocked ? ' quarter-locked-cell' : '';
+                const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
                 const qBorder = (t < 4) ? 'border-right: 3px solid rgba(255, 255, 255, 0.22) !important;' : '';
 
                 // Celda de Base
                 if (!r.baseId) {
-                    tr += `<td style="background: rgba(0,0,0,0.3)"></td>`;
+                    tr += `<td class="${lockClass}" style="background: rgba(0,0,0,0.3)"></td>`;
                 } else if (t === 4 || r.isSum) {
-                    tr += `<td class="cell-calc ${t===4?'cell-total':''}" id="${secId}-${r.baseId}-${t}">0,00</td>`;
+                    tr += `<td class="cell-calc ${t===4?'cell-total':''}${lockClass}" id="${secId}-${r.baseId}-${t}">0,00</td>`;
                 } else {
                     const val = data.taxCalcExcel[activeTaxCompany][secId].values[`${r.baseId}-${t}`];
                     const valStr = (val === 0 || val === '' || val === undefined || val === null) ? '' : formatCurrency(val);
                     const negStyle = (parseFloat(val) < 0) ? 'color: #ef4444 !important; font-weight: bold !important;' : '';
-                    tr += `<td><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.baseId}" data-t="${t}" data-type="base" oninput="updateTaxVal('${secId}','${r.baseId}',${t},this.value)" value="${valStr}" style="${negStyle}"></td>`;
+                    tr += `<td class="${lockClass}"><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.baseId}" data-t="${t}" data-type="base" oninput="updateTaxVal('${secId}','${r.baseId}',${t},this.value)" value="${valStr}" style="${negStyle}"${readonlyAttr}></td>`;
                 }
 
-                // Celda de Cuota (Lleva el borde grueso)
+                // Celda de Cuota
                 if (!r.cuotaId) {
-                    tr += `<td style="background: rgba(0,0,0,0.3); ${qBorder}"></td>`;
+                    tr += `<td class="${lockClass}" style="background: rgba(0,0,0,0.3); ${qBorder}"></td>`;
                 } else if (t === 4 || r.isSum) {
-                    tr += `<td class="cell-calc ${t===4?'cell-total':''}" id="${secId}-${r.cuotaId}-${t}" style="${qBorder}">0,00</td>`;
+                    tr += `<td class="cell-calc ${t===4?'cell-total':''}${lockClass}" id="${secId}-${r.cuotaId}-${t}" style="${qBorder}">0,00</td>`;
                 } else {
                     const val = data.taxCalcExcel[activeTaxCompany][secId].values[`${r.cuotaId}-${t}`];
                     const valStr = (val === 0 || val === '' || val === undefined || val === null) ? '' : formatCurrency(val);
                     const negStyle = (parseFloat(val) < 0) ? 'color: #ef4444 !important; font-weight: bold !important;' : '';
-                    tr += `<td style="${qBorder}"><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.cuotaId}" data-t="${t}" data-type="cuota" oninput="updateTaxVal('${secId}','${r.cuotaId}',${t},this.value)" value="${valStr}" style="${negStyle}"></td>`;
+                    tr += `<td class="${lockClass}" style="${qBorder}"><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.cuotaId}" data-t="${t}" data-type="cuota" oninput="updateTaxVal('${secId}','${r.cuotaId}',${t},this.value)" value="${valStr}" style="${negStyle}"${readonlyAttr}></td>`;
                 }
             }
             return tr + `</tr>`;
         }).join('');
     }
+
+    const ivaLocks = data.taxCalcExcel[activeTaxCompany].iva.lockedQuarters || {};
+    const igicLocks = data.taxCalcExcel[activeTaxCompany].igic.lockedQuarters || {};
+
+    const lockBtn = (sec, t) => {
+        const isLocked = !!(sec === 'iva' ? ivaLocks[t] : igicLocks[t]);
+        const icon = isLocked ? '🔒' : '🔓';
+        const title = isLocked ? 'Trimestre bloqueado (clic para desbloquear)' : 'Trimestre desbloqueado (clic para bloquear)';
+        return `<button type="button" class="btn-quarter-lock" title="${title}" onclick="toggleQuarterLock('${sec}', ${t})">${icon}</button>`;
+    };
 
     // 2. CONSTRUCCIÓN DE LA TABLA DE IVA
     let html = `<div class="excel-container">
@@ -3952,17 +3993,17 @@ function renderTaxTemplate() {
             <tr class="row-header-iva"><th colspan="11">IVA EMPRESA: - ${activeTaxCompany}</th></tr>
             <tr>
                 <th rowspan="2" style="vertical-align: middle;">CONCEPTOS</th>
-                <th colspan="2" style="background: #1e3a8a !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">1T</th>
-                <th colspan="2" style="background: #14532d !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">2T</th>
-                <th colspan="2" style="background: #7c2d12 !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">3T</th>
-                <th colspan="2" style="background: #581c87 !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">4T</th>
+                <th colspan="2" style="background: #1e3a8a !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">1T ${lockBtn('iva', 0)}</th>
+                <th colspan="2" style="background: #14532d !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">2T ${lockBtn('iva', 1)}</th>
+                <th colspan="2" style="background: #7c2d12 !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">3T ${lockBtn('iva', 2)}</th>
+                <th colspan="2" style="background: #581c87 !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">4T ${lockBtn('iva', 3)}</th>
                 <th colspan="2" style="background: #1a202c !important; color: #fde047 !important; font-weight: 700;">AÑO 390</th>
             </tr>
             <tr>
-                <th>Base</th><th style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
-                <th>Base</th><th style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
-                <th>Base</th><th style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
-                <th>Base</th><th style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
+                <th class="${ivaLocks[0]?'quarter-locked-cell':''}">Base</th><th class="${ivaLocks[0]?'quarter-locked-cell':''}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
+                <th class="${ivaLocks[1]?'quarter-locked-cell':''}">Base</th><th class="${ivaLocks[1]?'quarter-locked-cell':''}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
+                <th class="${ivaLocks[2]?'quarter-locked-cell':''}">Base</th><th class="${ivaLocks[2]?'quarter-locked-cell':''}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
+                <th class="${ivaLocks[3]?'quarter-locked-cell':''}">Base</th><th class="${ivaLocks[3]?'quarter-locked-cell':''}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
                 <th>Base</th><th>Cuota</th>
             </tr>
         </thead>
@@ -3973,26 +4014,34 @@ function renderTaxTemplate() {
     // Resultados Liquidación IVA
     html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IVA ■■■■■■►</td>`;
     for(let t=0; t<5; t++) {
+        const isLocked = t < 4 && !!ivaLocks[t];
+        const lockClass = isLocked ? ' quarter-locked-cell' : '';
         const qBorder = (t < 4) ? 'border-right: 3px solid rgba(255, 255, 255, 0.3) !important;' : '';
-        html += `<td colspan="2" style="position:relative; padding-right:18px; text-align: right !important; ${qBorder}">
+        html += `<td colspan="2" class="${lockClass}" style="position:relative; padding-right:18px; text-align: right !important; ${qBorder}">
             <span id="iva-res-final-${t}" style="font-weight: 800;">0,00</span>
             <button type="button" class="action-btn-mini" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:7px; width:12px; height:12px; padding:0; display:inline-flex; align-items:center; justify-content:center; line-height:1;" title="Exportar a Liquidaciones" onclick="exportResultToTaxes('iva', ${t})">📤</button>
         </td>`;
     }
     html += `</tr>`;
     
-    // Compensar e Infrasujeto
+    // Compensar e Infrasujeto IVA
     html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
+        const isLocked = !!ivaLocks[t];
+        const lockClass = isLocked ? ' quarter-locked-cell' : '';
+        const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
         const val = data.taxCalcExcel[activeTaxCompany].iva.values[`prev-${t}`] || 0;
-        html += `<td colspan="2" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
+        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${formatCurrency(val)}"${readonlyAttr}></td>`;
     }
     html += `<td colspan="2" class="cell-total" id="iva-prev-4" style="text-align: right !important;">0,00</td></tr>`;
     
     html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Casilla 120 / 110)</td>`;
     for(let t=0; t<4; t++) {
+        const isLocked = !!ivaLocks[t];
+        const lockClass = isLocked ? ' quarter-locked-cell' : '';
+        const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
         const val = data.taxCalcExcel[activeTaxCompany].iva.values[`nosujeto-${t}`] || 0;
-        html += `<td colspan="2" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('iva','nosujeto',${t},this.value)" value="${formatCurrency(val)}"></td>`;
+        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('iva','nosujeto',${t},this.value)" value="${formatCurrency(val)}"${readonlyAttr}></td>`;
     }
     html += `<td colspan="2" class="cell-total" id="iva-nosujeto-4" style="text-align: right !important;">0,00</td></tr>`;
 
@@ -4004,17 +4053,17 @@ function renderTaxTemplate() {
             <tr class="row-header-igic"><th colspan="11">IGIC EMPRESA: - ${activeTaxCompany}</th></tr>
             <tr>
                 <th rowspan="2" style="vertical-align: middle;">CONCEPTOS</th>
-                <th colspan="2" style="background: #1e3a8a !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">1T</th>
-                <th colspan="2" style="background: #14532d !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">2T</th>
-                <th colspan="2" style="background: #7c2d12 !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">3T</th>
-                <th colspan="2" style="background: #581c87 !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">4T</th>
+                <th colspan="2" style="background: #1e3a8a !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">1T ${lockBtn('igic', 0)}</th>
+                <th colspan="2" style="background: #14532d !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">2T ${lockBtn('igic', 1)}</th>
+                <th colspan="2" style="background: #7c2d12 !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">3T ${lockBtn('igic', 2)}</th>
+                <th colspan="2" style="background: #581c87 !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">4T ${lockBtn('igic', 3)}</th>
                 <th colspan="2" style="background: #1a202c !important; color: #fde047 !important; font-weight: 700;">AÑO 390</th>
             </tr>
             <tr>
-                <th>Base</th><th style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
-                <th>Base</th><th style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
-                <th>Base</th><th style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
-                <th>Base</th><th style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
+                <th class="${igicLocks[0]?'quarter-locked-cell':''}">Base</th><th class="${igicLocks[0]?'quarter-locked-cell':''}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
+                <th class="${igicLocks[1]?'quarter-locked-cell':''}">Base</th><th class="${igicLocks[1]?'quarter-locked-cell':''}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
+                <th class="${igicLocks[2]?'quarter-locked-cell':''}">Base</th><th class="${igicLocks[2]?'quarter-locked-cell':''}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
+                <th class="${igicLocks[3]?'quarter-locked-cell':''}">Base</th><th class="${igicLocks[3]?'quarter-locked-cell':''}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;">Cuota</th>
                 <th>Base</th><th>Cuota</th>
             </tr>
         </thead>
@@ -4025,8 +4074,10 @@ function renderTaxTemplate() {
     // Resultados Liquidación IGIC
     html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IGIC ■■■■■■►</td>`;
     for(let t=0; t<5; t++) {
+        const isLocked = t < 4 && !!igicLocks[t];
+        const lockClass = isLocked ? ' quarter-locked-cell' : '';
         const qBorder = (t < 4) ? 'border-right: 3px solid rgba(255, 255, 255, 0.3) !important;' : '';
-        html += `<td colspan="2" style="position:relative; padding-right:18px; text-align: right !important; ${qBorder}">
+        html += `<td colspan="2" class="${lockClass}" style="position:relative; padding-right:18px; text-align: right !important; ${qBorder}">
             <span id="igic-res-final-${t}" style="font-weight: 800;">0,00</span>
             <button type="button" class="action-btn-mini" style="position:absolute; right:2px; top:50%; transform:translateY(-50%); font-size:7px; width:12px; height:12px; padding:0; display:inline-flex; align-items:center; justify-content:center; line-height:1;" title="Exportar a Liquidaciones" onclick="exportResultToTaxes('igic', ${t})">📤</button>
         </td>`;
@@ -4036,15 +4087,21 @@ function renderTaxTemplate() {
     // Compensar e Inversión IGIC
     html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
+        const isLocked = !!igicLocks[t];
+        const lockClass = isLocked ? ' quarter-locked-cell' : '';
+        const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
         const val = data.taxCalcExcel[activeTaxCompany].igic.values[`prev-${t}`] || 0;
-        html += `<td colspan="2" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${formatCurrency(val)}"></td>`;
+        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${formatCurrency(val)}"${readonlyAttr}></td>`;
     }
     html += `<td colspan="2" class="cell-total" id="igic-prev-4" style="text-align: right !important;">0,00</td></tr>`;
     
     html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Bases emitidas de sujeto pasivo)</td>`;
     for(let t=0; t<4; t++) {
+        const isLocked = !!igicLocks[t];
+        const lockClass = isLocked ? ' quarter-locked-cell' : '';
+        const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
         const val = data.taxCalcExcel[activeTaxCompany].igic.values[`nosujeto-${t}`] || 0;
-        html += `<td colspan="2" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('igic','nosujeto',${t},this.value)" value="${formatCurrency(val)}"></td>`;
+        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('igic','nosujeto',${t},this.value)" value="${formatCurrency(val)}"${readonlyAttr}></td>`;
     }
     html += `<td colspan="2" class="cell-total" id="igic-nosujeto-4" style="text-align: right !important;">0,00</td></tr>`;
 
