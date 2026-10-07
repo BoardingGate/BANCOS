@@ -4142,7 +4142,7 @@ function renderTaxTemplate() {
     }
     html += `<td colspan="2" class="cell-total" id="iva-prev-4" style="text-align: right !important;">0,00</td></tr>`;
     
-    html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Casilla 120 / 110)</td>`;
+    html += `<tr class="row-not-subject sticky-foot-1"><td>EMIT. S.PASIVO (Casilla 122)</td>`;
     for(let t=0; t<4; t++) {
         const isLocked = !!ivaLocks[t];
         const lockClass = isLocked ? ' quarter-locked-cell' : '';
