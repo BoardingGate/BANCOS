@@ -3091,6 +3091,8 @@ function renderAll() {
       console.error("Error al renderizar 303/420:", e);
     }
   } 
+  renderCredentials();
+}   
 
 function isCredsAuthorized() {
   const authTime = localStorage.getItem('creds_authorized_time');
