@@ -771,8 +771,8 @@
     .row-label { width: 340px; text-align: left; background: #171923; font-weight: 500; font-size: 11px; }
 
     /* Cabeceras de Impuestos */
-    .row-header-iva { background: #1e3a8a !important; color: white !important; font-weight: bold; font-size: 16px; text-transform: uppercase; }
-    .row-header-igic { background: #7c2d12 !important; color: white !important; font-weight: bold; font-size: 16px; text-transform: uppercase; }
+    .row-header-iva { background: #1e3a8a !important; color: white !important; font-weight: bold; font-size: 18px !important; text-transform: uppercase; }
+    .row-header-igic { background: #7c2d12 !important; color: white !important; font-weight: bold; font-size: 18px !important; text-transform: uppercase; }
 
     /* Fondos de Secciones */
     .bg-emitidas { background: rgba(99, 102, 241, 0.05) !important; }
@@ -839,6 +839,7 @@
         position: sticky;
         top: 0;
         z-index: 16;
+        
         background: #1e3a8a !important;
     }
     .excel-table thead tr.row-header-igic td,
@@ -4097,7 +4098,7 @@ function renderTaxTemplate() {
     let html = `<div class="excel-container">
     <table class="excel-table">
         <thead>
-            <tr class="row-header-iva"><th colspan="14">IVA EMPRESA: - ${activeTaxCompany}</th></tr>
+            <tr class="row-header-iva"><th colspan="12">IVA EMPRESA: - ${activeTaxCompany}</th></tr>
             <tr>
                 <th rowspan="2" style="vertical-align: middle;">CONCEPTOS</th>
                 <th colspan="2" style="background: #1e3a8a !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">1T ${lockBtn('iva', 0)}</th>
@@ -4157,7 +4158,7 @@ function renderTaxTemplate() {
     // 3. CONSTRUCCIÓN DE LA TABLA DE IGIC
     html += `<table class="excel-table" style="margin-top: 40px;">
         <thead>
-            <tr class="row-header-igic"><th colspan="14">IGIC EMPRESA: - ${activeTaxCompany}</th></tr>
+            <tr class="row-header-igic"><th colspan="12">IGIC EMPRESA: - ${activeTaxCompany}</th></tr>
             <tr>
                 <th rowspan="2" style="vertical-align: middle;">CONCEPTOS</th>
                 <th colspan="2" style="background: #1e3a8a !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">1T ${lockBtn('igic', 0)}</th>
