@@ -768,7 +768,8 @@
         vertical-align: middle; 
     }    
     .excel-table th { background: #1a202c; color: #a0aec0; font-weight: 600; text-align: center; font-size: 11px; }
-    .row-label { width: 420px; text-align: left; background: #171923; font-weight: 500; font-size: 11px; }
+    .excel-table th:first-child,
+    .row-label { width: 470px; text-align: left; background: #171923; font-weight: 500; font-size: 11px; }
 
     /* Cabeceras de Impuestos */
   .row-header-iva { 
@@ -787,6 +788,28 @@
   padding: 8px 12px !important; 
   text-transform: uppercase; 
 }
+
+  .excel-table tr.row-header-iva th,
+    .excel-table tr.row-header-iva td { 
+        background: #1e3a8a !important; 
+        color: #ffffff !important; 
+        font-weight: 800 !important; 
+        font-size: 22px !important; /* <- Cambia aquí el tamaño a tu gusto (20px, 24px, etc.) */
+        height: 40px !important; 
+        line-height: 1.3 !important;
+        text-transform: uppercase !important; 
+    }
+
+    .excel-table tr.row-header-igic th,
+    .excel-table tr.row-header-igic td { 
+        background: #7c2d12 !important; 
+        color: #ffffff !important; 
+        font-weight: 800 !important; 
+        font-size: 22px !important; /* <- Cambia aquí el tamaño a tu gusto */
+        height: 40px !important; 
+        line-height: 1.3 !important;
+        text-transform: uppercase !important; 
+    }  
 
     /* Fondos de Secciones */
     .bg-emitidas { background: rgba(99, 102, 241, 0.05) !important; }
