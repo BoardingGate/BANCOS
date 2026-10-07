@@ -1713,39 +1713,47 @@ function gsiLoaded() {
 async function restoreFromGDrive() {
   window.ejecutarConexionGoogle(async () => {
     try {
-      const response = await gapi.client.drive.files.list({
+      const token = gapi.client.getToken()?.access_token || localStorage.getItem('gdrive_token');
+      if (!token) {
+        alert("No se pudo obtener la autorización de Google. Por favor, vuelve a pulsar el botón.");
+        return;
+      }
+
+      // 1. Buscar el archivo en Google Drive
+      const listResponse = await gapi.client.drive.files.list({
         q: "name = 'DATOSBANCARIOS_CLOUD.json' and trashed = false",
         fields: 'files(id, name)',
       });
 
-      const file = response.result.files && response.result.files[0];
+      const file = listResponse.result.files && listResponse.result.files[0];
       if (!file) {
-        alert("No se encontró el archivo 'DATOSBANCARIOS_CLOUD.json' en la raíz de tu Google Drive.");
+        alert("No se encontró ningún archivo llamado 'DATOSBANCARIOS_CLOUD.json' en tu cuenta de Google Drive.");
         return;
       }
 
-      // Obtener el contenido del archivo con alt=media
-      const fileData = await gapi.client.drive.files.get({
-        fileId: file.id,
-        alt: 'media'
+      // 2. Descargar el contenido usando fetch directo con el Bearer Token (EVITA EL ERROR 'l is not defined')
+      const downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
+      const fileResponse = await fetch(downloadUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
-      let backupParsed = null;
-      // La API REST de Google puede devolver el contenido en .result o en .body
-      if (typeof fileData.result === 'object' && fileData.result !== null) {
-        backupParsed = fileData.result;
-      } else if (fileData.body) {
-        backupParsed = JSON.parse(fileData.body);
-      } else if (typeof fileData.result === 'string') {
-        backupParsed = JSON.parse(fileData.result);
+      if (!fileResponse.ok) {
+        throw new Error(`Error en la descarga desde Drive: ${fileResponse.status} ${fileResponse.statusText}`);
       }
 
+      const backupParsed = await fileResponse.json();
+
+      // 3. Restaurar los datos y regenerar la interfaz
       if (backupParsed && typeof backupParsed === 'object') {
         data = backupParsed;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         localStorage.setItem('gdrive_sync_enabled', 'true');
         gdriveEnabled = true;
         updateCloudStatus(true);
+        
         renderAll();
         
         const notesEl = document.getElementById('notes-area');
@@ -1753,13 +1761,14 @@ async function restoreFromGDrive() {
           notesEl.value = data.notes || '';
           updateNotesCount();
         }
-        alert("¡Datos bancarios recuperados con éxito desde Google Drive!");
+        
+        alert("¡Datos restaurados con éxito desde Google Drive!");
       } else {
-        alert("El archivo descargado de Drive está vacío o tiene un formato no reconocido.");
+        alert("El archivo descargado no contiene un formato JSON válido.");
       }
     } catch (err) {
       console.error("Error al restaurar desde Drive:", err);
-      alert("Hubo un problema al descargar o procesar la copia: " + (err.message || JSON.stringify(err)));
+      alert("Hubo un problema al procesar la copia: " + (err.message || err));
     }
   }, false);
 }
