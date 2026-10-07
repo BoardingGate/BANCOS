@@ -768,9 +768,15 @@
         vertical-align: middle; 
     }    
     .excel-table th { background: #1a202c; color: #a0aec0; font-weight: 600; text-align: center; font-size: 11px; }
-    .excel-table th:first-child,
-    .row-label { width: 470px !important; text-align: left; background: #171923; font-weight: 500; font-size: 11px; }
-
+   .excel-table th:first-child,
+   .row-label { 
+      width: 450px !important;      /* <-- Aumenta de 340px a 420px (o el valor que prefieras) */
+      min-width: 450px !important; 
+      text-align: left; 
+      background: #171923; 
+      font-weight: 500; 
+      font-size: 11px; 
+    }
     /* Cabeceras de Impuestos */
   .row-header-iva { 
   background: #1e3a8a !important; 
