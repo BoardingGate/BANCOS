@@ -3838,14 +3838,31 @@ function updateNotesCount() {
 }
 
 // ─── INICIALIZACIÓN ───────────────────────────────────────
-document.addEventListener('DOMContentLoaded', ()=>{
-  loadData();
-  renderAll();
-  renderCredentials(); 
-  document.getElementById('notes-area').value = data.notes||'';
-  updateNotesCount();
-  setupEvents();
-}); 
+// CÓDIGO BLINDADO:
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    loadData();
+  } catch (err) {
+    console.error("Error en loadData:", err);
+  }
+
+  // Asignamos los eventos PRIMERO para que los botones nunca se queden muertos
+  try {
+    setupEvents();
+  } catch (err) {
+    console.error("Error en setupEvents:", err);
+  }
+
+  try {
+    renderAll();
+    renderCredentials();
+    const notesEl = document.getElementById('notes-area');
+    if (notesEl) notesEl.value = data.notes || '';
+    updateNotesCount();
+  } catch (err) {
+    console.error("Error renderizando componentes:", err);
+  }
+});
 
 // ====== MOTOR DE CÁLCULO E INICIALIZACIÓN COMPLETA DEL MODELO 303/420 ======
 // Variable de estado para controlar la empresa activa en la pestaña de impuestos
@@ -3969,7 +3986,7 @@ function renderTaxTemplate() {
             
             let label = r.label;
             if (r.rate) {
-                label = `${r.label.split(' ')[0]} <input type="number" class="cell-rate" onchange="updateTaxRate('${secId}','${r.rate}',this.value)" value="${data.taxCalcExcel[secId].rates[r.rate]}">%`;
+                l// CORRECCIÓN: label = `${r.label.split(' ')[0]} <input type="number" class="cell-rate" onchange="updateTaxRate('${secId}','${r.rate}',this.value)" value="${data.taxCalcExcel[activeTaxCompany][secId].rates[r.rate]}">%`;
             }
 
             let tr = `<tr class="${r.class || ''}"><td class="row-label">${label}</td>`;
