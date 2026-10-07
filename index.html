@@ -1713,13 +1713,15 @@ function gsiLoaded() {
 async function restoreFromGDrive() {
   window.ejecutarConexionGoogle(async () => {
     try {
-      const token = gapi.client.getToken()?.access_token || localStorage.getItem('gdrive_token');
+      const token = (gapi.client && gapi.client.getToken() && gapi.client.getToken().access_token) 
+                    || localStorage.getItem('gdrive_token');
+                    
       if (!token) {
-        alert("No se pudo obtener la autorización de Google. Por favor, vuelve a pulsar el botón.");
+        alert("No se encontró el token de acceso de Google. Vuelve a pulsar sobre 'Conectar cuenta'.");
         return;
       }
 
-      // 1. Buscar el archivo en Google Drive
+      // 1. Localizar archivo en Google Drive
       const listResponse = await gapi.client.drive.files.list({
         q: "name = 'DATOSBANCARIOS_CLOUD.json' and trashed = false",
         fields: 'files(id, name)',
@@ -1727,48 +1729,51 @@ async function restoreFromGDrive() {
 
       const file = listResponse.result.files && listResponse.result.files[0];
       if (!file) {
-        alert("No se encontró ningún archivo llamado 'DATOSBANCARIOS_CLOUD.json' en tu cuenta de Google Drive.");
+        alert("No se encontró el archivo 'DATOSBANCARIOS_CLOUD.json' en tu Google Drive.");
         return;
       }
 
-      // 2. Descargar el contenido usando fetch directo con el Bearer Token (EVITA EL ERROR 'l is not defined')
-      const downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
-      const fileResponse = await fetch(downloadUrl, {
+      // 2. Descarga directa limpia con Bearer Token
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      if (!fileResponse.ok) {
-        throw new Error(`Error en la descarga desde Drive: ${fileResponse.status} ${fileResponse.statusText}`);
+      if (!res.ok) {
+        throw new Error(`Error HTTP en Drive: ${res.status}`);
       }
 
-      const backupParsed = await fileResponse.json();
+      const backupParsed = await res.json();
 
-      // 3. Restaurar los datos y regenerar la interfaz
       if (backupParsed && typeof backupParsed === 'object') {
         data = backupParsed;
+
+        // Asegurar que las estructuras críticas existan
+        if (!data.balances) data.balances = {};
+        if (!data.movements) data.movements = {};
+        if (!data.invoices) data.invoices = [];
+        if (!data.taxValues) data.taxValues = {};
+        if (!data.taxCalcExcel) data.taxCalcExcel = {};
+        if (data.notes === undefined) data.notes = '';
+
+        // Guardar en almacenamiento local
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         localStorage.setItem('gdrive_sync_enabled', 'true');
         gdriveEnabled = true;
         updateCloudStatus(true);
-        
+
+        // Repintar todas las pestañas de inmediato
         renderAll();
-        
-        const notesEl = document.getElementById('notes-area');
-        if (notesEl) {
-          notesEl.value = data.notes || '';
-          updateNotesCount();
-        }
-        
-        alert("¡Datos restaurados con éxito desde Google Drive!");
+
+        alert("¡Copia de seguridad restaurada al 100%! (Movimientos, Notas y Modelo 303/420 listos).");
       } else {
-        alert("El archivo descargado no contiene un formato JSON válido.");
+        alert("El archivo descargado no contiene datos JSON válidos.");
       }
     } catch (err) {
       console.error("Error al restaurar desde Drive:", err);
-      alert("Hubo un problema al procesar la copia: " + (err.message || err));
+      alert("Hubo un problema al descargar o procesar la copia: " + (err.message || err));
     }
   }, false);
 }
@@ -3047,14 +3052,32 @@ function renderTaxes() {
 }
 
 function renderAll() {
+  // 1. Renderizar tablas base
   renderBalances();
   renderInvoices();
   renderTaxes();
-  if (typeof renderTaxTemplate === 'function') {
-    renderTaxTemplate();
+
+  // 2. Restaurar y sincronizar las NOTAS
+  const notesEl = document.getElementById('notes-area');
+  if (notesEl) {
+    notesEl.value = data.notes || '';
+    updateNotesCount();
   }
-  renderCredentials();
-}  
+
+  // 3. Restaurar y sincronizar el MODELO 303/420
+  if (data.companies && data.companies.length > 0) {
+    if (!activeTaxCompany || !data.companies.includes(activeTaxCompany)) {
+      activeTaxCompany = data.companies[0];
+    }
+  }
+  
+  if (typeof renderTaxTemplate === 'function') {
+    try {
+      renderTaxTemplate();
+    } catch (e) {
+      console.error("Error al renderizar 303/420:", e);
+    }
+  } 
 
 function isCredsAuthorized() {
   const authTime = localStorage.getItem('creds_authorized_time');
@@ -3841,9 +3864,18 @@ document.getElementById('table-taxes').addEventListener('input', e => {
 }
 
 function updateNotesCount() {
-  const t=document.getElementById('notes-area').value;
-  document.getElementById('notes-charcount').textContent=t.length+' caracteres';
-  document.getElementById('notes-linecount').textContent=(t?t.split('\n').length:0)+' líneas';
+  try {
+    const notesEl = document.getElementById('notes-area');
+    if (!notesEl) return;
+    const txt = notesEl.value || '';
+    const charCountEl = document.getElementById('notes-charcount');
+    const lineCountEl = document.getElementById('notes-linecount');
+    
+    if (charCountEl) charCountEl.textContent = txt.length + ' caracteres';
+    if (lineCountEl) lineCountEl.textContent = (txt ? txt.split('\n').length : 0) + ' líneas';
+  } catch (err) {
+    console.warn("Aviso en updateNotesCount:", err);
+  }
 }
 
 // ─── INICIALIZACIÓN ───────────────────────────────────────
