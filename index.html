@@ -1717,11 +1717,10 @@ async function restoreFromGDrive() {
                     || localStorage.getItem('gdrive_token');
                     
       if (!token) {
-        alert("No se encontró el token de acceso de Google. Vuelve a pulsar sobre 'Conectar cuenta'.");
+        alert("No se encontró autorización de Google. Por favor, pulsa 'Conectar cuenta'.");
         return;
       }
 
-      // 1. Localizar archivo en Google Drive
       const listResponse = await gapi.client.drive.files.list({
         q: "name = 'DATOSBANCARIOS_CLOUD.json' and trashed = false",
         fields: 'files(id, name)',
@@ -1729,54 +1728,61 @@ async function restoreFromGDrive() {
 
       const file = listResponse.result.files && listResponse.result.files[0];
       if (!file) {
-        alert("No se encontró el archivo 'DATOSBANCARIOS_CLOUD.json' en tu Google Drive.");
+        alert("No se encontró 'DATOSBANCARIOS_CLOUD.json' en tu Google Drive.");
         return;
       }
 
-      // 2. Descarga directa limpia con Bearer Token
+      // Descarga directa limpia que no pasa por gapi.client.drive (evita 'l is not defined')
       const res = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      if (!res.ok) {
-        throw new Error(`Error HTTP en Drive: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
 
       const backupParsed = await res.json();
-
       if (backupParsed && typeof backupParsed === 'object') {
         data = backupParsed;
-
-        // Asegurar que las estructuras críticas existan
-        if (!data.balances) data.balances = {};
-        if (!data.movements) data.movements = {};
-        if (!data.invoices) data.invoices = [];
-        if (!data.taxValues) data.taxValues = {};
+        
+        // Estructuras de compatibilidad por seguridad
         if (!data.taxCalcExcel) data.taxCalcExcel = {};
         if (data.notes === undefined) data.notes = '';
+        if (!data.disabledCells) data.disabledCells = {};
+        if (!data.collapsedBanks) data.collapsedBanks = {};
+        if (!data.collapsedCompanies) data.collapsedCompanies = {};
 
-        // Guardar en almacenamiento local
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         localStorage.setItem('gdrive_sync_enabled', 'true');
         gdriveEnabled = true;
         updateCloudStatus(true);
 
-        // Repintar todas las pestañas de inmediato
+        // Repintar la aplicación completa
         renderAll();
 
-        alert("¡Copia de seguridad restaurada al 100%! (Movimientos, Notas y Modelo 303/420 listos).");
-      } else {
-        alert("El archivo descargado no contiene datos JSON válidos.");
+        // Refrescar campo visual de notas y su contador
+        const notesEl = document.getElementById('notes-area');
+        if (notesEl) {
+          notesEl.value = data.notes || '';
+          updateNotesCount();
+        }
+
+        // Refrescar el selector y cálculo del modelo 303/420
+        if (data.companies && data.companies.length > 0) {
+          activeTaxCompany = data.companies[0];
+        }
+        if (typeof renderTaxTemplate === 'function') {
+          renderTaxTemplate();
+        }
+
+        alert("¡Datos restaurados con éxito desde Google Drive!");
       }
     } catch (err) {
-      console.error("Error al restaurar desde Drive:", err);
-      alert("Hubo un problema al descargar o procesar la copia: " + (err.message || err));
+      console.error("Error al restaurar:", err);
+      alert("Hubo un problema al restaurar la copia: " + (err.message || err));
     }
   }, false);
 }
+  
 let gdriveTimer;
 function debouncedGDriveSave() {
   clearTimeout(gdriveTimer);
@@ -1785,10 +1791,17 @@ function debouncedGDriveSave() {
   }, 5000); // Solo guarda en la nube si no hay cambios durante 5 MINUTOS
 }
 
-const originalSaveData = saveData;
-saveData = function() {
-    originalSaveData(); // Sigue guardando en local
-    debouncedGDriveSave(); // Intenta sincronizar en la nube
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    showSaved(true);
+    
+    if (gdriveEnabled) {
+      debouncedGDriveSave(); 
+    }
+  } catch(e) {
+    console.error("Error local:", e);
+  }
 }
 
 window.onload = () => {
@@ -3879,32 +3892,34 @@ function updateNotesCount() {
 }
 
 // ─── INICIALIZACIÓN ───────────────────────────────────────
-// CÓDIGO BLINDADO:
+
+// SUSTITUYE POR ESTO:
 document.addEventListener('DOMContentLoaded', () => {
   try {
     loadData();
-  } catch (err) {
-    console.error("Error en loadData:", err);
+  } catch (e) {
+    console.error("Error en loadData:", e);
   }
 
-  // Asignamos los eventos PRIMERO para que los botones nunca se queden muertos
+  // Activa los clics de las pestañas primero:
   try {
     setupEvents();
-  } catch (err) {
-    console.error("Error en setupEvents:", err);
+  } catch (e) {
+    console.error("Error en setupEvents:", e);
   }
 
+  // Renderiza los componentes:
   try {
     renderAll();
     renderCredentials();
     const notesEl = document.getElementById('notes-area');
     if (notesEl) notesEl.value = data.notes || '';
     updateNotesCount();
-  } catch (err) {
-    console.error("Error renderizando componentes:", err);
+  } catch (e) {
+    console.error("Error en renderAll:", e);
   }
 });
-
+  
 // ====== MOTOR DE CÁLCULO E INICIALIZACIÓN COMPLETA DEL MODELO 303/420 ======
 // Variable de estado para controlar la empresa activa en la pestaña de impuestos
 let activeTaxCompany = '';
@@ -4027,7 +4042,7 @@ function renderTaxTemplate() {
             
             let label = r.label;
             if (r.rate) {
-                l// CORRECCIÓN: label = `${r.label.split(' ')[0]} <input type="number" class="cell-rate" onchange="updateTaxRate('${secId}','${r.rate}',this.value)" value="${data.taxCalcExcel[activeTaxCompany][secId].rates[r.rate]}">%`;
+                label = `${r.label.split(' ')[0]} <input type="number" class="cell-rate" onchange="updateTaxRate('${secId}','${r.rate}',this.value)" value="${data.taxCalcExcel[activeTaxCompany][secId].rates[r.rate]}">%`;
             }
 
             let tr = `<tr class="${r.class || ''}"><td class="row-label">${label}</td>`;
