@@ -4142,7 +4142,7 @@ function renderTaxTemplate() {
     }
     html += `<td colspan="2" class="cell-total" id="iva-prev-4" style="text-align: right !important;">0,00</td></tr>`;
     
-    html += `<tr class="row-not-subject sticky-foot-1"><td>EMIT. S.PASIVO (Casilla 122)</td>`;
+    html += `<tr class="row-not-subject sticky-foot-1"><td>EMIT.S.PASIVO(Casi 122)</td>`;
     for(let t=0; t<4; t++) {
         const isLocked = !!ivaLocks[t];
         const lockClass = isLocked ? ' quarter-locked-cell' : '';
@@ -4202,7 +4202,7 @@ function renderTaxTemplate() {
     }
     html += `<td colspan="2" class="cell-total" id="igic-prev-4" style="text-align: right !important;">0,00</td></tr>`;
     
-    html += `<tr class="row-not-subject sticky-foot-1"><td>OPERACIÓN NO SUJETAS (Bases emitidas de sujeto pasivo)</td>`;
+    html += `<tr class="row-not-subject sticky-foot-1"><td>OPER.NO SUJETAS (Bases emitidas de sujeto pasivo)</td>`;
     for(let t=0; t<4; t++) {
         const isLocked = !!igicLocks[t];
         const lockClass = isLocked ? ' quarter-locked-cell' : '';
