@@ -1071,6 +1071,9 @@
     .btn-quarter-lock:hover {
       transform: scale(1.2);
     }
+    .tab-btn * {
+  pointer-events: none;
+   }
   </style>
 </head>
 <body>
@@ -3263,39 +3266,38 @@ document.addEventListener('focusout', e => {
 });
 
   // Lógica unificada para el cambio de sección
-  function switchSection(targetSec) {
-    // Sincronizar clases activas en los botones de escritorio
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.section === targetSec);
-    });
+function switchSection(targetSec) {
+  if (!targetSec) return;
 
-    // Sincronizar el valor seleccionado en el menú desplegable móvil
-    const selectEl = document.getElementById('header-section-select');
-    if (selectEl) {
-      selectEl.value = targetSec;
-    }
+  // Actualizar botones activos
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.section === targetSec);
+  });
 
-    // Activar sección visible en pantalla
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    const targetSectionEl = document.getElementById('section-' + targetSec);
-    if (targetSectionEl) {
-      targetSectionEl.classList.add('active');
-    }
-
-    // Conmutar botones dinámicos y contextuales en el cabecero
-    document.querySelectorAll('.dynamic-actions').forEach(el => el.classList.add('hidden'));
-    const activeActions = document.getElementById('actions-' + targetSec);
-    if (activeActions) {
-      activeActions.classList.remove('hidden');
-    }
+  // Mostrar la sección correspondiente
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const targetSectionEl = document.getElementById('section-' + targetSec);
+  if (targetSectionEl) {
+    targetSectionEl.classList.add('active');
   }
 
+  // Conmutar botones de acción de cabecera
+  document.querySelectorAll('.dynamic-actions').forEach(el => el.classList.add('hidden'));
+  const activeActions = document.getElementById('actions-' + targetSec);
+  if (activeActions) {
+    activeActions.classList.remove('hidden');
+  }
+}
+
   // Evento asignado a los botones tradicionales
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      switchSection(btn.dataset.section);
-    });
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    const targetBtn = e.target.closest('.tab-btn');
+    if (targetBtn && targetBtn.dataset.section) {
+      switchSection(targetBtn.dataset.section);
+    }
   });
+});
 
   // Evento asignado al nuevo selector desplegable
   const selectNav = document.getElementById('header-section-select');
