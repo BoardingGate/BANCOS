@@ -4097,7 +4097,7 @@ function renderTaxTemplate() {
     let html = `<div class="excel-container">
     <table class="excel-table">
         <thead>
-            <tr class="row-header-iva"><th colspan="11">IVA EMPRESA: - ${activeTaxCompany}</th></tr>
+            <tr class="row-header-iva"><th colspan="14">IVA EMPRESA: - ${activeTaxCompany}</th></tr>
             <tr>
                 <th rowspan="2" style="vertical-align: middle;">CONCEPTOS</th>
                 <th colspan="2" style="background: #1e3a8a !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">1T ${lockBtn('iva', 0)}</th>
@@ -4157,7 +4157,7 @@ function renderTaxTemplate() {
     // 3. CONSTRUCCIÓN DE LA TABLA DE IGIC
     html += `<table class="excel-table" style="margin-top: 40px;">
         <thead>
-            <tr class="row-header-igic"><th colspan="11">IGIC EMPRESA: - ${activeTaxCompany}</th></tr>
+            <tr class="row-header-igic"><th colspan="14">IGIC EMPRESA: - ${activeTaxCompany}</th></tr>
             <tr>
                 <th rowspan="2" style="vertical-align: middle;">CONCEPTOS</th>
                 <th colspan="2" style="background: #1e3a8a !important; color: #ffffff !important; border-right: 3px solid rgba(255, 255, 255, 0.3) !important; font-weight: 700;">1T ${lockBtn('igic', 0)}</th>
