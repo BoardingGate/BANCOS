@@ -1576,18 +1576,18 @@ function getGoogleToken(callback) {
 async function saveToGDrive() {
   if (localStorage.getItem('gdrive_sync_enabled') !== 'true') return;
 
-  const tieneSaldos = Object.keys(data.balances).length > 0;
-  const tieneMovimientos = Object.keys(data.movements).length > 0;
+  // Comprobar si los datos actuales son solo los valores por defecto vacíos
+  const tieneSaldos = data.balances && Object.keys(data.balances).length > 0;
+  const tieneMovimientos = data.movements && Object.keys(data.movements).length > 0;
   const tieneNotas = data.notes && data.notes.trim().length > 0;
 
   if (!tieneSaldos && !tieneMovimientos && !tieneNotas) {
-      console.warn("Sincronización abortada: Los datos locales están vacíos.");
+      console.warn("Sincronización abortada: los datos locales están vacíos para proteger la copia remota.");
       return;
   }
 
   if (!gapi.client || gapi.client.getToken() === null) {
-    console.log("🔑 No hay token. Pidiendo uno nuevo automáticamente...");
-    tokenClient.requestAccessToken({ prompt: '' });
+    console.log("No hay token activo para Google Drive.");
     return; 
   }
 
@@ -1596,12 +1596,12 @@ async function saveToGDrive() {
   const indicator = document.getElementById('save-indicator');
 
   try {
-   const listResponse = await gapi.client.drive.files.list({
+    const listResponse = await gapi.client.drive.files.list({
       q: `name = '${fileName}' and trashed = false`,
       fields: 'files(id)',
     });
     
-    const file = listResponse.result.files[0];
+    const file = listResponse.result.files && listResponse.result.files[0];
     const fileId = file ? file.id : null;
 
     const boundary = 'foo_bar_baz';
@@ -1629,7 +1629,7 @@ async function saveToGDrive() {
       headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }
     });
 
-    console.log("✅ Sincronizado en Google Drive");
+    console.log("Sincronizado en Google Drive con éxito.");
     updateCloudStatus(true);
     
     if (indicator) {
@@ -1641,15 +1641,13 @@ async function saveToGDrive() {
       }, 2500);
     }
   } catch (err) {
-    console.error("❌ Error en subida:", err);
+    console.error("Error al subir a Drive:", err);
     if (err.status === 401) {
-      console.log("Token caducado. Limpiando...");
       gapi.client.setToken(null);
       updateCloudStatus(false);
     }
   }
 }
-
   
 window.ejecutarConexionGoogle = function(proximoPaso, esSilencioso = false) {
   if (!tokenClient) return;
@@ -1717,18 +1715,48 @@ async function restoreFromGDrive() {
         fields: 'files(id, name)',
       });
 
-      const file = response.result.files[0];
-      if (!file) { alert("No se encontró copia en la nube."); return; }
+      const file = response.result.files && response.result.files[0];
+      if (!file) {
+        alert("No se encontró el archivo 'DATOSBANCARIOS_CLOUD.json' en la raíz de tu Google Drive.");
+        return;
+      }
 
-      const fileData = await gapi.client.drive.files.get({ fileId: file.id, alt: 'media' });
-      if (fileData.result) {
-        data = fileData.result;
+      // Obtener el contenido del archivo con alt=media
+      const fileData = await gapi.client.drive.files.get({
+        fileId: file.id,
+        alt: 'media'
+      });
+
+      let backupParsed = null;
+      // La API REST de Google puede devolver el contenido en .result o en .body
+      if (typeof fileData.result === 'object' && fileData.result !== null) {
+        backupParsed = fileData.result;
+      } else if (fileData.body) {
+        backupParsed = JSON.parse(fileData.body);
+      } else if (typeof fileData.result === 'string') {
+        backupParsed = JSON.parse(fileData.result);
+      }
+
+      if (backupParsed && typeof backupParsed === 'object') {
+        data = backupParsed;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        localStorage.setItem('gdrive_sync_enabled', 'true');
+        gdriveEnabled = true;
+        updateCloudStatus(true);
         renderAll();
-        alert("¡Datos restaurados con éxito!");
+        
+        const notesEl = document.getElementById('notes-area');
+        if (notesEl) {
+          notesEl.value = data.notes || '';
+          updateNotesCount();
+        }
+        alert("¡Datos bancarios recuperados con éxito desde Google Drive!");
+      } else {
+        alert("El archivo descargado de Drive está vacío o tiene un formato no reconocido.");
       }
     } catch (err) {
-      console.error("Error al restaurar:", err);
+      console.error("Error al restaurar desde Drive:", err);
+      alert("Hubo un problema al descargar o procesar la copia: " + (err.message || JSON.stringify(err)));
     }
   }, false);
 }
