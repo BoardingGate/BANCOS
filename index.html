@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <meta name="description" content="Control integral de saldos bancarios y conciliacion."/>
+  <meta name="description" content="Control intfegral de saldos bancarios y conciliacion."/>
   <title>Control Bancario</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
@@ -768,11 +768,25 @@
         vertical-align: middle; 
     }    
     .excel-table th { background: #1a202c; color: #a0aec0; font-weight: 600; text-align: center; font-size: 11px; }
-    .row-label { width: 340px; text-align: left; background: #171923; font-weight: 500; font-size: 11px; }
+    .row-label { width: 420px; text-align: left; background: #171923; font-weight: 500; font-size: 11px; }
 
     /* Cabeceras de Impuestos */
-    .row-header-iva { background: #1e3a8a !important; color: white !important; font-weight: bold; font-size: 18px !important; text-transform: uppercase; }
-    .row-header-igic { background: #7c2d12 !important; color: white !important; font-weight: bold; font-size: 18px !important; text-transform: uppercase; }
+  .row-header-iva { 
+  background: #1e3a8a !important; 
+  color: white !important; 
+  font-weight: 800; 
+  font-size: 22px !important; /* <-- Aumentado aquí */
+  padding: 8px 12px !important; 
+  text-transform: uppercase; 
+}
+.row-header-igic { 
+  background: #7c2d12 !important; 
+  color: white !important; 
+  font-weight: 800; 
+  font-size: 22px !important; /* <-- Aumentado aquí */
+  padding: 8px 12px !important; 
+  text-transform: uppercase; 
+}
 
     /* Fondos de Secciones */
     .bg-emitidas { background: rgba(99, 102, 241, 0.05) !important; }
