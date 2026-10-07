@@ -162,7 +162,6 @@
     /* NAVEGACIÓN EN LÍNEA DENTRO DEL CABECERO */
     .tab-nav-inline{display:flex;gap:3px;margin-left:8px}
     .tab-btn{background:transparent;border:1px solid transparent;color:var(--text-muted);padding:4px 10px;border-radius:var(--radius-sm);cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;transition:all var(--transition)}
-    .tab-btn *{pointer-events: none;}
     .tab-btn:hover{background:rgba(255,255,255,0.04);color:var(--text-primary)}
     .tab-btn.active{background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(6,182,212,0.1));color:var(--accent-light);border:1px solid rgba(99,102,241,0.25)}
     
@@ -757,7 +756,7 @@
         font-size: 11px; 
         color: #e2e8f0; 
         table-layout: fixed; 
-        margin-bottom: 10px;
+        margin-bottom: 10px; /* Reducido para evitar desperdiciar espacio */
         border-top: 1px solid #2d3748;
         border-left: 1px solid #2d3748;
     }
@@ -820,7 +819,7 @@
     /* Notas al pie de página */
     .tax-notes-footer { 
         width: 100%; 
-        min-height: 80px; 
+        min-height: 80px; /* Reducido para ahorrar espacio */
         background: rgba(18, 21, 43, 0.8); 
         border: 1px solid var(--border-strong); 
         border-radius: var(--radius); 
@@ -830,7 +829,7 @@
         padding: 10px; 
         resize: vertical; 
         outline: none; 
-        margin-top: 8px; 
+        margin-top: 8px; /* Ajustado */
     }
     .tax-notes-footer:focus { border-color: var(--accent); }
 
@@ -867,7 +866,7 @@
 
     /* Alturas y contenedor de cálculo 303/420 */
     #tax-template-container {
-        max-height: calc(100vh - 110px) !important; 
+        max-height: calc(100vh - 110px) !important; /* Optimizado de 160px a 110px */
         overflow-y: auto !important;
         position: relative;
     }
@@ -897,7 +896,7 @@
         border-right: 2px solid #2d3748 !important;
     }
 
-    /* Columnas AÑO 390 */
+/* Columnas AÑO 390 (Columnas 10 y 11 por defecto) */
     .excel-table td:nth-child(10), .excel-table td:nth-child(11) {
         background: #202430 !important;
         color: #fde047 !important;
@@ -907,7 +906,11 @@
         color: #fde047 !important;
     }
 
-    /* JERARQUÍA DE COLORES Y TAMAÑOS EN EL MODELO 303/420 */
+    /* ==========================================================================
+       MODIFICACIONES: JERARQUÍA DE COLORES Y TAMAÑOS EN EL MODELO 303/420
+       ========================================================================== */
+
+    /* 2.1. SUB-TOTALES EMITIDAS (Letra Gris, Fondo Azul) */
     tr:has(td[id*="b_tot_1"]),
     tr:has(td[id*="b_tot_2"]),
     tr:has(td[id*="igic-b_tot-"]),
@@ -918,7 +921,7 @@
     tr:has(td[id*="b_tot_2"]) td,
     tr:has(td[id*="igic-b_tot-"]) td,
     tr:has(td[id*="igic-b_tot_final-"]) td {
-        color: #94a3b8 !important; 
+        color: #94a3b8 !important; /* Letra Gris */
         font-weight: bold !important;
         background-color: #1a365d !important;
     }
@@ -929,6 +932,7 @@
         background-color: #132742 !important;
     }
 
+    /* 2.2. GRANDES TOTALES EMITIDAS (Letra Amarilla, Fondo Azul) */
     tr:has(td[id*="iva-b_tot_final"]),
     tr:has(td[id*="igic-b_tot_gfinal"]),
     tr:has(td[id*="c_total"]) {
@@ -937,7 +941,7 @@
     tr:has(td[id*="iva-b_tot_final"]) td,
     tr:has(td[id*="igic-b_tot_gfinal"]) td,
     tr:has(td[id*="c_total"]) td {
-        color: #fde047 !important; 
+        color: #fde047 !important; /* Letra Amarilla */
         background-color: #1a365d !important;
         font-weight: bold !important;
     }
@@ -947,11 +951,12 @@
         background-color: #132742 !important;
     }
 
+    /* 2.3. SUB-TOTALES RECIBIDAS (Letra Gris, Fondo Marrón) */
     tr:has(td[id*="r_btot"]) {
         background-color: #5c3a21 !important;
     }
     tr:has(td[id*="r_btot"]) td {
-        color: #94a3b8 !important; 
+        color: #94a3b8 !important; /* Letra Gris */
         font-weight: bold !important;
         background-color: #5c3a21 !important;
     }
@@ -959,13 +964,14 @@
         background-color: #442a18 !important;
     }
 
+    /* 2.4. GRANDES TOTALES RECIBIDAS (Letra Amarilla, Fondo Marrón) */
     tr:has(td[id*="r_btot_final"]),
     tr:has(td[id*="r_ctot"]) {
         background-color: #5c3a21 !important;
     }
     tr:has(td[id*="r_btot_final"]) td,
     tr:has(td[id*="r_ctot"]) td {
-        color: #fde047 !important; 
+        color: #fde047 !important; /* Letra Amarilla */
         font-weight: bold !important;
         background-color: #5c3a21 !important;
     }
@@ -974,6 +980,11 @@
         background-color: #442a18 !important;
     }
 
+    /* ==========================================================================
+       FORZADO DE ESPECIFICIDAD PARA COLUMNAS 10 Y 11 EN FILAS ESPECIALES
+       ========================================================================== */
+
+    /* Emitidas Sub-totales (Fuerzan Fondo Azul) */
     .excel-table tr:has(td[id*="b_tot_1"]) td:nth-child(10), .excel-table tr:has(td[id*="b_tot_1"]) td:nth-child(11),
     .excel-table tr:has(td[id*="b_tot_2"]) td:nth-child(10), .excel-table tr:has(td[id*="b_tot_2"]) td:nth-child(11),
     .excel-table tr:has(td[id*="igic-b_tot-"]) td:nth-child(10), .excel-table tr:has(td[id*="igic-b_tot-"]) td:nth-child(11),
@@ -982,6 +993,7 @@
         color: #94a3b8 !important;
     }
 
+    /* Emitidas Grandes Totales (Fuerzan Fondo Azul) */
     .excel-table tr:has(td[id*="iva-b_tot_final"]) td:nth-child(10), .excel-table tr:has(td[id*="iva-b_tot_final"]) td:nth-child(11),
     .excel-table tr:has(td[id*="igic-b_tot_gfinal"]) td:nth-child(10), .excel-table tr:has(td[id*="igic-b_tot_gfinal"]) td:nth-child(11),
     .excel-table tr:has(td[id*="c_total"]) td:nth-child(10), .excel-table tr:has(td[id*="c_total"]) td:nth-child(11) {
@@ -989,17 +1001,20 @@
         color: #fde047 !important; 
     }
 
+    /* Recibidas Sub-totales (Fuerzan Fondo Marrón) */
     .excel-table tr:has(td[id*="r_btot"]) td:nth-child(10), .excel-table tr:has(td[id*="r_btot"]) td:nth-child(11) {
         background-color: #5c3a21 !important;
         color: #94a3b8 !important;
     }
 
+    /* Recibidas Grandes Totales (Fuerzan Fondo Marrón) */
     .excel-table tr:has(td[id*="r_btot_final"]) td:nth-child(10), .excel-table tr:has(td[id*="r_btot_final"]) td:nth-child(11),
     .excel-table tr:has(td[id*="r_ctot"]) td:nth-child(10), .excel-table tr:has(td[id*="r_ctot"]) td:nth-child(11) {
         background-color: #5c3a21 !important;
         color: #fde047 !important;
     }
 
+    /* 2.5. FILA DE RESULTADO DE LIQUIDACIÓN INCREMENTADA */
     .row-resultado { 
         background: #1b4332 !important; 
         color: #fff !important; 
@@ -1014,17 +1029,18 @@
         font-weight: 800 !important;
     }
 
-    .field-input {
-        background: var(--bg-input);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        color: var(--text-primary);
-        font-family: inherit;
-        font-size: 14px; 
-        padding: 3px 5px;
-        transition: all var(--transition);
-        width: 100%;
-    }  
+.field-input {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px; 
+    padding: 3px 5px;
+    transition: all var(--transition);
+    width: 100%;
+}  
+  /* CELDA ACTUALIZADA HOY (COLOR OPACO/ATENUADO) */
     .balance-cell.cell-updated-today {
       opacity: 0.45;
       transition: opacity var(--transition);
@@ -1033,6 +1049,7 @@
       opacity: 0.95;
     }
 
+  /* TRIMESTRE BLOQUEADO Y CANDADO EN MODELO 303/420 */
     .quarter-locked-cell {
       opacity: 0.40 !important;
     }
@@ -1054,7 +1071,7 @@
     .btn-quarter-lock:hover {
       transform: scale(1.2);
     }
-</style>
+  </style>
 </head>
 <body>
 
@@ -1077,6 +1094,7 @@
   </div>
 </div>
 
+
 <div id="floating-creds-widget" class="floating-creds collapsed">
   <button type="button" id="floating-creds-tab" class="floating-creds-toggle-tab" title="Accesos directos">&#x25B6;</button>
   <div style="font-size: 10px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; user-select: none;">
@@ -1084,6 +1102,7 @@
   </div>
   <div style="max-height: 340px; overflow-y: auto; padding-right: 4px; scrollbar-width: thin;">
     <div class="credentials-grid" id="credentials-grid-container">
+      <!-- Los 10 campos dobles se cargan dinámicamente -->
     </div>
   </div>
 </div>  
@@ -1096,14 +1115,17 @@
       <div class="nav-buttons-container">
         <button class="tab-btn active" data-section="balances">&#x1F4CA; <span class="tab-btn-text">Saldos y Movimientos</span></button>
         <button class="tab-btn" data-section="notes">&#x1F4DD; <span class="tab-btn-text">Notas</span></button>
-        <button class="tab-btn" data-section="invoices">&#x1F4C4; <span class="tab-btn-text">Facturas</span></button>
-        <button class="tab-btn" data-section="taxes">&#x1F3DB; <span class="tab-btn-text">Impuestos</span></button>
+          <button class="tab-btn" data-section="invoices">&#x1F4C4; <span class="tab-btn-text">Facturas</span></button>
+          <button class="tab-btn" data-section="taxes">&#x1F3DB; <span class="tab-btn-text">Impuestos</span></button>
         <button class="tab-btn" data-section="tax-template">📊 <span class="tab-btn-text">303/420</span></button>
+        
+        
         <button class="tab-btn" data-section="backup">&#x1F4BE; <span class="tab-btn-text">Copia Seguridad</span></button>
       </div>
     </nav>  
   </div>
   <div class="header-right">
+    <!-- Acciones contextuales dinámicas -->
     <div class="dynamic-actions" id="actions-balances">
       <button class="btn btn-ghost btn-sm" onclick="printSectionReport('balances')">&#x1F4BE; Imprimir Hoja Única</button>
       <button class="btn btn-secondary btn-sm" id="btn-add-bank">+ Banco</button>
@@ -1128,6 +1150,7 @@
     <div class="dynamic-actions hidden" id="actions-backup">
       <button class="btn btn-primary btn-sm" onclick="exportBackup(false)">&#x1F4E5; Descargar Copia</button>
     </div>
+   
 
     <button class="btn btn-primary btn-sm" id="btn-manual-save">&#x1F4BE; Guardar Datos</button>
     <span id="gdrive-status-icon" style="font-size: 11px; margin-left: 10px; cursor: pointer; user-select: none;" onclick="ejecutarConexionGoogle()">
@@ -1193,12 +1216,15 @@
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 11px; color: var(--text-secondary); font-weight: 500;">Visualizando Empresa:</span>
           <select id="tax-active-company" class="tax-company-select" onchange="changeActiveTaxCompany(this.value)">
+             <!-- Las opciones se cargarán dinámicamente -->
           </select>
         </div>
         <button class="btn btn-ghost btn-sm" onclick="window.printSectionReport('tax-template')">🖨️ Imprimir Hoja Única</button>
     </div>
     
+    <!-- VOLVEMOS A AÑADIR LA CLASE DE SCROLL ÚNICO AQUÍ -->
     <div class="table-scroll-wrapper" id="tax-template-container">
+        <!-- El motor dinámico generará la hoja Excel aquí -->
     </div>   
   
   </section>
@@ -1315,7 +1341,8 @@ let data = {
   credentials: [] 
 };  
 
-// CONFIGURACIÓN DE GOOGLE
+
+// CONFIGURACIÓN DE GOOGLE (Rellena esto con tus datos)
 const CLIENT_ID = '1015353372327-qnofnvsqmd4oojn143p34193gusafhhh.apps.googleusercontent.com';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
@@ -1323,19 +1350,20 @@ const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 let tokenClient;
 let gapiInited = false;
 let gsiInited = false;
-let gdriveFileId = null;
+let gdriveFileId = null; // ID del archivo en la nube
 
 // 1. Inicializar APIs
 function gapiLoaded() {
   gapi.load('client', async () => {
     await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
     gapiInited = true;
-    verificarConexionInicial(); 
+     verificarConexionInicial(); 
   });
 }
 
 let gdriveEnabled = localStorage.getItem('gdrive_sync_enabled') === 'true';
   
+// Sustituye getGoogleToken para que siempre abra el diálogo si se llama manualmente 
 function updateCloudStatus(active) {
   const statusEl = document.getElementById('gdrive-status-icon');
   if (!statusEl) return;
@@ -1350,6 +1378,7 @@ function updateCloudStatus(active) {
 
 // --- MODAL DE APUNTES CONTABLES DE REGULARIZACIÓN Y PAGO ---
 function showAccountingEntriesModal(sec, t, emitido, soportado, prevCompensar, result) {
+    // Eliminar cualquier instancia previa del modal
     const oldModal = document.getElementById('accounting-entries-modal');
     if (oldModal) oldModal.remove();
 
@@ -1365,6 +1394,7 @@ function showAccountingEntriesModal(sec, t, emitido, soportado, prevCompensar, r
     let pagoRows = '';
 
     if (result > 0) {
+        // RESULTADO A PAGAR (Acreedor)
         regularizacionRows = `
             <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
                 <td style="padding:6px 4px; text-align:left;">${formatCurrency(emitido)} (${accRepercutido}) H.P. ${labelTax} Repercutido</td>
@@ -1401,6 +1431,7 @@ function showAccountingEntriesModal(sec, t, emitido, soportado, prevCompensar, r
             </tr>
         `;
     } else if (result < 0) {
+        // RESULTADO A COMPENSAR (Deudor)
         const compVal = Math.abs(result);
         regularizacionRows = `
             <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -1432,6 +1463,7 @@ function showAccountingEntriesModal(sec, t, emitido, soportado, prevCompensar, r
             </tr>
         `;
     } else {
+        // RESULTADO CERO
         regularizacionRows = `
             <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
                 <td style="padding:6px 4px; text-align:left;">${formatCurrency(emitido)} (${accRepercutido}) H.P. ${labelTax} Repercutido</td>
@@ -1472,6 +1504,7 @@ function showAccountingEntriesModal(sec, t, emitido, soportado, prevCompensar, r
             Empresa: <strong style="color:#fff;">${activeTaxCompany}</strong> | Periodo: <strong style="color:var(--accent-light);">${quarterLabel}</strong>
           </p>
           
+          <!-- Regularización -->
           <div style="margin-bottom: 16px;">
             <div style="font-weight: bold; color: var(--teal-light); font-size: 10px; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px dashed var(--border-strong); padding-bottom: 2px; letter-spacing:0.5px;">
               Regularización:
@@ -1489,6 +1522,7 @@ function showAccountingEntriesModal(sec, t, emitido, soportado, prevCompensar, r
             </table>
           </div>
 
+          <!-- Pago -->
           <div>
             <div style="font-weight: bold; color: var(--amber); font-size: 10px; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px dashed var(--border-strong); padding-bottom: 2px; letter-spacing:0.5px;">
               Pago:
@@ -1526,6 +1560,7 @@ function showAccountingEntriesModal(sec, t, emitido, soportado, prevCompensar, r
     });
 }  
 
+// 2. Autenticación y obtención de Token
 function getGoogleToken(callback) {
   tokenClient.callback = async (resp) => {
     if (resp.error !== undefined) throw (resp);
@@ -1541,17 +1576,18 @@ function getGoogleToken(callback) {
 async function saveToGDrive() {
   if (localStorage.getItem('gdrive_sync_enabled') !== 'true') return;
 
-  const tieneSaldos = data.balances && Object.keys(data.balances).length > 0;
-  const tieneMovimientos = data.movements && Object.keys(data.movements).length > 0;
+  const tieneSaldos = Object.keys(data.balances).length > 0;
+  const tieneMovimientos = Object.keys(data.movements).length > 0;
   const tieneNotas = data.notes && data.notes.trim().length > 0;
 
   if (!tieneSaldos && !tieneMovimientos && !tieneNotas) {
-      console.warn("Sincronización abortada: los datos locales están vacíos.");
+      console.warn("Sincronización abortada: Los datos locales están vacíos.");
       return;
   }
 
   if (!gapi.client || gapi.client.getToken() === null) {
-    console.log("No hay token activo para Google Drive.");
+    console.log("🔑 No hay token. Pidiendo uno nuevo automáticamente...");
+    tokenClient.requestAccessToken({ prompt: '' });
     return; 
   }
 
@@ -1565,7 +1601,7 @@ async function saveToGDrive() {
       fields: 'files(id)',
     });
     
-    const file = listResponse.result.files && listResponse.result.files[0];
+    const file = listResponse.result.files[0];
     const fileId = file ? file.id : null;
 
     const boundary = 'foo_bar_baz';
@@ -1593,7 +1629,7 @@ async function saveToGDrive() {
       headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }
     });
 
-    console.log("Sincronizado en Google Drive con éxito.");
+    console.log("✅ Sincronizado en Google Drive");
     updateCloudStatus(true);
     
     if (indicator) {
@@ -1605,25 +1641,27 @@ async function saveToGDrive() {
       }, 2500);
     }
   } catch (err) {
-    console.error("Error en subida:", err);
+    console.error("❌ Error en subida:", err);
     if (err.status === 401) {
+      console.log("Token caducado. Limpiando...");
       gapi.client.setToken(null);
       updateCloudStatus(false);
     }
   }
 }
 
+  
 window.ejecutarConexionGoogle = function(proximoPaso, esSilencioso = false) {
   if (!tokenClient) return;
 
   tokenClient.callback = async (respuesta) => {
     if (respuesta.error !== undefined) {
-      console.warn("Google denegó la conexión.");
+      console.warn("Google denegó la conexión automática.");
       updateCloudStatus(false);
       return;
     }
 
-    localStorage.setItem('gdrive_token', respuesta.access_token);
+     localStorage.setItem('gdrive_token', respuesta.access_token);
     const tiempoExpiracion = Date.now() + (respuesta.expires_in * 1000);
     localStorage.setItem('gdrive_token_expiry', tiempoExpiracion);
     
@@ -1638,22 +1676,25 @@ window.ejecutarConexionGoogle = function(proximoPaso, esSilencioso = false) {
     }
   };
 
+  // El 'prompt: empty' intenta conectar sin abrir ventana
   tokenClient.requestAccessToken({ prompt: esSilencioso ? '' : 'select_account' });
 };
 
 function verificarConexionInicial() {
-  if (!gapiInited || !gsiInited) return;
+  if (!gapiInited || !gsiInited) return; // Esperar a que ambas librerías carguen
 
   const tokenGuardado = localStorage.getItem('gdrive_token');
   const expiracion = localStorage.getItem('gdrive_token_expiry');
 
   if (tokenGuardado && expiracion && Date.now() < (parseInt(expiracion) - 60000)) {
+    console.log("🚀 Reutilizando llave guardada...");
     gapi.client.setToken({ access_token: tokenGuardado });
     gdriveEnabled = true;
     updateCloudStatus(true);
     saveToGDrive(); 
   } 
   else if (localStorage.getItem('gdrive_sync_enabled') === 'true') {
+    console.log("🔄 Intentando reconexión silenciosa con Google...");
     window.ejecutarConexionGoogle(null, true); 
   }
 }
@@ -1676,49 +1717,41 @@ async function restoreFromGDrive() {
         fields: 'files(id, name)',
       });
 
-      const file = response.result.files && response.result.files[0];
+      const file = response.result.files[0];
       if (!file) { alert("No se encontró copia en la nube."); return; }
 
       const fileData = await gapi.client.drive.files.get({ fileId: file.id, alt: 'media' });
-      let parsed = null;
-      if (typeof fileData.result === 'object' && fileData.result !== null) {
-        parsed = fileData.result;
-      } else if (fileData.body) {
-        parsed = JSON.parse(fileData.body);
-      } else if (typeof fileData.result === 'string') {
-        parsed = JSON.parse(fileData.result);
-      }
-
-      if (parsed && typeof parsed === 'object') {
-        data = parsed;
+      if (fileData.result) {
+        data = fileData.result;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        localStorage.setItem('gdrive_sync_enabled', 'true');
-        gdriveEnabled = true;
-        updateCloudStatus(true);
         renderAll();
-        const notesEl = document.getElementById('notes-area');
-        if (notesEl) {
-          notesEl.value = data.notes || '';
-          updateNotesCount();
-        }
-        alert("¡Datos restaurados con éxito desde Google Drive!");
-      } else {
-        alert("El archivo descargado no posee contenido legible.");
+        alert("¡Datos restaurados con éxito!");
       }
     } catch (err) {
       console.error("Error al restaurar:", err);
-      alert("Error al restaurar: " + (err.message || JSON.stringify(err)));
     }
   }, false);
 }
-
 let gdriveTimer;
 function debouncedGDriveSave() {
   clearTimeout(gdriveTimer);
   gdriveTimer = setTimeout(() => {
     saveToGDrive();
-  }, 5000);
+  }, 5000); // Solo guarda en la nube si no hay cambios durante 5 MINUTOS
 }
+
+const originalSaveData = saveData;
+saveData = function() {
+    originalSaveData(); // Sigue guardando en local
+    debouncedGDriveSave(); // Intenta sincronizar en la nube
+}
+
+window.onload = () => {
+  gapiLoaded();
+  gsiLoaded();
+};
+
+  
 
 let undoStack = [];
 
@@ -1734,6 +1767,7 @@ function pushUndo() {
   }
 }
 
+// Restaura el último estado guardado
 window.undoLastChange = function() {
   if (undoStack.length === 0) return;
   
@@ -1762,6 +1796,8 @@ document.addEventListener('focusin', e => {
   }
 });
 
+
+// --- ACTUALIZACIÓN DE DIFERENCIA PUNTEADO/ACTUAL ---
 function updateDiffPunteado(bi, ci) {
   const el = document.getElementById('diff-punteado-' + bi + '-' + ci);
   if (!el) return;
@@ -1773,10 +1809,11 @@ function updateDiffPunteado(bi, ci) {
   el.textContent = '[' + (formatCurrency(diffVal) || '0,00') + ']';
 }  
   
+// ─── PERSISTENCIA EN TIEMPO REAL ──────────────────────────
 function saveData() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    showSaved(true);
+    showSaved(true); // Esto avisa del guardado en el PC (Instantáneo)
     
     if (gdriveEnabled) {
       debouncedGDriveSave(); 
@@ -1790,7 +1827,7 @@ function manualSave() {
   try { 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
     showSaved(false); 
-    saveToGDrive(); 
+     saveToGDrive(); 
   } catch(e) {}
 }
 
@@ -1806,13 +1843,14 @@ function loadData() {
     if (data.masterPassword === undefined) {
       data.masterPassword = '';
     }
-    if (!data.lastUpdateDates) data.lastUpdateDates = {}; 
+     if (!data.lastUpdateDates) data.lastUpdateDates = {}; 
     if (!data.credentials || data.credentials.length !== 10) {
-      data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
-    }
+  data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
+}
   } catch(e) {}
 }
 
+// ─── REESTRUCTURACIÓN COMPACTA TRAS ELIMINAR FILA O COLUMNA ───────────
 function reindexBalancesAndMovementsAfterRowDelete(targetBi) {
   const newBalances = {};
   const newMovements = {};
@@ -1828,6 +1866,7 @@ function reindexBalancesAndMovementsAfterRowDelete(targetBi) {
     newBalances[newBi + '-' + ci] = data.balances[key];
   });
 
+  // Reindexar movimientos
   Object.keys(data.movements).forEach(key => {
     const parts = key.split('-');
     const bi = parseInt(parts[0], 10);
@@ -1865,11 +1904,12 @@ function reindexBalancesAndMovementsAfterColDelete(targetCi) {
   const newDisabled = {};
   const newCollapsedCompanies = {};
 
+  // Reindexar saldos
   Object.keys(data.balances).forEach(key => {
     const parts = key.split('-');
     const bi = parseInt(parts[0], 10);
     const ci = parseInt(parts[1], 10);
-    if (ci === targetCi) return; 
+    if (ci === targetCi) return; // Descartar columna eliminada
     const newCi = ci > targetCi ? ci - 1 : ci;
     newBalances[bi + '-' + newCi] = data.balances[key];
   });
@@ -1905,6 +1945,7 @@ function reindexBalancesAndMovementsAfterColDelete(targetCi) {
   data.collapsedCompanies = newCollapsedCompanies;
 }
 
+// ─── EXPORTACIÓN / COPIA DE SEGURIDAD ───────────────────
 window.exportBackup = function(isAuto = false) {
   try {
     const dataStr = JSON.stringify(data, null, 2);
@@ -1925,6 +1966,7 @@ window.exportBackup = function(isAuto = false) {
   }
 };
 
+// ─── FORMATO NUMÉRICO ──────────────────────────────────
 function formatCurrency(n) {
   if (n === '' || n === null || n === undefined) return '';
   const v = parseFloat(n);
@@ -1935,6 +1977,8 @@ function formatCurrency(n) {
 function parseCurrency(str) {
   if (str === null || str === undefined || str === '') return '';
   str = String(str).trim();
+  
+  // Limpiar espacios en blanco y símbolos de moneda
   str = str.replace(/[\s€]/g, '');
   
   let hasComma = str.includes(',');
@@ -1942,18 +1986,22 @@ function parseCurrency(str) {
   
   if (hasDot && !hasComma) {
     let parts = str.split('.');
+    // Si la parte derecha tiene 1 o 2 dígitos, asumimos que el punto actúa como decimal
     if (parts.length === 2 && parts[1].length <= 2) {
       return parseFloat(str); 
     } else {
+      // De lo contrario, los puntos actúan como separadores de millar
       return parseFloat(str.replace(/\./g, '')); 
     }
   } else if (hasComma) {
+    // Caso estándar de España: puntos de millar y coma decimal
     return parseFloat(str.replace(/\./g, '').replace(',', '.'));
   }
   
   return parseFloat(str);
 }
 
+// ─── CÁLCULO ─────────────────────────────────────────
 function calcConciliado(bi, ci) {
   const key = bi+'-'+ci;
   const bal = data.balances[key] || {};
@@ -1968,6 +2016,7 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ─── INDICADOR DE GUARDADO ─────────────────────────────
 let saveTimer;
 function showSaved(isAuto = false) {
   const el = document.getElementById('save-indicator');
@@ -1977,6 +2026,7 @@ function showSaved(isAuto = false) {
   saveTimer = setTimeout(()=>{ el.classList.remove('saved'); el.textContent='\u2713 Datos guardados'; }, 1500);
 }
 
+// ─── DIÁLOGO DE CONFIRMACIÓN ──────────────────────────────
 let confirmCb = null;
 function confirm_(msg, cb) {
   document.getElementById('confirm-message').textContent = msg;
@@ -1984,6 +2034,7 @@ function confirm_(msg, cb) {
   confirmCb = cb;
 }
 
+// ─── ACTUALIZACIÓN DE CONCILIADO ──────────────────────────
 function updateConciliado(bi, ci) {
   const el = document.getElementById('conc-'+bi+'-'+ci);
   if (!el) return;
@@ -1995,6 +2046,7 @@ function updateConciliado(bi, ci) {
   el.className = 'field-calc ' + (v<0?'calc-negative':v===0?'calc-zero':'');
 }
 
+// ─── ACUMULADO GLOBAL DINÁMICO (FILAS Y COLUMNAS) ───────────────────
 function updateAllTotals() {
    data.companies.forEach((_, ci) => {
     let totalAct = 0;
@@ -2042,18 +2094,19 @@ function updateAllTotals() {
     const elRowCon = document.getElementById('row-total-con-' + bi);
     if (elRowCon) elRowCon.textContent = fCon;
 
-    const elRowActCol = document.getElementById('row-total-act-collapsed-' + bi);
+     const elRowActCol = document.getElementById('row-total-act-collapsed-' + bi);
     if (elRowActCol) elRowActCol.textContent = fAct;
     const elRowConCol = document.getElementById('row-total-con-collapsed-' + bi);
     if (elRowConCol) elRowConCol.textContent = fCon;
 
-    const elRowActBCCol = document.getElementById('row-total-act-bankcol-collapsed-' + bi);
+   const elRowActBCCol = document.getElementById('row-total-act-bankcol-collapsed-' + bi);
     if (elRowActBCCol) elRowActBCCol.textContent = fAct;
     const elRowConBCCol = document.getElementById('row-total-con-bankcol-collapsed-' + bi);
     if (elRowConBCCol) elRowConBCCol.textContent = fCon;
   });
 }
 
+// ─── REPORTES DE IMPRESIÓN (NATIVOS / PDF) ─────────────────
 const reportStyles = `
   body {
     font-family: 'Inter', -apple-system, sans-serif;
@@ -2103,6 +2156,7 @@ const reportStyles = `
     text-align: right;
   }
   
+  /* ESTILOS DE MATRIZ DE SALDOS EN REPORTE DE HOJA ÚNICA */
   .print-matrix-table {
     width: 100%;
     table-layout: fixed;
@@ -2122,6 +2176,7 @@ const reportStyles = `
     font-size: 8.5px;
   }
   
+  /* Cabecera vertical transpuesta para empresas (Eje Y) */
   .print-company-col {
     font-weight: 700;
     font-size: 8.5px;
@@ -2165,12 +2220,14 @@ const reportStyles = `
     line-height: 1.2;
   }
   
+  /* Distinción estética para movimientos ya conciliados */
   .print-mov-item.is-reconciled {
     background: rgba(22, 163, 74, 0.04) !important;
     border-color: #bbf7d0 !important;
     color: #15803d !important;
   }
   
+  /* CELDAS INACTIVAS: BLANCO ABSOLUTO Y SIN TEXTO */
   .cell-print-disabled {
     background-color: #ffffff !important;
     background-image: none !important;
@@ -2178,6 +2235,7 @@ const reportStyles = `
     border: 1px solid #cbd5e1 !important;
   }
 
+  /* FORZAR LA IMPRESIÓN EN VERTICAL PORTRAIT */
   @media print {
     @page {
       size: portrait;
@@ -2189,6 +2247,7 @@ const reportStyles = `
     }
   }
   
+  /* MATRIZ DE MESES EN REPORTE DE FACTURAS */
   .print-months-matrix {
     display: flex;
     gap: 1.5px;
@@ -2214,7 +2273,7 @@ const reportStyles = `
     border-color: #06b6d4;
     color: #ffffff;
   }
-
+  /* --- ESTILOS DE ADAPTACIÓN PARA IMPRESIÓN DEL MODELO 303/420 --- */
   .excel-table {
     border: 1px solid #475569 !important;
     color: #000 !important;
@@ -2237,25 +2296,27 @@ const reportStyles = `
     font-weight: 600 !important;
   }
   .excel-table td:nth-child(6) {
-    background: #f8fafc !important;
+    background: #f8fafc !important; /* Columna AÑO 390 en gris sutil */
     color: #1e293b !important;
   }
   
+  /* Sombreado de bloques para distinguir emitidas y recibidas en papel */
   .bg-emitidas { background-color: rgba(99, 102, 241, 0.05) !important; }
   .bg-recibidas { background-color: rgba(16, 185, 129, 0.04) !important; }
 
+  /* Mapeo de colores para las filas especiales en papel */
   tr:has(td[id*="iva-b_tot_final"]) td,
   tr:has(td[id*="b_tot_gfinal"]) td,
   tr:has(td[id*="r_btot_final"]) td {
-    background-color: #fef3c7 !important;
+    background-color: #fef3c7 !important; /* Fondo crema/ocre claro para bases finales */
     color: #92400e !important;
   }
   .row-resultado td {
-    background-color: #d1fae5 !important;
+    background-color: #d1fae5 !important; /* Fondo verde claro para el resultado impreso */
     color: #065f46 !important;
   }
 `;
-
+// --- MODAL DE SELECCIÓN DE EMPRESAS PARA IMPRESIÓN ---
 function showPrintFilterModal(onConfirm) {
   const oldModal = document.getElementById('print-filter-modal');
   if (oldModal) oldModal.remove();
@@ -2328,14 +2389,14 @@ function generateUnifiedPrintHTML(selectedCompanies = null, selectedTaxCompanies
   const nc = data.companies.length;
 
   const transposedRowColors = [
-    '#f8fafc',
-    '#f0fdf4',
-    '#f0f9ff',
-    '#fffbeb',
-    '#fdf2f8',
-    '#faf5ff',
-    '#f0fdfa',
-    '#fef2f2'
+    '#f8fafc', // Slate
+    '#f0fdf4', // Emerald
+    '#f0f9ff', // Sky
+    '#fffbeb', // Amber
+    '#fdf2f8', // Rose
+    '#faf5ff', // Purple
+    '#f0fdfa', // Teal
+    '#fef2f2'  // Red
   ];
 
   let html = `<h1>Reporte General Consolidado - Control Bancario</h1>`;
@@ -2362,6 +2423,7 @@ function generateUnifiedPrintHTML(selectedCompanies = null, selectedTaxCompanies
     html += `<tr style="background-color: ${bgColor};">`;
     html += `<td class="print-company-col" style="border-left: 3px solid #6366f1;">${esc(company)}</td>`;
 
+
       data.banks.forEach((_, bi) => {
       const key = bi + '-' + ci;
       const isDisabled = data.disabledCells[key] === true;
@@ -2372,13 +2434,36 @@ function generateUnifiedPrintHTML(selectedCompanies = null, selectedTaxCompanies
         const bal = data.balances[key] || {};
         const sc = calcConciliado(bi, ci);
         
+        // Procesar todos los movimientos
         const movs = data.movements[key] || [];
         let movsHTML = '';
         if (movs.length > 0) {
           movsHTML += `<div style="margin-top: 2px; border-top: 1px dashed #cbd5e1; padding-top: 2px;">`;
           movs.forEach(m => {
             const isRec = m.conciliado === true;
-color: #475569;"><span class="p-lbl" style="color: #b45309;">Otr:</span> <span>${esc(bal.otraAnotacion)}</span></div>` : ''}
+            const statusLabel = isRec ? `<span style="color: #16a34a; font-weight:700;">[C]</span>` : `<span style="color: #b45309; font-weight:700;">[P]</span>`;
+            movsHTML += `<div class="print-mov-item${isRec ? ' is-reconciled' : ''}">
+              ${statusLabel} <strong>${formatCurrency(m.importe)}</strong> ${esc(m.observacion || '')}
+            </div>`;
+          });
+          movsHTML += `</div>`;
+        }
+
+        html += `<td>
+          <div class="print-cell-box">
+            <div class="p-row">
+              <span class="p-lbl act">Act:</span>
+              <span class="bold">${formatCurrency(bal.saldoActual) || '0,00'}</span>
+            </div>
+            <div class="p-row">
+              <span class="p-lbl pun">Pun:</span>
+              <span>${formatCurrency(bal.saldoPunteado) || '0,00'}</span>
+            </div>
+            <div class="p-row" style="background-color: rgba(255,255,255,0.75);">
+              <span class="p-lbl conc">Conc:</span>
+              <span class="bold" style="color: #16a34a;">${formatCurrency(sc) || '0,00'}</span>
+            </div>
+            ${bal.otraAnotacion ? `<div class="p-row" style="color: #475569;"><span class="p-lbl" style="color: #b45309;">Otr:</span> <span>${esc(bal.otraAnotacion)}</span></div>` : ''}
             ${movsHTML}
           </div>
         </td>`;
@@ -2388,6 +2473,7 @@ color: #475569;"><span class="p-lbl" style="color: #b45309;">Otr:</span> <span>$
   });
   html += `</tbody></table>`;
 
+// ─── SECCIÓN 2: FACTURAS RECURRENTES ───
   html += `<div style="width: 100%; margin-top: 12px;">
     <h2 style="font-size: 9px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Facturas Recurrentes</h2>
     <table class="print-matrix-table">
@@ -2422,7 +2508,7 @@ color: #475569;"><span class="p-lbl" style="color: #b45309;">Otr:</span> <span>$
   });
 
   html += `</tbody></table></div>`;
-
+// ─── SECCIÓN 3: LIQUIDACIÓN DE IMPUESTOS (DEBAJO) ───
   html += `<div style="width: 100%; margin-top: 12px;">
     <h2 style="font-size: 9px; margin-bottom: 4px; border-bottom: 1.5px solid #6366f1; padding-bottom: 1px; color: #1e1b4b; background: rgba(0,0,0,0.03); padding-left: 4px;">Liquidación de Impuestos</h2>
     <table class="print-matrix-table">
@@ -2453,8 +2539,8 @@ color: #475569;"><span class="p-lbl" style="color: #b45309;">Otr:</span> <span>$
          
          const valStr = (numV === 0) ? '' : formatCurrency(v);
          let colorStyle = '';
-         if (numV > 0) colorStyle = 'color: #2563eb; font-weight: bold;';
-         else if (numV < 0) colorStyle = 'color: #dc2626; font-weight: bold;';
+         if (numV > 0) colorStyle = 'color: #2563eb; font-weight: bold;'; // Azul para positivo
+         else if (numV < 0) colorStyle = 'color: #dc2626; font-weight: bold;'; // Rojo para negativo
          
          const bgStyle = presented ? 'background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;' : '';
          const checkMark = presented ? '<span style="color: #16a34a; font-size: 10px;">☑</span>' : '<span style="color: #cbd5e1; font-size: 10px;">☐</span>';
@@ -2484,12 +2570,15 @@ function generateNotesPrintHTML() {
           <div style="font-size: 11px; white-space: pre-wrap; font-family: monospace; line-height: 1.5; border: 1px solid #cbd5e1; padding: 12px; background: #fafafa; border-radius: 4px;">${esc(data.notes || '')}</div>`;
 }
 
+// Genera de forma limpia y estática la maqueta de IVA e IGIC para impresión
 function generateTaxTemplatePrintHTML() {
   const container = document.getElementById('tax-template-container');
   if (!container) return '';
   
+  // Clonamos el elemento de pantalla para no alterar la interactividad del usuario
   const clone = container.cloneNode(true);
   
+  // Sincronizamos y transformamos las cajas de texto (inputs) en texto plano legible
   const originalInputs = container.querySelectorAll('input');
   const clonedInputs = clone.querySelectorAll('input');
   
@@ -2499,6 +2588,7 @@ function generateTaxTemplatePrintHTML() {
       span.style.fontWeight = 'bold';
       span.style.fontSize = '10px';
       
+      // Conservamos la visualización limpia del porcentaje si es un rate selector
       if (orig.classList.contains('cell-rate')) {
          span.textContent = orig.value ? orig.value + '%' : '';
          span.style.color = '#b45309';
@@ -2511,6 +2601,7 @@ function generateTaxTemplatePrintHTML() {
     }
   });
   
+  // Transformamos el campo de notas final en un bloque de texto plano para impresión
   const originalTextarea = container.querySelector('textarea');
   const clonedTextarea = clone.querySelector('textarea');
   if (originalTextarea && clonedTextarea) {
@@ -2533,7 +2624,6 @@ function generateTaxTemplatePrintHTML() {
   
   return printHTML;
 }
-
 window.printSectionReport = function(sectionType) {
   if (sectionType === 'balances') {
     showPrintFilterModal((selectedCompanies, selectedTaxCompanies) => {
@@ -2591,6 +2681,8 @@ function executePrint(sectionType, selectedCompanies = null, selectedTaxCompanie
   doc.close();
 }
 
+
+// ─── NAVEGACIÓN RÁPIDA (SCROLL) ───────────────────────────
 window.navScroll = function(direction) {
   const wrapper = document.getElementById('wrapper-balances');
   if (!wrapper) return;
@@ -2603,10 +2695,12 @@ window.navScroll = function(direction) {
   }
 };
 
+// ─── RENDERIZADO CUADRÍCULA COMBINADA ──────────────────────
 function renderBalances() {
   const g = document.getElementById('grid-balances');
   const nc = data.companies.length;
   
+  // Construcción dinámica de columnas según estado de contracción de empresas y de la primera columna de bancos
   let bankColWidth = data.collapsedBankColumn ? '35px' : '240px';
   let colSpecs = [bankColWidth];
   data.companies.forEach((_, ci) => {
@@ -2681,6 +2775,7 @@ function renderBalances() {
     }
   });
 
+  // Filas por Entidad Bancaria
   data.banks.forEach((b,bi) => {
     const bColor = bankColors[bi % bankColors.length];
     const isRowCollapsed = data.collapsedBanks[bi] === true;
@@ -2735,8 +2830,7 @@ function renderBalances() {
         '<div class="movement-item'+(m.conciliado?' mov-conciliado':'')+'" draggable="true" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'">'
         + '<div class="mov-row1">'
         + '<span class="mov-drag-handle" title="Arrastrar para reordenar">&#x2630;</span>'
-        + '<input type="text" class="mov-importe fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'" data-field="importe" value="'+esc(formatCurrency(m.importe))+'" placeholder="Importe"/>'
-        + '<label class="mov-check-label" title="Conciliado">'
+        + '<input type="text" class="mov-importe fmt-num" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'" data-field="importe" value="'+esc(formatCurrency(m.importe))+'" placeholder="Importe"/>'        + '<label class="mov-check-label" title="Conciliado">'
         + '<input type="checkbox" class="mov-conciliado-check" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'"'+(m.conciliado?' checked':'')+'/>'
         + '<span class="check-text">Conc.</span></label>'
         + '<button class="btn-del-mov" data-bi="'+bi+'" data-ci="'+ci+'" data-mi="'+mi+'" title="Eliminar">\u2715</button>'
@@ -2745,11 +2839,13 @@ function renderBalances() {
         + '</div></div>'
       ).join('');
 
+      // 1. Valores básicos
       const fActual = hasActual ? (formatCurrency(bal.saldoActual) || '0,00') : '\u2014';
       const fConciliado = concText;
       const actualNum = parseFloat(bal.saldoActual) || 0;
       const isDiff = hasActual && (Math.abs(actualNum - cv) > 0.009);
 
+      // 2. Lógica de Fecha UNIFICADA
       const uDate = (data.lastUpdateDates && data.lastUpdateDates[key]) || '';
       let dateHtmlLabel = '';
       let dateRowMin = '';
@@ -2765,12 +2861,13 @@ function renderBalances() {
         dateRowMin = '<div class="sum-row" style="justify-content:center; margin-top:2px;">' +
                      '<span style="color:' + color + '; font-size:8px; font-weight:600;">(' + uDate + ')</span>' +
                      '</div>';
-      }
+      }// Contar apuntes pendientes de conciliar
       const pendingCount = movs.filter(m => !m.conciliado).length;
       const pendingBadgeHtml = pendingCount > 0 
         ? '<div class="sum-row" style="justify-content:center; margin-top:3px;"><span class="pending-badge" title="' + pendingCount + ' apunte(s) pendiente(s)">' + pendingCount + '</span></div>' 
         : '';
 
+      // 3. Construcción del resumen (Vista minimizada)
       let summaryHTML = '<div class="collapsed-summary">'
         + '<div class="sum-row" title="Saldo Actual"><span class="sum-lbl act">A:</span><span class="sum-val">' + esc(fActual) + '</span></div>';      
           
@@ -2780,12 +2877,14 @@ function renderBalances() {
       
       summaryHTML += dateRowMin + pendingBadgeHtml + '</div>';
 
+      // 4. Clases CSS (Atenuación si está revisada hoy)
       let cellClasses = 'grid-cell balance-cell';
       if (isDisabled) cellClasses += ' cell-disabled';
       if (isColCollapsed) cellClasses += ' company-collapsed-cell'; 
       if (isRowCollapsed) cellClasses += ' row-collapsed-cell';
       if (isUpdatedToday && !isDisabled && !isColCollapsed && !isRowCollapsed) cellClasses += ' cell-updated-today';
 
+      // Calcular diferencia entre saldo punteado y saldo actual
       const pNum = parseFloat(bal.saldoPunteado) || 0;
       const aNum = parseFloat(bal.saldoActual) || 0;
       const diffVal = pNum - aNum;
@@ -2828,7 +2927,7 @@ function renderBalances() {
   g.innerHTML = html;
   updateAllTotals();
 }
-
+// ─── RENDERIZADO FACTURAS ──────────────────────────────────
 function renderInvoices() {
   document.getElementById('invoices-body').innerHTML = data.invoices.map((inv,i) => {
     const months = MONTH_LABELS.map((ml,mi) =>
@@ -2853,6 +2952,7 @@ function renderInvoices() {
   }).join('');
 }
 
+// ─── RENDERIZADO IMPUESTOS ─────────────────────────────────
 function renderTaxes() {
   const t = document.getElementById('table-taxes');
   const cos = data.taxCompanies;
@@ -2884,6 +2984,7 @@ function renderTaxes() {
             if (numV > 0) colorClass = ' tax-val-positive';
             else if (numV < 0) colorClass = ' tax-val-negative';
 
+            // REGLA: Si es 0 o vacío, forzamos a que esté literalmente en blanco
             const valStr = (numV === 0) ? '' : formatCurrency(v);
 
             return `<td style="${bgStyle}">
@@ -2919,15 +3020,16 @@ function isCredsAuthorized() {
   const authTime = localStorage.getItem('creds_authorized_time');
   if (!authTime) return false;
   const diff = Date.now() - parseInt(authTime, 10);
-  return diff < 24 * 60 * 60 * 1000;
+  return diff < 24 * 60 * 60 * 1000; // Validez de 24 horas
 }
 
 function renderCredentials() {
   const container = document.getElementById('credentials-grid-container');
   if (!container) return;
 
+  // 1. Estado: NO AUTORIZADO
   if (!isCredsAuthorized()) {
-    container.style.display = 'block';
+    container.style.display = 'block'; // Cambia el diseño temporalmente a bloque para formularios
 
     if (!data.masterPassword) {
       container.innerHTML = `
@@ -2955,15 +3057,18 @@ function renderCredentials() {
     return;
   }
 
-  container.style.display = 'grid';
+  // 2. Estado: AUTORIZADO (Muestra los campos)
+  container.style.display = 'grid'; // Restaura el diseño grid de doble columna
   let html = '';
   for (let i = 0; i < 10; i++) {
     const cred = data.credentials[i] || { usuario: '', contrasena: '' };
     html += `
+      <!-- Columna Usuario -->
       <div class="credential-field-group">
         <input type="text" class="field-input cred-input" data-idx="${i}" data-field="usuario" value="${esc(cred.usuario)}" placeholder="Usuario ${i + 1}" />
         <button type="button" class="action-btn-mini copy-cred-btn" data-idx="${i}" data-field="usuario" title="Copiar" style="position: absolute; right: 2px;">📋</button>
       </div>
+      <!-- Columna Contraseña -->
       <div class="credential-field-group">
         <div class="input-pass-wrapper">
           <input type="password" class="field-input cred-input" data-idx="${i}" data-field="contrasena" value="${esc(cred.contrasena)}" placeholder="Clave ${i + 1}" id="cred-pass-${i}" />
@@ -2978,6 +3083,7 @@ function renderCredentials() {
   container.innerHTML = html;
 }
 
+// Envía texto al portapapeles informando temporalmente en el panel superior
 function copyToClipboard(text) {
   if (!text) return;
   navigator.clipboard.writeText(text).then(() => {
@@ -2991,64 +3097,73 @@ function copyToClipboard(text) {
     }, 1200);
   }).catch(() => {});
 }
+  
 
-function attemptUnlock() {
-  const input = document.getElementById('input-master-pass');
-  const err = document.getElementById('unlock-error');
-  if (!input) return;
+// --- CONTROL DE ACCESO (CLAVE MAESTRA) ---
+  
+  function attemptUnlock() {
+    const input = document.getElementById('input-master-pass');
+    const err = document.getElementById('unlock-error');
+    if (!input) return;
 
-  if (input.value === data.masterPassword) {
-    localStorage.setItem('creds_authorized_time', Date.now());
-    renderCredentials();
-  } else {
-    if (err) err.style.display = 'block';
+    if (input.value === data.masterPassword) {
+      localStorage.setItem('creds_authorized_time', Date.now()); // Autorizar sesión por 24 horas
+      renderCredentials();
+    } else {
+      if (err) err.style.display = 'block';
+    }
   }
+
+  // Eventos de clic de botones internos del widget flotante de claves
+  document.getElementById('floating-creds-widget').addEventListener('click', e => {
+    if (e.target.id === 'btn-save-master-pass') {
+      const p1 = document.getElementById('setup-master-pass').value;
+      const p2 = document.getElementById('setup-master-pass-confirm').value;
+      if (!p1) { alert('La clave no puede estar vacía.'); return; }
+      if (p1 !== p2) { alert('Las claves introducidas no coinciden.'); return; }
+      
+      data.masterPassword = p1;
+      saveData();
+      localStorage.setItem('creds_authorized_time', Date.now()); // Autorizar automáticamente
+      renderCredentials();
+    }
+
+    if (e.target.id === 'btn-unlock-creds') {
+      attemptUnlock();
+    }
+
+    // Reset de seguridad (borra clave y credenciales)
+    if (e.target.id === 'btn-reset-master-pass') {
+      confirm_('¿Resetear la Clave Maestra? Por seguridad se borrarán todas las credenciales guardadas.', () => {
+        data.masterPassword = '';
+        data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
+        localStorage.removeItem('creds_authorized_time');
+        saveData();
+        renderCredentials();
+      });
+    }
+  });
+
+  document.getElementById('floating-creds-widget').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.id === 'input-master-pass') {
+      e.preventDefault();
+      attemptUnlock();
+    }
+  });
+  
+  
+// ─── EVENTOS Y LÓGICA DE INTERFACES ───────────────────────
+function setupEvents() {
+  
+if (!data.credentials || data.credentials.length !== 10) {
+  data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
 }
 
-document.getElementById('floating-creds-widget').addEventListener('click', e => {
-  if (e.target.id === 'btn-save-master-pass') {
-    const p1 = document.getElementById('setup-master-pass').value;
-    const p2 = document.getElementById('setup-master-pass-confirm').value;
-    if (!p1) { alert('La clave no puede estar vacía.'); return; }
-    if (p1 !== p2) { alert('Las claves introducidas no coinciden.'); return; }
-    
-    data.masterPassword = p1;
-    saveData();
-    localStorage.setItem('creds_authorized_time', Date.now());
-    renderCredentials();
-  }
+if (data.masterPassword === undefined) {
+  data.masterPassword = '';}  
 
-  if (e.target.id === 'btn-unlock-creds') {
-    attemptUnlock();
-  }
 
-  if (e.target.id === 'btn-reset-master-pass') {
-    confirm_('¿Resetear la Clave Maestra? Por seguridad se borrarán todas las credenciales guardadas.', () => {
-      data.masterPassword = '';
-      data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
-      localStorage.removeItem('creds_authorized_time');
-      saveData();
-      renderCredentials();
-    });
-  }
-});
-
-document.getElementById('floating-creds-widget').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && e.target.id === 'input-master-pass') {
-    e.preventDefault();
-    attemptUnlock();
-  }
-});
-
-function setupEvents() {
-  if (!data.credentials || data.credentials.length !== 10) {
-    data.credentials = Array.from({length: 10}, () => ({ usuario: '', contrasena: '' }));
-  }
-
-  if (data.masterPassword === undefined) {
-    data.masterPassword = '';
-  }  
-
+// --- LÓGICA DEL WIDGET FLOTANTE DE CREDENCIALES ---
   const credsWidget = document.getElementById('floating-creds-widget');
   const credsTab = document.getElementById('floating-creds-tab');
 
@@ -3059,6 +3174,7 @@ function setupEvents() {
     });
   }
 
+  // Capturar cambios de entrada y guardarlos al instante
   document.getElementById('credentials-grid-container').addEventListener('input', e => {
     const el = e.target;
     if (el.classList.contains('cred-input')) {
@@ -3069,6 +3185,7 @@ function setupEvents() {
     }
   });
 
+  // Eventos internos de la cuadrícula: Copiar y Alternar visibilidad de claves
   document.getElementById('credentials-grid-container').addEventListener('click', e => {
     const btn = e.target.closest('.action-btn-mini');
     if (!btn) return;
@@ -3091,48 +3208,53 @@ function setupEvents() {
     }
   });
 
-  document.addEventListener('focusout', e => {
-    if (e.target.classList.contains('fmt-num')) {
-      const parsed = parseCurrency(e.target.value);
-      const isExcelCell = e.target.classList.contains('cell-input');
-      const isTaxAmount = e.target.classList.contains('tax-amount');
-      
-      if ((isExcelCell || isTaxAmount) && (!parsed || parsed === 0)) {
-         e.target.value = '';
-      } else if (!parsed && parsed !== 0) {
-         e.target.value = '';
-      } else {
-         e.target.value = formatCurrency(parsed);
-      }
-
-      if (parsed < 0) {
-         e.target.style.setProperty('color', '#ef4444', 'important');
-         e.target.style.setProperty('font-weight', 'bold', 'important');
-      } else {
-         e.target.style.removeProperty('color');
-         e.target.style.removeProperty('font-weight');
-      }
+  
+document.addEventListener('focusout', e => {
+  if (e.target.classList.contains('fmt-num')) {
+    const parsed = parseCurrency(e.target.value);
+    const isExcelCell = e.target.classList.contains('cell-input');
+    const isTaxAmount = e.target.classList.contains('tax-amount');
+    
+    if ((isExcelCell || isTaxAmount) && (!parsed || parsed === 0)) {
+       e.target.value = '';
+    } else if (!parsed && parsed !== 0) {
+       e.target.value = '';
+    } else {
+       e.target.value = formatCurrency(parsed);
     }
-  });
 
+    // Aplicar estilo de color reactivo para valores negativos
+    if (parsed < 0) {
+       e.target.style.setProperty('color', '#ef4444', 'important');
+       e.target.style.setProperty('font-weight', 'bold', 'important');
+    } else {
+       e.target.style.removeProperty('color');
+       e.target.style.removeProperty('font-weight');
+    }
+  }
+});
+
+  // Lógica unificada para el cambio de sección
   function switchSection(targetSec) {
-    if (!targetSec) return;
-
+    // Sincronizar clases activas en los botones de escritorio
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.section === targetSec);
     });
 
+    // Sincronizar el valor seleccionado en el menú desplegable móvil
     const selectEl = document.getElementById('header-section-select');
     if (selectEl) {
       selectEl.value = targetSec;
     }
 
+    // Activar sección visible en pantalla
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     const targetSectionEl = document.getElementById('section-' + targetSec);
     if (targetSectionEl) {
       targetSectionEl.classList.add('active');
     }
 
+    // Conmutar botones dinámicos y contextuales en el cabecero
     document.querySelectorAll('.dynamic-actions').forEach(el => el.classList.add('hidden'));
     const activeActions = document.getElementById('actions-' + targetSec);
     if (activeActions) {
@@ -3140,15 +3262,14 @@ function setupEvents() {
     }
   }
 
+  // Evento asignado a los botones tradicionales
   document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const targetBtn = e.target.closest('.tab-btn');
-      if (targetBtn && targetBtn.dataset.section) {
-        switchSection(targetBtn.dataset.section);
-      }
+    btn.addEventListener('click', () => {
+      switchSection(btn.dataset.section);
     });
   });
 
+  // Evento asignado al nuevo selector desplegable
   const selectNav = document.getElementById('header-section-select');
   if (selectNav) {
     selectNav.addEventListener('change', (e) => {
@@ -3167,6 +3288,7 @@ function setupEvents() {
     saveData(); renderAll();
   });
 
+  // GRID DE BALANCES - Entradas de datos
   document.getElementById('grid-balances').addEventListener('input', e => {
     const el = e.target;
     if (el.classList.contains('company-input')) {
@@ -3179,7 +3301,7 @@ function setupEvents() {
       saveData();
       return;
     }
-    if (el.dataset.field && el.dataset.bi!==undefined) {
+ if (el.dataset.field && el.dataset.bi!==undefined) {
       const bi=+el.dataset.bi, ci=+el.dataset.ci, key=bi+'-'+ci;
       const isMov = el.classList.contains('mov-importe') || el.classList.contains('mov-obs');
       
@@ -3192,12 +3314,12 @@ function setupEvents() {
           updateConciliado(bi,ci);
           updateAllTotals();
         }
-      } else {
+ } else {
         if (!data.balances[key]) data.balances[key]={};
         data.balances[key][el.dataset.field] = el.classList.contains('fmt-num') ? parseCurrency(el.value) : el.value;
         saveData();
 
-        if (el.dataset.field==='saldoActual') {
+if (el.dataset.field==='saldoActual') {
           const now = new Date();
           const d = String(now.getDate()).padStart(2, '0');
           const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -3215,7 +3337,9 @@ function setupEvents() {
     }
   });
 
+  // GRID DE BALANCES - Clics y Checkboxes
   document.getElementById('grid-balances').addEventListener('click', e => {
+
     const collapsedCell = e.target.closest('.balance-cell.company-collapsed-cell');
     if (collapsedCell) {
       const bi = collapsedCell.dataset.bi;
@@ -3234,15 +3358,17 @@ function setupEvents() {
       return; 
     }
 
-    if (e.target.closest('.btn-undo')) {
+     if (e.target.closest('.btn-undo')) {
       undoLastChange();
       return;
     }
 
+    // Guardar estado previo en el resto de clics interactivos
     if (e.target.closest('.copy-actual-btn') || e.target.closest('.clear-field-btn') || e.target.classList.contains('btn-add-mov') || e.target.classList.contains('btn-del-mov')) {
       pushUndo();
     }
     
+    // Expandir/Contraer Columna de Empresa (Persistente al instante)
     if (e.target.closest('.btn-toggle-col')) {
       const btn = e.target.closest('.btn-toggle-col');
       const ci = +btn.dataset.ci;
@@ -3252,16 +3378,19 @@ function setupEvents() {
       return;
     }
 
+    
+    // Expandir/Contraer TODAS las Columnas de Empresa de golpe (Persistente al instante)
     if (e.target.closest('.btn-toggle-all-cols')) {
       const anyExpanded = data.companies.some((_, ci) => !data.collapsedCompanies[ci]);
       data.companies.forEach((_, ci) => {
-        data.collapsedCompanies[ci] = anyExpanded;
+        data.collapsedCompanies[ci] = anyExpanded; // Si hay alguna expandida, las contrae todas. Si no, las expande todas.
       });
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(err) {}
       renderBalances();
       return;
     }
 
+    // Expandir/Contraer Fila de Banco (Persistente al instante)
     if (e.target.closest('.btn-toggle-row')) {
       const btn = e.target.closest('.btn-toggle-row');
       const bi = +btn.dataset.bi;
@@ -3271,6 +3400,7 @@ function setupEvents() {
       return;
     }
 
+    // Expandir/Contraer Columna Completa de Bancos (Persistente al instante)
     if (e.target.closest('.btn-toggle-bank-col')) {
       data.collapsedBankColumn = !data.collapsedBankColumn;
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(err) {}
@@ -3278,6 +3408,7 @@ function setupEvents() {
       return;
     }
 
+    // Copiar Saldo Actual a Punteado
     if (e.target.closest('.copy-actual-btn')) {
       const btn = e.target.closest('.copy-actual-btn');
       const bi = +btn.dataset.bi, ci = +btn.dataset.ci, key = bi + '-' + ci;
@@ -3288,6 +3419,7 @@ function setupEvents() {
       return;
     }
 
+    // Borrado rápido de campos individuales
     if (e.target.closest('.clear-field-btn')) {
       const btn = e.target.closest('.clear-field-btn');
       const bi = +btn.dataset.bi, ci = +btn.dataset.ci, key = bi + '-' + ci;
@@ -3302,6 +3434,7 @@ function setupEvents() {
       return;
     }
 
+    // Eliminación robusta de Banco con reindexación
     if (e.target.classList.contains('btn-delete-row')) {
       const bi = +e.target.dataset.bi;
       confirm_('Eliminar banco "'+data.banks[bi]+'" y todos sus datos?', () => {
@@ -3312,6 +3445,7 @@ function setupEvents() {
       });
     }
 
+    // Eliminación robusta de Empresa con reindexación
     if (e.target.classList.contains('btn-delete-col')) {
       const ci = +e.target.dataset.ci;
       confirm_('Eliminar empresa "'+data.companies[ci]+'" y todos sus datos?', () => {
@@ -3322,10 +3456,11 @@ function setupEvents() {
       });
     }
 
-    if (e.target.classList.contains('btn-add-mov')) {
+if (e.target.classList.contains('btn-add-mov')) {
       const bi=+e.target.dataset.bi, ci=+e.target.dataset.ci, key=bi+'-'+ci;
       if (!data.movements[key]) data.movements[key]=[];
       
+      // Obtener la fecha actual en formato DD-MM
       const now = new Date();
       const d = String(now.getDate()).padStart(2, '0');
       const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -3361,6 +3496,7 @@ function setupEvents() {
     }
   });
 
+  // ARRASTRAR Y REORDENAR MOVIMIENTOS PENDIENTES (DRAG & DROP)
   let draggedMov = null;
 
   document.getElementById('grid-balances').addEventListener('dragstart', e => {
@@ -3380,6 +3516,7 @@ function setupEvents() {
     const targetItem = e.target.closest('.movement-item');
     if (!targetItem || !draggedMov) return;
     
+    // Solo permitir reordenar dentro de la misma celda
     if (+targetItem.dataset.bi === draggedMov.bi && +targetItem.dataset.ci === draggedMov.ci) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
@@ -3421,6 +3558,7 @@ function setupEvents() {
     }
   });
 
+  // FACTURAS
   document.getElementById('btn-add-invoice').addEventListener('click', () => {
     data.invoices.push({months:new Array(12).fill(false),descripcion:'',codigoContable:'',importe:'',banco:'',tipoFacturacion:'',observaciones:''});
     saveData(); renderInvoices();
@@ -3458,12 +3596,13 @@ function setupEvents() {
     }
   });
 
+  // IMPUESTOS
   document.getElementById('btn-add-tax-company').addEventListener('click', () => {
     data.taxCompanies.push('Empresa '+(data.taxCompanies.length+1));
     saveData(); renderTaxes();
   });
 
-  document.getElementById('table-taxes').addEventListener('input', e => {
+document.getElementById('table-taxes').addEventListener('input', e => {
     const el = e.target;
     if (el.classList.contains('tax-company-input')) {
       data.taxCompanies[+el.dataset.ci] = el.value;
@@ -3474,7 +3613,7 @@ function setupEvents() {
       data.taxValues[el.dataset.row + '-' + el.dataset.ci] = val;
       saveData();
       
-      if (el.classList.contains('tax-amount')) {
+     if (el.classList.contains('tax-amount')) {
          const numVal = parseFloat(val) || 0;
          el.classList.remove('tax-val-positive', 'tax-val-negative');
          if (numVal > 0) el.classList.add('tax-val-positive');
@@ -3489,14 +3628,14 @@ function setupEvents() {
     }
   });
 
-  document.getElementById('table-taxes').addEventListener('change', e => {
+   document.getElementById('table-taxes').addEventListener('change', e => {
     const el = e.target;
     if (el.classList.contains('tax-presented-check')) {
       if (!data.taxPresented) data.taxPresented = {};
       data.taxPresented[el.dataset.row + '-' + el.dataset.ci] = el.checked;
       saveData();
       
-      const td = el.closest('td');
+       const td = el.closest('td');
       if (td) {
         td.style.background = el.checked ? 'rgba(128, 128, 128, 0.25)' : '';
       }
@@ -3513,7 +3652,6 @@ function setupEvents() {
       });
     }
   });
-
   const taxNotesEl = document.getElementById('tax-notes-area');
   if (taxNotesEl) {
     taxNotesEl.addEventListener('input', () => {
@@ -3522,6 +3660,7 @@ function setupEvents() {
     });
   }
 
+  // NOTAS
   const notesEl = document.getElementById('notes-area');
   notesEl.addEventListener('input', () => {
     data.notes=notesEl.value; saveData(); updateNotesCount();
@@ -3622,7 +3761,7 @@ function setupEvents() {
           } else {
             const rawVal = Number(res.toFixed(4));
             calcResult.textContent = rawVal.toLocaleString('es-ES');
-            calcResult.dataset.raw = rawVal;
+            calcResult.dataset.raw = rawVal; // Guarda el valor numérico limpio para operar
           }
         } catch (err) {
           calcResult.textContent = 'Error';
@@ -3643,6 +3782,7 @@ function setupEvents() {
     });
   }
 
+ 
   document.getElementById('btn-manual-save').addEventListener('click', () => {
     manualSave();
   });
@@ -3667,6 +3807,7 @@ function updateNotesCount() {
   document.getElementById('notes-linecount').textContent=(t?t.split('\n').length:0)+' líneas';
 }
 
+// ─── INICIALIZACIÓN ───────────────────────────────────────
 document.addEventListener('DOMContentLoaded', ()=>{
   loadData();
   renderAll();
@@ -3676,6 +3817,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setupEvents();
 }); 
 
+// ====== MOTOR DE CÁLCULO E INICIALIZACIÓN COMPLETA DEL MODELO 303/420 ======
+// Variable de estado para controlar la empresa activa en la pestaña de impuestos
 let activeTaxCompany = '';
 
 function initTaxCalcData() {
@@ -3741,6 +3884,7 @@ function renderTaxTemplate() {
     const container = document.getElementById('tax-template-container');
     if (!container) return;
 
+    // ESQUEMAS DE FILAS CON SUB-TOTALES INTEGRADOS
     const ivaRows = [
         { id: 'r1', label: 'Emitidas 4%', rate: 'r1', class: 'bg-emitidas', baseId: 'b_r1', cuotaId: 'c_r1' },
         { id: 'r2', label: 'Emitidas 10%', rate: 'r2', class: 'bg-emitidas', baseId: 'b_r2', cuotaId: 'c_r2' },
@@ -3806,6 +3950,7 @@ function renderTaxTemplate() {
                 const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
                 const qBorder = (t < 4) ? 'border-right: 3px solid rgba(255, 255, 255, 0.22) !important;' : '';
 
+                // Celda de Base
                 if (!r.baseId) {
                     tr += `<td class="${lockClass}" style="background: rgba(0,0,0,0.3)"></td>`;
                 } else if (t === 4 || r.isSum) {
@@ -3817,6 +3962,7 @@ function renderTaxTemplate() {
                     tr += `<td class="${lockClass}"><input type="text" class="cell-input fmt-num" data-section="${secId}" data-row="${r.baseId}" data-t="${t}" data-type="base" oninput="updateTaxVal('${secId}','${r.baseId}',${t},this.value)" value="${valStr}" style="${negStyle}"${readonlyAttr}></td>`;
                 }
 
+                // Celda de Cuota
                 if (!r.cuotaId) {
                     tr += `<td class="${lockClass}" style="background: rgba(0,0,0,0.3); ${qBorder}"></td>`;
                 } else if (t === 4 || r.isSum) {
@@ -3842,6 +3988,7 @@ function renderTaxTemplate() {
         return `<button type="button" class="btn-quarter-lock" title="${title}" onclick="toggleQuarterLock('${sec}', ${t})">${icon}</button>`;
     };
 
+    // 2. CONSTRUCCIÓN DE LA TABLA DE IVA
     let html = `<div class="excel-container">
     <table class="excel-table">
         <thead>
@@ -3866,6 +4013,7 @@ function renderTaxTemplate() {
 
     html += drawHorizontalGroupRows(ivaRows, 'iva');
     
+    // Resultados Liquidación IVA
     html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IVA ■■■■■■►</td>`;
     for(let t=0; t<5; t++) {
         const isLocked = t < 4 && !!ivaLocks[t];
@@ -3878,6 +4026,7 @@ function renderTaxTemplate() {
     }
     html += `</tr>`;
     
+    // Compensar e Infrasujeto IVA
     html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const isLocked = !!ivaLocks[t];
@@ -3900,6 +4049,7 @@ function renderTaxTemplate() {
 
     html += `</tbody></table></div>`;
 
+    // 3. CONSTRUCCIÓN DE LA TABLA DE IGIC
     html += `<table class="excel-table" style="margin-top: 40px;">
         <thead>
             <tr class="row-header-igic"><th colspan="11">IGIC EMPRESA: - ${activeTaxCompany}</th></tr>
@@ -3923,6 +4073,7 @@ function renderTaxTemplate() {
 
     html += drawHorizontalGroupRows(igicRows, 'igic');
     
+    // Resultados Liquidación IGIC
     html += `<tr class="row-resultado sticky-foot-3"><td>LIQUIDACIÓN IGIC ■■■■■■►</td>`;
     for(let t=0; t<5; t++) {
         const isLocked = t < 4 && !!igicLocks[t];
@@ -3935,6 +4086,7 @@ function renderTaxTemplate() {
     }
     html += `</tr>`;
     
+    // Compensar e Inversión IGIC
     html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const isLocked = !!igicLocks[t];
@@ -3981,6 +4133,7 @@ window.updateTaxVal = (sec, row, t, val) => {
     }
     data.taxCalcExcel[activeTaxCompany][sec].values[`${row}-${t}`] = numValue; 
     
+    // REPLICAR AUTOMÁTICAMENTE INTRACOMUNITARIAS (CONTRAPUNTE)
     if (row === 'b_intra') {
         data.taxCalcExcel[activeTaxCompany][sec].values[`r_bintra-${t}`] = numValue;
         const targetInput = document.querySelector(`input[data-section="${sec}"][data-row="r_bintra"][data-t="${t}"]`);
@@ -3992,8 +4145,9 @@ window.updateTaxVal = (sec, row, t, val) => {
         if (targetInput) targetInput.value = formatCurrency(numValue);
     }
 
+    // AUTO-CALCULAR CUOTA TRIMESTRAL AL INTRODUCIR LA BASE
     if (row.startsWith('b_r')) {
-        const rateIndex = row.split('_')[1];
+        const rateIndex = row.split('_')[1]; // r1, r2, r3, etc.
         const rateVal = data.taxCalcExcel[activeTaxCompany][sec].rates[rateIndex] || 0;
         const autoCuota = numValue * (rateVal / 100);
         
@@ -4038,12 +4192,14 @@ function calculateExcelTax() {
         let anual = {};
         const rates = data.taxCalcExcel[activeTaxCompany][sec].rates;
 
+        // 1. Procesar cálculos y acumulados de celdas calculadas
         for (let t = 0; t < 4; t++) {
             const getV = (id) => data.taxCalcExcel[activeTaxCompany][sec].values[`${id}-${t}`] || 0;
             const setV = (id, val) => { 
                 const el = document.getElementById(`${sec}-${id}-${t}`);
                 if (el) {
                     el.textContent = formatCurrency(val);
+                    // Coloreado rojo si el cálculo intermedio da negativo
                     if (val < 0) {
                         el.style.setProperty('color', '#ef4444', 'important');
                     } else {
@@ -4054,6 +4210,7 @@ function calculateExcelTax() {
             };
 
             if (sec === 'iva') {
+                // Bases Emitidas
                 const bSum1 = getV('b_r1') + getV('b_r2') + getV('b_r3') + getV('b_r4') + getV('b_r5') + getV('b_rect');
                 setV('b_tot_1', bSum1);
                 
@@ -4063,9 +4220,11 @@ function calculateExcelTax() {
                 const bFinal = bSum2 + getV('b_invers') + getV('b_zero') + getV('nosujeto');
                 setV('b_tot_final', bFinal);
 
+                // Cuotas Emitidas
                 const cTot = getV('c_r1') + getV('c_r2') + getV('c_r3') + getV('c_r4') + getV('c_r5') + getV('c_intra') + getV('c_suj') + getV('c_rect');
                 setV('c_total', cTot);
 
+                // Recibidas
                 const rBases = getV('r_b28') + getV('r_b0');
                 setV('r_btot', rBases);
                 
@@ -4075,6 +4234,7 @@ function calculateExcelTax() {
                 const rCuotas = getV('r_c') + getV('r_cintra') + getV('r_crect');
                 setV('r_ctot', rCuotas);
                 
+                // Resultado final liquidación (IVA)
                 const compensacion = getV('prev');
                 const res = (cTot - rCuotas) - compensacion;
                 
@@ -4092,6 +4252,7 @@ function calculateExcelTax() {
                 setV('prev', compensacion);
                 setV('nosujeto', getV('nosujeto'));
             } else {
+                // IGIC Bases Emitidas
                 const bTot = getV('b_ig0') + getV('b_ig3') + getV('b_ig7') + getV('b_ig13') + getV('b_ig_ex1') + getV('b_ig_ex2') + getV('b_rect');
                 setV('b_tot', bTot);
                 
@@ -4101,9 +4262,11 @@ function calculateExcelTax() {
                 const bFinal = bSum2 + getV('b_invers') + getV('b_zero');
                 setV('b_tot_gfinal', bFinal);
 
+                // IGIC Cuotas Emitidas
                 const cTot = getV('c_ig3') + getV('c_ig7') + getV('c_ig13') + getV('c_ig_ex1') + getV('c_ig_ex2') + getV('c_intra') + getV('c_suj') + getV('c_rect');
                 setV('c_total', cTot);
 
+                // IGIC Recibidas
                 const rBases = getV('r_b28') + getV('r_b0');
                 setV('r_btot', rBases);
                 
@@ -4113,6 +4276,7 @@ function calculateExcelTax() {
                 const rCuotas = getV('r_c') + getV('r_cintra') + getV('r_crect');
                 setV('r_ctot', rCuotas);
 
+                // Resultado final liquidación (IGIC)
                 const compensacion = getV('prev');
                 const res = (cTot - rCuotas) - compensacion;
 
@@ -4132,6 +4296,7 @@ function calculateExcelTax() {
             }
         }
 
+        // 2. Escanear dinámicamente y acumular todos los inputs manuales
         const valuesObj = data.taxCalcExcel[activeTaxCompany][sec].values || {};
         Object.keys(valuesObj).forEach(key => {
             const parts = key.split('-');
