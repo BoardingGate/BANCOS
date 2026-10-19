@@ -4199,24 +4199,16 @@ function renderTaxTemplate() {
     
 
 // Compensar e Infrasujeto IVA
-    html += `<tr class="row-not-subject sticky-foot-2">
-      <td class="row-label" style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
-        <span>AÑO ANTERIOR / COMPENSAR</span>
-        <span style="font-size:9px; color:var(--text-muted); display:inline-flex; align-items:center; gap:3px;">
-          Pte. Inicial:
-          <input type="text" class="cell-input fmt-num" style="width:75px; text-align:right; font-size:10px; padding:1px 4px; border:1px solid rgba(255,255,255,0.15); border-radius:3px; color:#fde047;" 
-                 value="${formatCurrency(data.taxCalcExcel[activeTaxCompany].iva.initialPrev || 0)}" 
-                 title="Importe a compensar pendiente del ejercicio anterior"
-                 oninput="updateInitialPrev('iva', this.value)">
-        </span>
-      </td>`;
+    html += `<tr class="row-not-subject sticky-foot-2"><td class="row-label">AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const isLocked = !!ivaLocks[t];
         const lockClass = isLocked ? ' quarter-locked-cell' : '';
         const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
-        const val = data.taxCalcExcel[activeTaxCompany].iva.values[`prev-${t}`] || 0;
+        const val = (t === 0) 
+            ? (data.taxCalcExcel[activeTaxCompany].iva.initialPrev || 0)
+            : (data.taxCalcExcel[activeTaxCompany].iva.values[`prev-${t}`] || 0);
         const valStr = val > 0 ? formatCurrency(val) : '';
-        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${valStr}" placeholder=""${readonlyAttr}></td>`;
+        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${valStr}" placeholder="0,00"${readonlyAttr}></td>`;
     }
     html += `<td colspan="2" class="cell-total" id="iva-prev-4" style="text-align: right !important;">0,00</td></tr>`;
     
@@ -4269,25 +4261,17 @@ function renderTaxTemplate() {
     }
     html += `</tr>`;
     
-    // Compensar e Inversión IGIC
-    html += `<tr class="row-not-subject sticky-foot-2">
-      <td class="row-label" style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
-        <span>AÑO ANTERIOR / COMPENSAR</span>
-        <span style="font-size:9px; color:var(--text-muted); display:inline-flex; align-items:center; gap:3px;">
-          Pte. Inicial:
-          <input type="text" class="cell-input fmt-num" style="width:75px; text-align:right; font-size:10px; padding:1px 4px; border:1px solid rgba(255,255,255,0.15); border-radius:3px; color:#fde047;" 
-                 value="${formatCurrency(data.taxCalcExcel[activeTaxCompany].igic.initialPrev || 0)}" 
-                 title="Importe a compensar pendiente del ejercicio anterior"
-                 oninput="updateInitialPrev('igic', this.value)">
-        </span>
-      </td>`;
+// Compensar e Inversión IGIC
+    html += `<tr class="row-not-subject sticky-foot-2"><td class="row-label">AÑO ANTERIOR / COMPENSAR</td>`;
     for(let t=0; t<4; t++) {
         const isLocked = !!igicLocks[t];
         const lockClass = isLocked ? ' quarter-locked-cell' : '';
         const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
-        const val = data.taxCalcExcel[activeTaxCompany].igic.values[`prev-${t}`] || 0;
+        const val = (t === 0) 
+            ? (data.taxCalcExcel[activeTaxCompany].igic.initialPrev || 0)
+            : (data.taxCalcExcel[activeTaxCompany].igic.values[`prev-${t}`] || 0);
         const valStr = val > 0 ? formatCurrency(val) : '';
-        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${valStr}" placeholder=""${readonlyAttr}></td>`;
+        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${valStr}" placeholder="0,00"${readonlyAttr}></td>`;
     }
     html += `<td colspan="2" class="cell-total" id="igic-prev-4" style="text-align: right !important;">0,00</td></tr>`;
     
