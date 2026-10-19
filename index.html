@@ -3969,7 +3969,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // ====== MOTOR DE CÁLCULO E INICIALIZACIÓN COMPLETA DEL MODELO 303/420 ======
 // Variable de estado para controlar la empresa activa en la pestaña de impuestos
 let activeTaxCompany = '';
-
 function initTaxCalcData() {
     if (!data.taxCalcExcel) {
         data.taxCalcExcel = {};
@@ -3979,20 +3978,34 @@ function initTaxCalcData() {
             data.taxCalcExcel[co] = {
                 iva: { 
                     rates: { r1: 4, r2: 10, r3: 21, r4: 0, r5: 0 }, 
+                    initialPrev: 24.98,
                     values: { 'prev-0': 24.98 },
                     notes: '',
                     lockedQuarters: {}
                 },
                 igic: { 
                     rates: { r1: 0, r2: 3, r3: 7, r4: 13, r5: 0, r6: 0 }, 
+                    initialPrev: 0,
                     values: {},
                     notes: '',
                     lockedQuarters: {}
                 }
             };
         }
-        if (!data.taxCalcExcel[co].iva.lockedQuarters) data.taxCalcExcel[co].iva.lockedQuarters = {};
-        if (!data.taxCalcExcel[co].igic.lockedQuarters) data.taxCalcExcel[co].igic.lockedQuarters = {};
+        
+        // Compatibilidad con datos existentes
+        ['iva', 'igic'].forEach(sec => {
+            if (!data.taxCalcExcel[co][sec]) return;
+            if (data.taxCalcExcel[co][sec].initialPrev === undefined) {
+                const oldVal = data.taxCalcExcel[co][sec].prev !== undefined 
+                    ? data.taxCalcExcel[co][sec].prev 
+                    : (data.taxCalcExcel[co][sec].values && data.taxCalcExcel[co][sec].values['prev-0']);
+                data.taxCalcExcel[co][sec].initialPrev = parseFloat(oldVal) || 0;
+            }
+            if (!data.taxCalcExcel[co][sec].lockedQuarters) {
+                data.taxCalcExcel[co][sec].lockedQuarters = {};
+            }
+        });
     });
 
     if (!activeTaxCompany && data.companies.length > 0) {
@@ -4000,6 +4013,15 @@ function initTaxCalcData() {
     }
 }
 
+// Permite definir o modificar el saldo pendiente que viene de ejercicios anteriores
+window.updateInitialPrev = (sec, val) => {
+    initTaxCalcData();
+    const num = parseCurrency(val) || 0;
+    data.taxCalcExcel[activeTaxCompany][sec].initialPrev = num;
+    saveData();
+    calculateExcelTax();
+};
+  
 window.toggleQuarterLock = (sec, t) => {
     initTaxCalcData();
     if (!data.taxCalcExcel[activeTaxCompany][sec].lockedQuarters) {
@@ -4176,25 +4198,27 @@ function renderTaxTemplate() {
     html += `</tr>`;
     
     // Compensar e Infrasujeto IVA
-    html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
+// Compensar e Infrasujeto IVA
+    html += `<tr class="row-not-subject sticky-foot-2">
+      <td class="row-label" style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+        <span>AÑO ANTERIOR / COMPENSAR</span>
+        <span style="font-size:9px; color:var(--text-muted); display:inline-flex; align-items:center; gap:3px;">
+          Pte. Inicial:
+          <input type="text" class="cell-input fmt-num" style="width:75px; text-align:right; font-size:10px; padding:1px 4px; border:1px solid rgba(255,255,255,0.15); border-radius:3px; color:#fde047;" 
+                 value="${formatCurrency(data.taxCalcExcel[activeTaxCompany].iva.initialPrev || 0)}" 
+                 title="Importe a compensar pendiente del ejercicio anterior"
+                 oninput="updateInitialPrev('iva', this.value)">
+        </span>
+      </td>`;
     for(let t=0; t<4; t++) {
         const isLocked = !!ivaLocks[t];
         const lockClass = isLocked ? ' quarter-locked-cell' : '';
         const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
         const val = data.taxCalcExcel[activeTaxCompany].iva.values[`prev-${t}`] || 0;
-        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${formatCurrency(val)}"${readonlyAttr}></td>`;
+        const valStr = val > 0 ? formatCurrency(val) : '';
+        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${valStr}" placeholder=""${readonlyAttr}></td>`;
     }
     html += `<td colspan="2" class="cell-total" id="iva-prev-4" style="text-align: right !important;">0,00</td></tr>`;
-    
-    html += `<tr class="row-not-subject sticky-foot-1"><td>EMIT.S.PASIVO(Casi 122)</td>`;
-    for(let t=0; t<4; t++) {
-        const isLocked = !!ivaLocks[t];
-        const lockClass = isLocked ? ' quarter-locked-cell' : '';
-        const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
-        const val = data.taxCalcExcel[activeTaxCompany].iva.values[`nosujeto-${t}`] || 0;
-        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('iva','nosujeto',${t},this.value)" value="${formatCurrency(val)}"${readonlyAttr}></td>`;
-    }
-    html += `<td colspan="2" class="cell-total" id="iva-nosujeto-4" style="text-align: right !important;">0,00</td></tr>`;
 
     html += `</tbody></table></div>`;
 
@@ -4235,26 +4259,27 @@ function renderTaxTemplate() {
     }
     html += `</tr>`;
     
-    // Compensar e Inversión IGIC
-    html += `<tr class="row-not-subject sticky-foot-2"><td>AÑO ANTERIOR / COMPENSAR</td>`;
+// Compensar e Inversión IGIC
+    html += `<tr class="row-not-subject sticky-foot-2">
+      <td class="row-label" style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+        <span>AÑO ANTERIOR / COMPENSAR</span>
+        <span style="font-size:9px; color:var(--text-muted); display:inline-flex; align-items:center; gap:3px;">
+          Pte. Inicial:
+          <input type="text" class="cell-input fmt-num" style="width:75px; text-align:right; font-size:10px; padding:1px 4px; border:1px solid rgba(255,255,255,0.15); border-radius:3px; color:#fde047;" 
+                 value="${formatCurrency(data.taxCalcExcel[activeTaxCompany].igic.initialPrev || 0)}" 
+                 title="Importe a compensar pendiente del ejercicio anterior"
+                 oninput="updateInitialPrev('igic', this.value)">
+        </span>
+      </td>`;
     for(let t=0; t<4; t++) {
         const isLocked = !!igicLocks[t];
         const lockClass = isLocked ? ' quarter-locked-cell' : '';
         const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
         const val = data.taxCalcExcel[activeTaxCompany].igic.values[`prev-${t}`] || 0;
-        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${formatCurrency(val)}"${readonlyAttr}></td>`;
+        const valStr = val > 0 ? formatCurrency(val) : '';
+        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${valStr}" placeholder=""${readonlyAttr}></td>`;
     }
-    html += `<td colspan="2" class="cell-total" id="igic-prev-4" style="text-align: right !important;">0,00</td></tr>`;
-    
-    html += `<tr class="row-not-subject sticky-foot-1"><td>OPER.NO SUJETAS (Bases emitidas de sujeto pasivo)</td>`;
-    for(let t=0; t<4; t++) {
-        const isLocked = !!igicLocks[t];
-        const lockClass = isLocked ? ' quarter-locked-cell' : '';
-        const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
-        const val = data.taxCalcExcel[activeTaxCompany].igic.values[`nosujeto-${t}`] || 0;
-        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('igic','nosujeto',${t},this.value)" value="${formatCurrency(val)}"${readonlyAttr}></td>`;
-    }
-    html += `<td colspan="2" class="cell-total" id="igic-nosujeto-4" style="text-align: right !important;">0,00</td></tr>`;
+    html += `<td colspan="2" class="cell-total" id="igic-prev-4" style="text-align: right !important;">0,00</td></tr>`;tant;">0,00</td></tr>`;
 
     html += `</tbody></table></div>`;
 
@@ -4328,9 +4353,10 @@ window.updateTaxMeta = (sec, key, t, val) => {
     if (!data.taxCalcExcel[activeTaxCompany][sec].values) {
         data.taxCalcExcel[activeTaxCompany][sec].values = {};
     }
-    data.taxCalcExcel[activeTaxCompany][sec].values[`${key}-${t}`] = parseCurrency(val); 
+    const parsed = parseCurrency(val) || 0;
+    data.taxCalcExcel[activeTaxCompany][sec].values[`${key}-${t}`] = parsed; 
     if (key === 'prev' && t === 0) {
-        data.taxCalcExcel[activeTaxCompany][sec].prev = parseCurrency(val);
+        data.taxCalcExcel[activeTaxCompany][sec].initialPrev = parsed;
     }
     saveData(); 
     calculateExcelTax(); 
@@ -4341,6 +4367,9 @@ function calculateExcelTax() {
         let anual = {};
         const rates = data.taxCalcExcel[activeTaxCompany][sec].rates;
 
+        // Saldo a compensar acumulado disponible (inicia con el saldo previo del ejercicio anterior)
+        let saldoPendiente = data.taxCalcExcel[activeTaxCompany][sec].initialPrev || 0;
+
         // 1. Procesar cálculos y acumulados de celdas calculadas
         for (let t = 0; t < 4; t++) {
             const getV = (id) => data.taxCalcExcel[activeTaxCompany][sec].values[`${id}-${t}`] || 0;
@@ -4348,7 +4377,6 @@ function calculateExcelTax() {
                 const el = document.getElementById(`${sec}-${id}-${t}`);
                 if (el) {
                     el.textContent = formatCurrency(val);
-                    // Coloreado rojo si el cálculo intermedio da negativo
                     if (val < 0) {
                         el.style.setProperty('color', '#ef4444', 'important');
                     } else {
@@ -4357,6 +4385,9 @@ function calculateExcelTax() {
                 }
                 anual[id] = (anual[id] || 0) + val;
             };
+
+            let cTot = 0;
+            let rCuotas = 0;
 
             if (sec === 'iva') {
                 // Bases Emitidas
@@ -4370,7 +4401,7 @@ function calculateExcelTax() {
                 setV('b_tot_final', bFinal);
 
                 // Cuotas Emitidas
-                const cTot = getV('c_r1') + getV('c_r2') + getV('c_r3') + getV('c_r4') + getV('c_r5') + getV('c_intra') + getV('c_suj') + getV('c_rect');
+                cTot = getV('c_r1') + getV('c_r2') + getV('c_r3') + getV('c_r4') + getV('c_r5') + getV('c_intra') + getV('c_suj') + getV('c_rect');
                 setV('c_total', cTot);
 
                 // Recibidas
@@ -4380,26 +4411,8 @@ function calculateExcelTax() {
                 const rBasesFinal = rBases + getV('r_brect') + getV('r_bintra');
                 setV('r_btot_final', rBasesFinal);
                 
-                const rCuotas = getV('r_c') + getV('r_cintra') + getV('r_crect');
+                rCuotas = getV('r_c') + getV('r_cintra') + getV('r_crect');
                 setV('r_ctot', rCuotas);
-                
-                // Resultado final liquidación (IVA)
-                const compensacion = getV('prev');
-                const res = (cTot - rCuotas) - compensacion;
-                
-                const elRes = document.getElementById('iva-res-final-'+t);
-                if (elRes) {
-                    elRes.textContent = formatCurrency(res);
-                    if (res < 0) {
-                        elRes.style.setProperty('color', '#ef4444', 'important');
-                    } else {
-                        elRes.style.removeProperty('color');
-                    }
-                }
-                anual['res_final'] = (anual['res_final'] || 0) + res;
-                
-                setV('prev', compensacion);
-                setV('nosujeto', getV('nosujeto'));
             } else {
                 // IGIC Bases Emitidas
                 const bTot = getV('b_ig0') + getV('b_ig3') + getV('b_ig7') + getV('b_ig13') + getV('b_ig_ex1') + getV('b_ig_ex2') + getV('b_rect');
@@ -4412,7 +4425,7 @@ function calculateExcelTax() {
                 setV('b_tot_gfinal', bFinal);
 
                 // IGIC Cuotas Emitidas
-                const cTot = getV('c_ig3') + getV('c_ig7') + getV('c_ig13') + getV('c_ig_ex1') + getV('c_ig_ex2') + getV('c_intra') + getV('c_suj') + getV('c_rect');
+                cTot = getV('c_ig3') + getV('c_ig7') + getV('c_ig13') + getV('c_ig_ex1') + getV('c_ig_ex2') + getV('c_intra') + getV('c_suj') + getV('c_rect');
                 setV('c_total', cTot);
 
                 // IGIC Recibidas
@@ -4422,30 +4435,55 @@ function calculateExcelTax() {
                 const rBases2 = rBases + getV('r_brect') + getV('r_bintra');
                 setV('r_btot_final', rBases2);
                 
-                const rCuotas = getV('r_c') + getV('r_cintra') + getV('r_crect');
+                rCuotas = getV('r_c') + getV('r_cintra') + getV('r_crect');
                 setV('r_ctot', rCuotas);
-
-                // Resultado final liquidación (IGIC)
-                const compensacion = getV('prev');
-                const res = (cTot - rCuotas) - compensacion;
-
-                const elRes = document.getElementById('igic-res-final-'+t);
-                if (elRes) {
-                    elRes.textContent = formatCurrency(res);
-                    if (res < 0) {
-                        elRes.style.setProperty('color', '#ef4444', 'important');
-                    } else {
-                        elRes.style.removeProperty('color');
-                    }
-                }
-                anual['res_final'] = (anual['res_final'] || 0) + res;
-                
-                setV('prev', compensacion);
-                setV('nosujeto', getV('nosujeto'));
             }
+
+            // --- LÓGICA AUTOMÁTICA OFICIAL DE COMPENSACIÓN ---
+            const diff = Math.round((cTot - rCuotas) * 100) / 100; // Resultado antes de compensar
+            let compensar = 0;
+
+            if (diff > 0) {
+                // El trimestre es a pagar y hay saldo acumulado a compensar disponible
+                if (saldoPendiente > 0) {
+                    compensar = Math.round(Math.min(saldoPendiente, diff) * 100) / 100;
+                    saldoPendiente = Math.round((saldoPendiente - compensar) * 100) / 100;
+                }
+            } else {
+                // Si da 0 o negativo, NO se compensa nada (se elimina cualquier compensación)
+                compensar = 0;
+                if (diff < 0) {
+                    // El exceso negativo del trimestre se suma al saldo a compensar en trimestres posteriores
+                    saldoPendiente = Math.round((saldoPendiente + Math.abs(diff)) * 100) / 100;
+                }
+            }
+
+            // Anotar automáticamente la compensación en los datos y en el input en pantalla
+            data.taxCalcExcel[activeTaxCompany][sec].values[`prev-${t}`] = compensar;
+            const prevInput = document.querySelector(`input[data-section="${sec}"][data-row="prev"][data-t="${t}"]`);
+            if (prevInput) {
+                prevInput.value = compensar > 0 ? formatCurrency(compensar) : '';
+            }
+
+            // Resultado final de la liquidación del trimestre
+            const res = Math.round((diff - compensar) * 100) / 100;
+
+            const elRes = document.getElementById(`${sec}-res-final-${t}`);
+            if (elRes) {
+                elRes.textContent = formatCurrency(res);
+                if (res < 0) {
+                    elRes.style.setProperty('color', '#ef4444', 'important');
+                } else {
+                    elRes.style.removeProperty('color');
+                }
+            }
+            anual['res_final'] = (anual['res_final'] || 0) + res;
+
+            setV('prev', compensar);
+            setV('nosujeto', getV('nosujeto'));
         }
 
-        // 2. Escanear dinámicamente y acumular todos los inputs manuales
+        // 2. Escanear y acumular inputs manuales
         const valuesObj = data.taxCalcExcel[activeTaxCompany][sec].values || {};
         Object.keys(valuesObj).forEach(key => {
             const parts = key.split('-');
