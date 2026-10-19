@@ -4442,34 +4442,52 @@ function calculateExcelTax() {
                 rCuotas = getV('r_c') + getV('r_cintra') + getV('r_crect');
                 setV('r_ctot', rCuotas);
             }
-
-            // --- LÓGICA AUTOMÁTICA OFICIAL DE COMPENSACIÓN ---
+// --- LÓGICA AUTOMÁTICA OFICIAL DE COMPENSACIÓN ---
             const diff = Math.round((cTot - rCuotas) * 100) / 100; // Resultado antes de compensar
             let compensar = 0;
 
-            if (diff > 0) {
-                // El trimestre es a pagar y hay saldo acumulado a compensar disponible
-                if (saldoPendiente > 0) {
+            if (t === 0) {
+                // 1T: El saldo del ejercicio anterior está en la casilla del 1T
+                const prevAnoAnterior = data.taxCalcExcel[activeTaxCompany][sec].initialPrev || 0;
+                saldoPendiente = prevAnoAnterior;
+
+                if (diff > 0) {
                     compensar = Math.round(Math.min(saldoPendiente, diff) * 100) / 100;
                     saldoPendiente = Math.round((saldoPendiente - compensar) * 100) / 100;
+                } else {
+                    compensar = 0;
+                    if (diff < 0) {
+                        saldoPendiente = Math.round((saldoPendiente + Math.abs(diff)) * 100) / 100;
+                    }
+                }
+
+                // Mantener en la casilla de 1T el saldo que traías del año anterior
+                const prevInput = document.querySelector(`input[data-section="${sec}"][data-row="prev"][data-t="0"]`);
+                if (prevInput && document.activeElement !== prevInput) {
+                    prevInput.value = prevAnoAnterior > 0 ? formatCurrency(prevAnoAnterior) : '';
                 }
             } else {
-                // Si da 0 o negativo, NO se compensa nada (se elimina cualquier compensación)
-                compensar = 0;
-                if (diff < 0) {
-                    // El exceso negativo del trimestre se suma al saldo a compensar en trimestres posteriores
-                    saldoPendiente = Math.round((saldoPendiente + Math.abs(diff)) * 100) / 100;
+                // 2T, 3T y 4T: Se compensa automáticamente solo si da a pagar
+                if (diff > 0) {
+                    if (saldoPendiente > 0) {
+                        compensar = Math.round(Math.min(saldoPendiente, diff) * 100) / 100;
+                        saldoPendiente = Math.round((saldoPendiente - compensar) * 100) / 100;
+                    }
+                } else {
+                    compensar = 0;
+                    if (diff < 0) {
+                        saldoPendiente = Math.round((saldoPendiente + Math.abs(diff)) * 100) / 100;
+                    }
+                }
+
+                data.taxCalcExcel[activeTaxCompany][sec].values[`prev-${t}`] = compensar;
+                const prevInput = document.querySelector(`input[data-section="${sec}"][data-row="prev"][data-t="${t}"]`);
+                if (prevInput) {
+                    prevInput.value = compensar > 0 ? formatCurrency(compensar) : '';
                 }
             }
 
-            // Anotar automáticamente la compensación en los datos y en el input en pantalla
-            data.taxCalcExcel[activeTaxCompany][sec].values[`prev-${t}`] = compensar;
-            const prevInput = document.querySelector(`input[data-section="${sec}"][data-row="prev"][data-t="${t}"]`);
-            if (prevInput) {
-                prevInput.value = compensar > 0 ? formatCurrency(compensar) : '';
-            }
-
-            // Resultado final de la liquidación del trimestre
+            // Resultado de la liquidación del trimestre
             const res = Math.round((diff - compensar) * 100) / 100;
 
             const elRes = document.getElementById(`${sec}-res-final-${t}`);
@@ -4485,6 +4503,7 @@ function calculateExcelTax() {
 
             setV('prev', compensar);
             setV('nosujeto', getV('nosujeto'));
+
         }
 
         // 2. Escanear y acumular inputs manuales
