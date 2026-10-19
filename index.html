@@ -4197,7 +4197,7 @@ function renderTaxTemplate() {
     }
     html += `</tr>`;
     
-    // Compensar e Infrasujeto IVA
+
 // Compensar e Infrasujeto IVA
     html += `<tr class="row-not-subject sticky-foot-2">
       <td class="row-label" style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
@@ -4219,6 +4219,16 @@ function renderTaxTemplate() {
         html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="prev" data-t="${t}" oninput="updateTaxMeta('iva','prev',${t},this.value)" value="${valStr}" placeholder=""${readonlyAttr}></td>`;
     }
     html += `<td colspan="2" class="cell-total" id="iva-prev-4" style="text-align: right !important;">0,00</td></tr>`;
+    
+    html += `<tr class="row-not-subject sticky-foot-1"><td>EMIT.S.PASIVO(Casi 122)</td>`;
+    for(let t=0; t<4; t++) {
+        const isLocked = !!ivaLocks[t];
+        const lockClass = isLocked ? ' quarter-locked-cell' : '';
+        const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
+        const val = data.taxCalcExcel[activeTaxCompany].iva.values[`nosujeto-${t}`] || 0;
+        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="iva" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('iva','nosujeto',${t},this.value)" value="${formatCurrency(val)}"${readonlyAttr}></td>`;
+    }
+    html += `<td colspan="2" class="cell-total" id="iva-nosujeto-4" style="text-align: right !important;">0,00</td></tr>`;
 
     html += `</tbody></table></div>`;
 
@@ -4259,7 +4269,7 @@ function renderTaxTemplate() {
     }
     html += `</tr>`;
     
-// Compensar e Inversión IGIC
+    // Compensar e Inversión IGIC
     html += `<tr class="row-not-subject sticky-foot-2">
       <td class="row-label" style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
         <span>AÑO ANTERIOR / COMPENSAR</span>
@@ -4279,7 +4289,17 @@ function renderTaxTemplate() {
         const valStr = val > 0 ? formatCurrency(val) : '';
         html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="prev" data-t="${t}" oninput="updateTaxMeta('igic','prev',${t},this.value)" value="${valStr}" placeholder=""${readonlyAttr}></td>`;
     }
-    html += `<td colspan="2" class="cell-total" id="igic-prev-4" style="text-align: right !important;">0,00</td></tr>`;tant;">0,00</td></tr>`;
+    html += `<td colspan="2" class="cell-total" id="igic-prev-4" style="text-align: right !important;">0,00</td></tr>`;
+    
+    html += `<tr class="row-not-subject sticky-foot-1"><td>OPER.NO SUJETAS (Bases emitidas de sujeto pasivo)</td>`;
+    for(let t=0; t<4; t++) {
+        const isLocked = !!igicLocks[t];
+        const lockClass = isLocked ? ' quarter-locked-cell' : '';
+        const readonlyAttr = isLocked ? ' readonly tabindex="-1"' : '';
+        const val = data.taxCalcExcel[activeTaxCompany].igic.values[`nosujeto-${t}`] || 0;
+        html += `<td colspan="2" class="${lockClass}" style="border-right: 3px solid rgba(255, 255, 255, 0.3) !important;"><input type="text" class="cell-input fmt-num" data-section="igic" data-row="nosujeto" data-t="${t}" oninput="updateTaxMeta('igic','nosujeto',${t},this.value)" value="${formatCurrency(val)}"${readonlyAttr}></td>`;
+    }
+    html += `<td colspan="2" class="cell-total" id="igic-nosujeto-4" style="text-align: right !important;">0,00</td></tr>`;
 
     html += `</tbody></table></div>`;
 
